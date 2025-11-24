@@ -1,0 +1,367 @@
+.main-footer {
+  background-color: var(--calcite-color-foreground-1);
+  border-top: 1px solid var(--calcite-color-border-2);
+  padding: 64px 0 24px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.footer-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--calcite-color-text-1);
+  margin-bottom: 12px;
+}
+
+.footer-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--calcite-color-text-1);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer-section p {
+  color: var(--calcite-color-text-2);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.logo-image {
+  max-width: 60px;
+  height: auto;
+}
+
+.footer-logo h3 {
+  margin: 0;
+}
+
+.footer-logo calcite-icon {
+  color: var(--calcite-color-brand);
+}
+
+.footer-description {
+  color: var(--calcite-color-text-2);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-size: 0.9375rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: var(--calcite-color-text-2);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: 0.9375rem;
+  display: inline-block;
+}
+
+.footer-links a:hover {
+  color: var(--calcite-color-brand);
+}
+
+.newsletter-form {
+  margin-top: 16px;
+}
+
+.newsletter-form calcite-input {
+  width: 100%;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--calcite-color-border-2);
+  color: var(--calcite-color-text-3);
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: var(--calcite-color-text-3);
+  font-size: 0.875rem;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer-bottom-links span {
+  color: var(--calcite-color-text-3);
+}
+
+.footer-bottom-links a {
+  color: var(--calcite-color-text-3);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-bottom-links a:hover {
+  color: var(--calcite-color-brand);
+}
+
+/* Tablet Responsive - 1024px */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+
+  .footer-section:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile Responsive - 768px */
+@media (max-width: 768px) {
+  .main-footer {
+    padding: 48px 0 24px;
+  }
+
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .footer-section:first-child {
+    grid-column: 1;
+  }
+
+  .footer-section h3 {
+    font-size: 1.25rem;
+  }
+
+  .footer-section h4 {
+    font-size: 0.9375rem;
+    margin-bottom: 12px;
+  }
+
+  .footer-logo {
+    gap: 10px;
+  }
+
+  .logo-image {
+    max-width: 50px;
+  }
+
+  .footer-description {
+    font-size: 0.875rem;
+  }
+
+  .social-links {
+    gap: 10px;
+  }
+
+  .footer-links a {
+    font-size: 0.875rem;
+  }
+
+  .footer-links li {
+    margin-bottom: 10px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 20px;
+    gap: 12px;
+  }
+
+  .footer-bottom p {
+    font-size: 0.8125rem;
+  }
+
+  .footer-bottom-links {
+    justify-content: center;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Small Mobile - 480px */
+@media (max-width: 480px) {
+  .main-footer {
+    padding: 32px 0 20px;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .footer-grid {
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .footer-section h3 {
+    font-size: 1.125rem;
+    margin-bottom: 10px;
+  }
+
+  .footer-section h4 {
+    font-size: 0.875rem;
+    margin-bottom: 10px;
+  }
+
+  .footer-section p {
+    font-size: 0.8125rem;
+  }
+
+  .footer-logo {
+    gap: 8px;
+  }
+
+  .logo-image {
+    max-width: 45px;
+  }
+
+  .footer-description {
+    font-size: 0.8125rem;
+    margin-bottom: 16px;
+  }
+
+  .social-links {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .footer-links a {
+    font-size: 0.8125rem;
+  }
+
+  .footer-links li {
+    margin-bottom: 8px;
+  }
+
+  .newsletter-form {
+    margin-top: 12px;
+  }
+
+  .footer-bottom {
+    padding-top: 16px;
+    gap: 10px;
+  }
+
+  .footer-bottom p {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .footer-bottom-links {
+    gap: 8px;
+    font-size: 0.75rem;
+  }
+
+  .footer-bottom-links span {
+    display: none;
+  }
+
+  .footer-bottom-links a {
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra Small - 360px */
+@media (max-width: 360px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .footer-section h3 {
+    font-size: 1rem;
+  }
+
+  .footer-section h4 {
+    font-size: 0.8125rem;
+  }
+
+  .logo-image {
+    max-width: 40px;
+  }
+
+  .social-links {
+    gap: 6px;
+  }
+
+  .footer-bottom-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Remove tap highlights on touch devices */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth transitions */
+.footer-links a,
+.footer-bottom-links a,
+.social-links a {
+  transition: all 0.3s ease;
+}
+
+/* Ensure calcite components are responsive */
+@media (max-width: 768px) {
+  calcite-button::part(button),
+  calcite-input::part(input) {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  calcite-button::part(button),
+  calcite-input::part(input) {
+    font-size: 0.8125rem;
+  }
+}

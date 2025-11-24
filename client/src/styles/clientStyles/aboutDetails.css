@@ -1,0 +1,421 @@
+/* About Details - Responsive Styles */
+
+/* Reset and Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.about-container {
+  background: #fff;
+  width: 100%;
+}
+
+/* Section Layout */
+.section-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 700px;
+  width: 100%;
+}
+
+/* Text Content */
+.text-content {
+  padding: clamp(2.5rem, 6vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.text-content.bg-white {
+  background: #fff;
+}
+
+.text-content.bg-gray {
+  background: #f8f8f8;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 2rem;
+  color: #2b2b2b;
+}
+
+.section-paragraph {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: #444;
+  margin-bottom: 1.5rem;
+  max-width: 650px;
+}
+
+/* Button Container */
+.button-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Media Container */
+.media-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+  overflow: hidden;
+}
+
+/* Background Image */
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.background-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Logo Overlay - First Section Only */
+.logo-overlay {
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  z-index: 4;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+}
+
+.logo-overlay img {
+  max-width: 250px;
+  height: auto;
+  display: block;
+}
+
+/* Foreground Image Container */
+.foreground-image-container {
+  position: absolute;
+  top: 15%;
+  width: 50%;
+  height: 55%;
+  z-index: 2;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.foreground-image-container.media-left {
+  right: 5%;
+}
+
+.foreground-image-container.media-right {
+  left: 10%;
+}
+
+.foreground-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Caption Box */
+.caption-box {
+  position: absolute;
+  bottom: 8%;
+  width: 400px;
+  max-width: 90%;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+  z-index: 3;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.caption-box.left-aligned {
+  left: 8%;
+}
+
+.caption-box.right-aligned {
+  right: 8%;
+}
+
+.caption-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #2b2b2b;
+}
+
+.caption-description {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+  .section-wrapper {
+    min-height: 600px;
+  }
+
+  .media-container {
+    min-height: 600px;
+  }
+
+  .logo-overlay {
+    left: 20%;
+    top: 15%;
+  }
+
+  .logo-overlay img {
+    max-width: 200px;
+  }
+
+  .foreground-image-container {
+    width: 55%;
+    height: 50%;
+  }
+
+  .caption-box {
+    width: 350px;
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  }
+
+  .section-paragraph {
+    font-size: 1rem;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .section-wrapper {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .text-content {
+    padding: 2.5rem 1.5rem;
+    order: 2;
+  }
+
+  .media-container {
+    min-height: 500px;
+    order: 1;
+  }
+
+  /* Force media first, text second on mobile */
+  .section-wrapper.media-right .text-content {
+    order: 2;
+  }
+
+  .section-wrapper.media-right .media-container {
+    order: 1;
+  }
+
+  /* Logo positioning on mobile */
+  .logo-overlay {
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .logo-overlay img {
+    max-width: 180px;
+  }
+
+  .foreground-image-container {
+    top: 30%;
+    left: 5% !important;
+    right: 5% !important;
+    width: 90%;
+    height: 45%;
+  }
+
+  .caption-box {
+    width: calc(100% - 2rem);
+    left: 1rem !important;
+    right: 1rem !important;
+    bottom: 1rem !important;
+    padding: 1.25rem;
+  }
+
+  .caption-title {
+    font-size: 1.1rem;
+  }
+
+  .caption-description {
+    font-size: 0.9rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-paragraph {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .button-container {
+    margin-top: 1rem;
+  }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+  .media-container {
+    min-height: 450px;
+  }
+
+  .text-content {
+    padding: 2rem 1.25rem;
+  }
+
+  .logo-overlay img {
+    max-width: 150px;
+  }
+
+  .foreground-image-container {
+    width: 85%;
+    height: 40%;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-paragraph {
+    font-size: 0.9rem;
+  }
+
+  .caption-box {
+    padding: 1rem;
+  }
+
+  .caption-title {
+    font-size: 1rem;
+  }
+
+  .caption-description {
+    font-size: 0.85rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+
+  .button-container calcite-button {
+    width: 100%;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .media-container {
+    min-height: 400px;
+  }
+
+  .foreground-image-container {
+    height: 55%;
+    top: 20%;
+  }
+
+  .logo-overlay {
+    top: 8%;
+  }
+
+  .logo-overlay img {
+    max-width: 140px;
+  }
+}
+
+/* Extra Small Devices */
+@media (max-width: 375px) {
+  .logo-overlay img {
+    max-width: 130px;
+  }
+
+  .section-title {
+    font-size: 1.35rem;
+  }
+
+  .section-paragraph {
+    font-size: 0.875rem;
+  }
+
+  .foreground-image-container {
+    height: 35%;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1600px) {
+  .section-wrapper {
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+
+  .logo-overlay img {
+    max-width: 300px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .section-wrapper {
+    page-break-inside: avoid;
+  }
+
+  .logo-overlay {
+    filter: none;
+  }
+
+  .caption-box,
+  .foreground-image-container {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .caption-box {
+    background: rgba(255, 255, 255, 1);
+    border: 2px solid #000;
+  }
+
+  .caption-title,
+  .section-title {
+    color: #000;
+  }
+
+  .caption-description,
+  .section-paragraph {
+    color: #222;
+  }
+}

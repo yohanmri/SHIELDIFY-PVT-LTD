@@ -1,0 +1,221 @@
+.main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.main-nav.scrolled {
+  background-color: var(--calcite-color-foreground-1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.desktop-menu {
+  display: flex;
+  gap: 4px;
+}
+
+.desktop-menu calcite-menu-item {
+  --calcite-color-text-1: var(--calcite-color-text-2);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.desktop-menu calcite-menu-item:hover {
+  --calcite-color-text-1: var(--calcite-color-brand);
+}
+
+.nav-action-group {
+  display: flex;
+  align-items: center;
+  margin-right: 2px;
+  gap: 0;
+  overflow: hidden;
+}
+
+.nav-action-button {
+  --calcite-action-icon-size: 24px;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-right: 1px solid var(--calcite-color-border-3);
+}
+
+.nav-action-button:last-child {
+  border-right: none;
+}
+
+.nav-action-button:hover {
+  background-color: var(--calcite-color-foreground-2);
+}
+
+.mobile-actions {
+  display: none;
+}
+
+.mobile-action-button,
+.mobile-menu-toggle {
+  --calcite-action-icon-size: 24px;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle.active {
+  background-color: var(--calcite-color-foreground-2);
+}
+
+/* Mobile Menu Overlay */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 64px; /* Height of navbar */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--calcite-color-foreground-1);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+
+.mobile-menu-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mobile-menu-content {
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-nav-links {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--calcite-color-border-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--calcite-color-text-1);
+}
+
+.mobile-nav-item:hover {
+  background-color: var(--calcite-color-foreground-2);
+  padding-left: 24px;
+}
+
+.mobile-nav-item.active {
+  color: var(--calcite-color-brand);
+  font-weight: 500;
+}
+
+.mobile-nav-item calcite-icon {
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-item:hover calcite-icon {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.mobile-bottom-actions {
+  display: flex;
+  gap: 0;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--calcite-color-border-3);
+}
+
+.mobile-bottom-action {
+  flex: 1;
+  --calcite-action-icon-size: 24px;
+  height: 56px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-right: 1px solid var(--calcite-color-border-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mobile-bottom-action:last-child {
+  border-right: none;
+}
+
+.mobile-bottom-action:hover {
+  background-color: var(--calcite-color-foreground-2);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .desktop-menu {
+    display: none;
+  }
+
+  .nav-action-group {
+    display: none;
+  }
+
+  .mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-menu-overlay {
+    display: none !important;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+calcite-action:focus-visible {
+  outline: 2px solid var(--calcite-color-brand);
+  outline-offset: 2px;
+}
