@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
+import API from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -19,10 +20,11 @@ import '@esri/calcite-components/components/calcite-action';
 import '@esri/calcite-components/components/calcite-tooltip';
 import '@esri/calcite-components/components/calcite-list';
 import '@esri/calcite-components/components/calcite-list-item';
+import '@esri/calcite-components/components/calcite-loader';
 
 export default function AdminProductList() {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
+  const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -31,43 +33,30 @@ export default function AdminProductList() {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
+  
+  // NEW: State for API data
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample products data (in real app, this would come from API/database)
-  const [products, setProducts] = useState([
-    { 
-      id: 1, 
-      name: 'Engineer Safety Helmet', 
-      category: 'Safety Helmets', 
-      workerType: 'Engineer',
-      color: 'White',
-      price: 2500,
-      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80',
-      features: ['ABS Material', 'Adjustable', 'Ventilated'],
-      stock: 150
-    },
-    { 
-      id: 2, 
-      name: 'Construction Safety Helmet', 
-      category: 'Safety Helmets', 
-      workerType: 'Construction Worker',
-      color: 'Yellow',
-      price: 2200,
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',
-      features: ['High Impact', 'Sweatband', 'Lightweight'],
-      stock: 200
-    },
-    { 
-      id: 3, 
-      name: 'Industrial Gum Boots', 
-      category: 'Gum Boots', 
-      workerType: 'Construction Worker',
-      color: 'Black',
-      price: 3500,
-      image: 'https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?w=400&q=80',
-      features: ['Steel Toe', 'Waterproof', 'Anti-Slip'],
-      stock: 80
+  // NEW: Fetch products from API
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await API.get('/products');
+      setProducts(response.data.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('Failed to load products. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const categories = ['all', ...new Set(products.map(p => p.category))];
 
@@ -81,7 +70,14 @@ export default function AdminProductList() {
   }, [selectedCategory, searchQuery, products]);
 
   const handleEdit = (product) => {
-    setSelectedProduct({ ...product });
+    // Convert features array to comma-separated string for editing
+    const productToEdit = {
+      ...product,
+      features: Array.isArray(product.features) 
+        ? product.features.join(', ') 
+        : product.features
+    };
+    setSelectedProduct(productToEdit);
     setEditModalOpen(true);
   };
 
@@ -90,16 +86,48 @@ export default function AdminProductList() {
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    setProducts(products.filter(p => p.id !== selectedProduct.id));
-    setDeleteModalOpen(false);
-    setSelectedProduct(null);
+  // NEW: Updated delete with API call
+  const confirmDelete = async () => {
+    try {
+      await API.delete(`/products/${selectedProduct._id}`);
+      setProducts(products.filter(p => p._id !== selectedProduct._id));
+      setDeleteModalOpen(false);
+      setSelectedProduct(null);
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Failed to delete product. Please try again.');
+    }
   };
 
-  const handleSaveEdit = () => {
-    setProducts(products.map(p => p.id === selectedProduct.id ? selectedProduct : p));
-    setEditModalOpen(false);
-    setSelectedProduct(null);
+  // NEW: Updated save with API call
+  const handleSaveEdit = async () => {
+    try {
+      // Prepare the data to send
+      const updateData = {
+        name: selectedProduct.name,
+        category: selectedProduct.category,
+        workerType: selectedProduct.workerType,
+        color: selectedProduct.color,
+        price: parseFloat(selectedProduct.price),
+        stock: parseInt(selectedProduct.stock),
+        features: selectedProduct.features, // Send as string, backend will handle conversion
+        image: selectedProduct.image
+      };
+
+      console.log('Sending update data:', updateData);
+
+      const response = await API.put(`/products/${selectedProduct._id}`, updateData);
+      
+      console.log('Update response:', response.data);
+      
+      // Update the local state with the response data
+      setProducts(products.map(p => p._id === selectedProduct._id ? response.data.data : p));
+      setEditModalOpen(false);
+      setSelectedProduct(null);
+    } catch (err) {
+      console.error('Error updating product:', err);
+      alert(`Failed to update product: ${err.response?.data?.message || err.message}`);
+    }
   };
 
   const handleImageChange = (e) => {
@@ -153,6 +181,14 @@ export default function AdminProductList() {
             </calcite-button>
           </div>
 
+          {/* Error Notice */}
+          {error && (
+            <calcite-notice open icon="exclamation-mark-triangle" kind="danger" style={{ marginBottom: '20px' }}>
+              <div slot="title">Error</div>
+              <div slot="message">{error}</div>
+            </calcite-notice>
+          )}
+
           {/* Filters & View Toggle */}
           <div style={{ 
             display: 'flex', 
@@ -204,15 +240,25 @@ export default function AdminProductList() {
             <calcite-chip>{filteredProducts.length} products</calcite-chip>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <calcite-loader scale="l"></calcite-loader>
+              <p style={{ marginTop: '16px', color: 'var(--calcite-ui-text-3)' }}>
+                Loading products...
+              </p>
+            </div>
+          )}
+
           {/* Card View */}
-          {viewMode === 'card' && (
+          {!loading && viewMode === 'card' && (
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '20px'
             }}>
               {filteredProducts.map(product => (
-                <calcite-card key={product.id}>
+                <calcite-card key={product._id}>
                   <img 
                     slot="thumbnail" 
                     src={product.image} 
@@ -274,14 +320,14 @@ export default function AdminProductList() {
           )}
 
           {/* List View */}
-          {viewMode === 'list' && (
+          {!loading && viewMode === 'list' && (
             <calcite-list>
               {filteredProducts.map(product => (
                 <calcite-list-item
-                  key={product.id}
+                  key={product._id}
                   label={product.name}
                   description={`${product.category} • ${product.workerType} • Stock: ${product.stock}`}
-                  value={product.id.toString()}
+                  value={product._id}
                 >
                   <img 
                     slot="content-start"
@@ -332,7 +378,7 @@ export default function AdminProductList() {
           )}
 
           {/* Empty State */}
-          {filteredProducts.length === 0 && (
+          {!loading && filteredProducts.length === 0 && (
             <calcite-notice open icon="exclamation-mark-triangle" kind="warning">
               <div slot="title">No products found</div>
               <div slot="message">Try adjusting your filters or search terms</div>
@@ -351,7 +397,6 @@ export default function AdminProductList() {
         <div slot="content" style={{ padding: '20px' }}>
           {selectedProduct && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Product Image */}
               <div>
                 <calcite-label>Product Image</calcite-label>
                 <div style={{ 
@@ -393,7 +438,7 @@ export default function AdminProductList() {
                 Product Name
                 <calcite-input-text
                   value={selectedProduct.name}
-                  onCalciteInputTextChange={(e) => 
+                  onInput={(e) => 
                     setSelectedProduct({ ...selectedProduct, name: e.target.value })
                   }
                 />
@@ -403,7 +448,7 @@ export default function AdminProductList() {
                 Category
                 <calcite-input-text
                   value={selectedProduct.category}
-                  onCalciteInputTextChange={(e) => 
+                  onInput={(e) => 
                     setSelectedProduct({ ...selectedProduct, category: e.target.value })
                   }
                 />
@@ -413,7 +458,7 @@ export default function AdminProductList() {
                 Worker Type
                 <calcite-input-text
                   value={selectedProduct.workerType}
-                  onCalciteInputTextChange={(e) => 
+                  onInput={(e) => 
                     setSelectedProduct({ ...selectedProduct, workerType: e.target.value })
                   }
                 />
@@ -423,7 +468,7 @@ export default function AdminProductList() {
                 Color
                 <calcite-input-text
                   value={selectedProduct.color}
-                  onCalciteInputTextChange={(e) => 
+                  onInput={(e) => 
                     setSelectedProduct({ ...selectedProduct, color: e.target.value })
                   }
                 />
@@ -431,22 +476,33 @@ export default function AdminProductList() {
 
               <calcite-label>
                 Price (LKR)
-          <calcite-input-number
-  value={selectedProduct.price.toString()}  // Add .toString()
-  onCalciteInputNumberChange={(e) => 
-    setSelectedProduct({ ...selectedProduct, price: parseFloat(e.target.value) })
-  }
-/>
+                <calcite-input-number
+                  value={selectedProduct.price.toString()}
+                  onInput={(e) => 
+                    setSelectedProduct({ ...selectedProduct, price: parseFloat(e.target.value) || 0 })
+                  }
+                />
               </calcite-label>
 
               <calcite-label>
                 Stock
-            <calcite-input-number
-  value={selectedProduct.stock.toString()}  // Add .toString()
-  onCalciteInputNumberChange={(e) => 
-    setSelectedProduct({ ...selectedProduct, stock: parseInt(e.target.value) })
-  }
-/>
+                <calcite-input-number
+                  value={selectedProduct.stock.toString()}
+                  onInput={(e) => 
+                    setSelectedProduct({ ...selectedProduct, stock: parseInt(e.target.value) || 0 })
+                  }
+                />
+              </calcite-label>
+
+              <calcite-label>
+                Features (comma-separated)
+                <calcite-text-area
+                  value={selectedProduct.features}
+                  rows="3"
+                  onInput={(e) => 
+                    setSelectedProduct({ ...selectedProduct, features: e.target.value })
+                  }
+                />
               </calcite-label>
             </div>
           )}

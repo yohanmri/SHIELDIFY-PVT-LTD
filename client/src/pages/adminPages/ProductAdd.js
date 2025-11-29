@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
+import API from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -23,9 +24,9 @@ export default function AdminProductAdd() {
     name: '',
     category: 'Safety Helmets',
     workerType: 'Engineer',
-    color: '',
-    price: '',
-    stock: '',
+    color: 'White', // Set default color
+    price: 0,
+    stock: 0,
     features: '',
     image: null,
     imagePreview: null
@@ -36,6 +37,7 @@ export default function AdminProductAdd() {
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
   const [errors, setErrors] = useState({});
   const [successNotice, setSuccessNotice] = useState(false);
+  const [loading, setLoading] = useState(false); // NEW: Loading state
 
   const categories = [
     'Safety Helmets',
@@ -82,6 +84,7 @@ export default function AdminProductAdd() {
   ];
 
   const handleInputChange = (field, value) => {
+    console.log('Changing field:', field, 'Value:', value); // Debug log
     setFormData({ ...formData, [field]: value });
     if (errors[field]) {
       setErrors({ ...errors, [field]: '' });
@@ -122,31 +125,57 @@ export default function AdminProductAdd() {
   const validateForm = () => {
     const newErrors = {};
     
+    console.log('Validating form data:', formData); // Debug log
+    
     if (!formData.name.trim()) newErrors.name = 'Product name is required';
-    if (!formData.color) newErrors.color = 'Color is required';
-    if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required';
-    if (!formData.stock || formData.stock < 0) newErrors.stock = 'Valid stock quantity is required';
+    if (!formData.color || formData.color === '') newErrors.color = 'Color is required';
+    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'Valid price is required';
+    if (formData.stock === '' || parseInt(formData.stock) < 0) newErrors.stock = 'Valid stock quantity is required';
     if (!formData.image) newErrors.image = 'Product image is required';
     if (!formData.features.trim()) newErrors.features = 'At least one feature is required';
 
+    console.log('Validation errors:', newErrors); // Debug log
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // NEW: Updated handleSubmit with API call
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Here you would typically send data to your backend
-      console.log('Product Data:', {
-        ...formData,
-        features: formData.features.split(',').map(f => f.trim()).filter(f => f)
-      });
+      setLoading(true);
       
-      setSuccessNotice(true);
-      setTimeout(() => {
-        navigate('/admin/product-list');
-      }, 2000);
+      try {
+        const productData = {
+          name: formData.name,
+          category: formData.category,
+          workerType: formData.workerType,
+          color: formData.color,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock),
+          features: formData.features,
+          image: formData.image
+        };
+
+        const response = await API.post('/products', productData);
+        
+        console.log('Product created:', response.data);
+        
+        setSuccessNotice(true);
+        setTimeout(() => {
+          navigate('/admin/product-list');
+        }, 2000);
+        
+      } catch (err) {
+        console.error('Error creating product:', err);
+        setErrors({ 
+          submit: err.response?.data?.message || 'Failed to create product. Please try again.' 
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -171,6 +200,15 @@ export default function AdminProductAdd() {
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
               Fill in the product details below
             </p>
+            {/* Debug button - Remove this after testing */}
+            <calcite-button 
+              appearance="outline" 
+              scale="s"
+              onClick={() => console.log('Current form data:', formData)}
+              style={{ marginTop: '8px' }}
+            >
+              Debug: Show Form Data
+            </calcite-button>
           </div>
 
           {/* Success Notice */}
@@ -179,6 +217,16 @@ export default function AdminProductAdd() {
               <calcite-notice open icon="check-circle" kind="success">
                 <div slot="title">Product Added Successfully!</div>
                 <div slot="message">Redirecting to product list...</div>
+              </calcite-notice>
+            </div>
+          )}
+
+          {/* Error Notice */}
+          {errors.submit && (
+            <div style={{ marginBottom: '20px' }}>
+              <calcite-notice open icon="exclamation-mark-triangle" kind="danger">
+                <div slot="title">Error</div>
+                <div slot="message">{errors.submit}</div>
               </calcite-notice>
             </div>
           )}
@@ -267,7 +315,7 @@ export default function AdminProductAdd() {
                     <calcite-input-text
                       placeholder="e.g., Engineer Safety Helmet"
                       value={formData.name}
-                      onCalciteInputTextChange={(e) => handleInputChange('name', e.target.value)}
+                      onInput={(e) => handleInputChange('name', e.target.value)}
                     />
                     {errors.name && (
                       <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
@@ -281,7 +329,7 @@ export default function AdminProductAdd() {
                       Category *
                       <calcite-select
                         value={formData.category}
-                        onCalciteSelectChange={(e) => handleInputChange('category', e.target.value)}
+                        onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOption.value)}
                       >
                         {categories.map(cat => (
                           <calcite-option key={cat} value={cat}>{cat}</calcite-option>
@@ -293,7 +341,7 @@ export default function AdminProductAdd() {
                       Worker Type *
                       <calcite-select
                         value={formData.workerType}
-                        onCalciteSelectChange={(e) => handleInputChange('workerType', e.target.value)}
+                        onCalciteSelectChange={(e) => handleInputChange('workerType', e.target.selectedOption.value)}
                       >
                         {workerTypes.map(type => (
                           <calcite-option key={type} value={type}>{type}</calcite-option>
@@ -306,9 +354,8 @@ export default function AdminProductAdd() {
                     Color *
                     <calcite-select
                       value={formData.color}
-                      onCalciteSelectChange={(e) => handleInputChange('color', e.target.value)}
+                      onCalciteSelectChange={(e) => handleInputChange('color', e.target.selectedOption.value)}
                     >
-                      <calcite-option value="">Select Color</calcite-option>
                       {colors.map(color => (
                         <calcite-option key={color} value={color}>{color}</calcite-option>
                       ))}
@@ -333,7 +380,7 @@ export default function AdminProductAdd() {
                       placeholder="2500"
                       value={formData.price}
                       min="0"
-                      onCalciteInputNumberChange={(e) => handleInputChange('price', e.target.value)}
+                      onInput={(e) => handleInputChange('price', e.target.value)}
                     />
                     {errors.price && (
                       <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
@@ -348,7 +395,7 @@ export default function AdminProductAdd() {
                       placeholder="100"
                       value={formData.stock}
                       min="0"
-                      onCalciteInputNumberChange={(e) => handleInputChange('stock', e.target.value)}
+                      onInput={(e) => handleInputChange('stock', e.target.value)}
                     />
                     {errors.stock && (
                       <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
@@ -371,7 +418,7 @@ export default function AdminProductAdd() {
                       placeholder="e.g., ABS Material, Adjustable, Ventilated, UV Protection"
                       value={formData.features}
                       rows="4"
-                      onCalciteTextAreaChange={(e) => handleInputChange('features', e.target.value)}
+                      onInput={(e) => handleInputChange('features', e.target.value)}
                     />
                     {errors.features && (
                       <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
@@ -404,14 +451,17 @@ export default function AdminProductAdd() {
                 <calcite-button 
                   appearance="outline"
                   onClick={handleCancel}
+                  disabled={loading}
                 >
                   Cancel
                 </calcite-button>
                 <calcite-button 
                   type="submit"
                   icon-start="save"
+                  loading={loading}
+                  disabled={loading}
                 >
-                  Add Product
+                  {loading ? 'Adding Product...' : 'Add Product'}
                 </calcite-button>
               </div>
             </div>
