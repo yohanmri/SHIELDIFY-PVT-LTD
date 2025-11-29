@@ -6,7 +6,7 @@ import { defineCustomElements } from '@esri/calcite-components/dist/loader';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 // Initialize Calcite Components
 defineCustomElements(window, { 
-  resourcesUrl: 'https://js.arcgis.com/calcite-components/2.13.2/assets' 
+  resourcesUrl: 'https://js.arcgis.com/calcite-components/3.3.3/assets' 
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

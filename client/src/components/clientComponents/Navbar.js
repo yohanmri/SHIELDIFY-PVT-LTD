@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '@esri/calcite-components/components/calcite-navigation';
 import '@esri/calcite-components/components/calcite-navigation-logo';
 import '@esri/calcite-components/components/calcite-menu';
@@ -7,10 +8,15 @@ import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-action';
 import '../../styles/clientStyles/navbar.css';
 
-export default function Navbar({ setPage, activePage = 'home' }) {
+export default function Navbar() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Get active page from current route
+  const activePage = location.pathname === '/' ? 'home' : location.pathname.slice(1);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,21 +39,19 @@ export default function Navbar({ setPage, activePage = 'home' }) {
   }, [mobileMenuOpen]);
 
   const menuItems = [
-    { page: 'home', text: 'Home' },
-    { page: 'products', text: 'Products' },
-    { page: 'services', text: 'Services' },
-    // { page: 'solutions', text: 'Solutions' },
-    // { page: 'projects', text: 'Projects' },
-    { page: 'about', text: 'About' },
-    { page: 'contact', text: 'Contact' }
+    { page: 'home', text: 'Home', path: '/' },
+    { page: 'products', text: 'Products', path: '/products' },
+    { page: 'services', text: 'Services', path: '/services' },
+    // { page: 'solutions', text: 'Solutions', path: '/solutions' },
+    // { page: 'projects', text: 'Projects', path: '/projects' },
+    { page: 'about', text: 'About', path: '/about' },
+    { page: 'contact', text: 'Contact', path: '/contact' }
   ];
 
-  const handleNavClick = (page) => {
-    if (setPage) {
-      setPage(page);
-      setMobileMenuOpen(false);
-      window.scrollTo(0, 0);
-    }
+  const handleNavClick = (path) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+    window.scrollTo(0, 0);
   };
 
   const handleSearch = () => {
@@ -60,9 +64,7 @@ export default function Navbar({ setPage, activePage = 'home' }) {
   };
 
   const handleSignIn = () => {
-    if (setPage) {
-      setPage('signin');
-    }
+    navigate('/signin');
   };
 
   return (
@@ -76,7 +78,7 @@ export default function Navbar({ setPage, activePage = 'home' }) {
           heading="SHIELDIFY (PVT) LTD"
           description="YOUR TRUST BEYOND SAFETY"
           thumbnail="/assets/images/shieldify-picture-logo.png"
-          onClick={() => handleNavClick('home')}
+          onClick={() => handleNavClick('/')}
           style={{
             cursor: 'pointer'
           }}
@@ -89,7 +91,7 @@ export default function Navbar({ setPage, activePage = 'home' }) {
                 key={index}
                 text={item.text}
                 active={activePage === item.page}
-                onClick={() => handleNavClick(item.page)}
+                onClick={() => handleNavClick(item.path)}
               ></calcite-menu-item>
             ))}
           </calcite-menu>
@@ -159,7 +161,7 @@ export default function Navbar({ setPage, activePage = 'home' }) {
               <div 
                 key={index}
                 className={`mobile-nav-item ${activePage === item.page ? 'active' : ''}`}
-                onClick={() => handleNavClick(item.page)}
+                onClick={() => handleNavClick(item.path)}
               >
                 <span>{item.text}</span>
                 <calcite-icon icon="chevron-right" scale="s"></calcite-icon>
