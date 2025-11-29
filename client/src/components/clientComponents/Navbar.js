@@ -36,8 +36,8 @@ export default function Navbar({ setPage, activePage = 'home' }) {
     { page: 'home', text: 'Home' },
     { page: 'products', text: 'Products' },
     { page: 'services', text: 'Services' },
-    { page: 'solutions', text: 'Solutions' },
-    { page: 'projects', text: 'Projects' },
+    // { page: 'solutions', text: 'Solutions' },
+    // { page: 'projects', text: 'Projects' },
     { page: 'about', text: 'About' },
     { page: 'contact', text: 'Contact' }
   ];
@@ -73,13 +73,11 @@ export default function Navbar({ setPage, activePage = 'home' }) {
       >
         <calcite-navigation-logo
           slot="logo"
-          heading="GIS Solutions"
-          description="Professional GIS Services"
-          thumbnail="/assets/logoGIS.png"
+          heading="SHIELDIFY (PVT) LTD"
+          description="YOUR TRUST BEYOND SAFETY"
+          thumbnail="/assets/images/shieldify-picture-logo.png"
           onClick={() => handleNavClick('home')}
           style={{
-            '--calcite-navigation-logo-width': '100px',   
-            '--calcite-navigation-logo-height': '100px',
             cursor: 'pointer'
           }}
         />
@@ -97,6 +95,18 @@ export default function Navbar({ setPage, activePage = 'home' }) {
           </calcite-menu>
           
           <div className="nav-action-group">
+            <img 
+              src="/assets/images/flag-SriLanka.png"
+              alt="Sri Lanka Flag"
+              className="flag-icon"
+              style={{
+                height: '24px',
+                width: 'auto',
+                marginRight: '8px',
+                cursor: 'pointer'
+              }}
+            />
+            
             <calcite-action 
               className="nav-action-button"
               icon="search"

@@ -1,402 +1,546 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productsCard.css';
 
-export default function ProductsComponent({ setPage }) {
-  const [hoveredCard, setHoveredCard] = useState(null);
+export default function ProductsCard({ setPage }) {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedWorkerType, setSelectedWorkerType] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // 4 columns x 3 rows
 
-  // Organized by Esri's three major product categories
-  const productCategories = {
-    online: {
-      name: "ArcGIS Online",
-      color: "#7b5fa6",
-      description: "Cloud-based GIS platform for creating and sharing maps",
-      products: [
-        { 
-          icon: "/assets/arcGISonline.png", 
-          title: "ArcGIS Online", 
-          desc: "Cloud-based mapping platform for creating, sharing, and managing web maps and spatial data across organizations.",
-          features: ["Cloud Storage", "Collaboration", "Web Maps", "Data Management"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-online/overview"
-        },
-        { 
-          icon: "/assets/survey.png", 
-          title: "Survey123", 
-          desc: "Create smart forms to collect field data quickly with customizable surveys that work online and offline.",
-          features: ["Custom Forms", "Offline Mode", "Photo Capture", "GPS Integration"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-survey123/overview"
-        },
-        { 
-          icon: "/assets/dashboards.png", 
-          title: "ArcGIS Dashboards", 
-          desc: "Build compelling data visualizations with interactive charts, maps, and indicators for real-time monitoring.",
-          features: ["Real-time Data", "Interactive Charts", "KPI Indicators", "Custom Themes"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-dashboards/overview"
-        },
-        { 
-          icon: "/assets/field-maps.png", 
-          title: "Field Maps", 
-          desc: "Mobile app for field data collection and asset management with offline capabilities and custom forms.",
-          features: ["Offline Maps", "Asset Management", "Navigation", "Data Collection"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-field-maps/overview"
-        },
-        { 
-          icon: "/assets/storymap.png", 
-          title: "StoryMaps", 
-          desc: "Transform your maps into immersive narrative experiences that combine text, multimedia, and interactive content.",
-          features: ["Narrative Maps", "Multimedia", "Templates", "Sharing"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-storymaps/overview"
-        },
-        { 
-          icon: "/assets/quickCapture.png", 
-          title: "QuickCapture", 
-          desc: "Rapidly collect field observations with one-tap buttons for fast data capture at walking or driving speeds.",
-          features: ["One-tap Capture", "High-speed Collection", "Custom Buttons", "GPS Tracking"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-quickcapture/overview"
-        },
-        { 
-          icon: "/assets/product6.png", 
-          title: "ArcGIS Insights", 
-          desc: "Perform spatial analytics and data science workflows with an intuitive drag-and-drop interface.",
-          features: ["Spatial Analytics", "Data Science", "Visualization", "Drag & Drop"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-insights/overview"
-        }
-      ]
+  // Product database with worker types and colors
+  const products = [
+    // Safety Helmets
+    { 
+      id: 1, 
+      name: 'Engineer Safety Helmet', 
+      category: 'Safety Helmets', 
+      workerType: 'Engineer',
+      color: 'White',
+      price: 'LKR 2,500',
+      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80',
+      features: ['ABS Material', 'Adjustable', 'Ventilated']
     },
-    pro: {
-      name: "ArcGIS Pro",
-      color: "#6d4f96",
-      description: "Professional desktop GIS for advanced analysis",
-      products: [
-        { 
-          icon: "/assets/arcgis-pro.png", 
-          title: "ArcGIS Pro", 
-          desc: "Professional desktop GIS application for advanced mapping, spatial analysis, data management, and visualization workflows.",
-          features: ["Advanced Analytics", "3D Mapping", "Geoprocessing", "Publishing"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-pro/overview"
-        }
-      ]
+    { 
+      id: 2, 
+      name: 'Construction Safety Helmet', 
+      category: 'Safety Helmets', 
+      workerType: 'Construction Worker',
+      color: 'Yellow',
+      price: 'LKR 2,200',
+      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',
+      features: ['High Impact', 'Sweatband', 'Lightweight']
     },
-    enterprise: {
-      name: "ArcGIS Enterprise",
-      color: "#8b4c9f",
-      description: "On-premises GIS platform for organizations",
-      products: [
-        { 
-          icon: "/assets/product1.png", 
-          title: "ArcGIS Enterprise", 
-          desc: "Complete enterprise GIS platform for secure deployment and management of geospatial services within your infrastructure.",
-          features: ["On-Premise", "Security", "Scalability", "Enterprise Ready"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-enterprise/overview"
-        },
-        { 
-          icon: "/assets/experience-builderlogo.png", 
-          title: "Experience Builder", 
-          desc: "Build custom web applications with drag-and-drop widgets without writing code for map-centric experiences.",
-          features: ["No-code Builder", "Drag & Drop", "Custom Widgets", "Responsive Design"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-experience-builder/overview"
-        },
-        { 
-          icon: "/assets/product2.png", 
-          title: "ArcGIS Hub", 
-          desc: "Community engagement platform to share data, apps, and initiatives with citizens and stakeholders.",
-          features: ["Community Portal", "Data Sharing", "Collaboration", "Engagement"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-hub/overview"
-        },
-        { 
-          icon: "/assets/product8.png", 
-          title: "ArcGIS Velocity", 
-          desc: "Real-time and big data analytics platform for processing streaming IoT and sensor data.",
-          features: ["Real-time Analytics", "IoT Integration", "Stream Processing", "Big Data"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-velocity/overview"
-        },
-        { 
-          icon: "/assets/product10.png", 
-          title: "ArcGIS Indoors", 
-          desc: "Indoor mapping and space management platform for facilities, campuses, and indoor navigation.",
-          features: ["Indoor Maps", "Space Management", "Wayfinding", "Facilities"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-indoors/overview"
-        },
-        { 
-          icon: "/assets/product9.png", 
-          title: "ArcGIS Urban", 
-          desc: "3D urban planning solution for designing, planning, and visualizing city development projects.",
-          features: ["3D Planning", "Urban Design", "Visualization", "Zoning"],
-          link: "https://www.esri.com/en-us/arcgis/products/arcgis-urban/overview"
-        }
-      ]
+    { 
+      id: 3, 
+      name: 'Electrical Safety Helmet', 
+      category: 'Safety Helmets', 
+      workerType: 'Electrician',
+      color: 'Blue',
+      price: 'LKR 2,800',
+      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&q=80',
+      features: ['Dielectric', 'Chin Strap', 'Class E Rated']
+    },
+    { 
+      id: 4, 
+      name: 'Supervisor Safety Helmet', 
+      category: 'Safety Helmets', 
+      workerType: 'Supervisor',
+      color: 'Red',
+      price: 'LKR 2,600',
+      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80',
+      features: ['High Visibility', 'UV Resistant', 'Reflective']
+    },
+    { 
+      id: 5, 
+      name: 'Visitor Safety Helmet', 
+      category: 'Safety Helmets', 
+      workerType: 'Visitor',
+      color: 'Green',
+      price: 'LKR 1,800',
+      image: 'https://images.unsplash.com/photo-1590845947670-c009801ffa74?w=400&q=80',
+      features: ['Lightweight', 'One Size', 'Basic Protection']
+    },
+
+    // Gum Boots
+    { 
+      id: 6, 
+      name: 'Industrial Gum Boots', 
+      category: 'Gum Boots', 
+      workerType: 'Construction Worker',
+      color: 'Black',
+      price: 'LKR 3,500',
+      image: 'https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?w=400&q=80',
+      features: ['Steel Toe', 'Waterproof', 'Anti-Slip']
+    },
+    { 
+      id: 7, 
+      name: 'Chemical Resistant Boots', 
+      category: 'Gum Boots', 
+      workerType: 'Factory Worker',
+      color: 'Yellow',
+      price: 'LKR 4,200',
+      image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&q=80',
+      features: ['Chemical Proof', 'Steel Toe', 'High Cut']
+    },
+
+    // Safety Hand Gloves
+    { 
+      id: 8, 
+      name: 'Leather Work Gloves', 
+      category: 'Safety Hand Gloves', 
+      workerType: 'Construction Worker',
+      color: 'Brown',
+      price: 'LKR 800',
+      image: 'https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=400&q=80',
+      features: ['Genuine Leather', 'Reinforced', 'Breathable']
+    },
+    { 
+      id: 9, 
+      name: 'Cut Resistant Gloves', 
+      category: 'Safety Hand Gloves', 
+      workerType: 'Factory Worker',
+      color: 'Gray',
+      price: 'LKR 1,200',
+      image: 'https://images.unsplash.com/photo-1603010715383-256d5a44f9e8?w=400&q=80',
+      features: ['Level 5 Cut', 'Flexible', 'Grip Enhanced']
+    },
+    { 
+      id: 10, 
+      name: 'Electrical Insulated Gloves', 
+      category: 'Safety Hand Gloves', 
+      workerType: 'Electrician',
+      color: 'Orange',
+      price: 'LKR 2,500',
+      image: 'https://images.unsplash.com/photo-1585157670026-1cbc7f6da8d3?w=400&q=80',
+      features: ['Voltage Tested', 'Latex Free', 'Insulated']
+    },
+
+    // Safety Jackets
+    { 
+      id: 11, 
+      name: 'Hi-Vis Vest - Engineer', 
+      category: 'Safety Jacket', 
+      workerType: 'Engineer',
+      color: 'White',
+      price: 'LKR 1,500',
+      image: 'https://images.unsplash.com/photo-1507090960745-b32f65d3113a?w=400&q=80',
+      features: ['Reflective Strips', 'Breathable', 'Multi-Pocket']
+    },
+    { 
+      id: 12, 
+      name: 'Hi-Vis Vest - Construction', 
+      category: 'Safety Jacket', 
+      workerType: 'Construction Worker',
+      color: 'Yellow',
+      price: 'LKR 1,400',
+      image: 'https://images.unsplash.com/photo-1597045566677-8cf032d6c3c5?w=400&q=80',
+      features: ['Class 2 ANSI', '360° Visibility', 'Mesh']
+    },
+    { 
+      id: 13, 
+      name: 'Hi-Vis Vest - Supervisor', 
+      category: 'Safety Jacket', 
+      workerType: 'Supervisor',
+      color: 'Red',
+      price: 'LKR 1,600',
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80',
+      features: ['Premium Quality', 'Extra Reflective', 'Badge Holder']
+    },
+
+    // Safety Goggles
+    { 
+      id: 14, 
+      name: 'Clear Safety Goggles', 
+      category: 'Safety Goggles', 
+      workerType: 'Factory Worker',
+      color: 'Clear',
+      price: 'LKR 600',
+      image: 'https://images.unsplash.com/photo-1574594143321-fd5ec44c0b18?w=400&q=80',
+      features: ['Anti-Fog', 'UV Protection', 'Impact Resistant']
+    },
+    { 
+      id: 15, 
+      name: 'Welding Safety Goggles', 
+      category: 'Safety Goggles', 
+      workerType: 'Welder',
+      color: 'Green',
+      price: 'LKR 1,200',
+      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80',
+      features: ['Shade 5', 'Heat Resistant', 'Side Protection']
+    },
+
+    // Ear Muff
+    { 
+      id: 16, 
+      name: 'Noise Reduction Ear Muffs', 
+      category: 'Ear Muff', 
+      workerType: 'Factory Worker',
+      color: 'Yellow',
+      price: 'LKR 1,800',
+      image: 'https://images.unsplash.com/photo-1606318313732-f6d4b8a52fe0?w=400&q=80',
+      features: ['30dB Reduction', 'Adjustable', 'Padded']
+    },
+
+    // First Aid Box
+    { 
+      id: 17, 
+      name: 'Portable First Aid Kit', 
+      category: 'First Aid Boxes', 
+      workerType: 'All Workers',
+      color: 'Red',
+      price: 'LKR 3,500',
+      image: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&q=80',
+      features: ['50-Piece Kit', 'Compact', 'Wall Mountable']
+    },
+
+    // Eye Protection
+    { 
+      id: 18, 
+      name: 'Safety Spectacles', 
+      category: 'Eye Protection', 
+      workerType: 'Engineer',
+      color: 'Clear',
+      price: 'LKR 800',
+      image: 'https://images.unsplash.com/photo-1574594143321-fd5ec44c0b18?w=400&q=80',
+      features: ['Scratch Resistant', 'Lightweight', 'Side Shields']
+    },
+
+    // Dust Mask
+    { 
+      id: 19, 
+      name: 'N95 Respirator Mask', 
+      category: 'Dust Mask', 
+      workerType: 'Factory Worker',
+      color: 'White',
+      price: 'LKR 350',
+      image: 'https://images.unsplash.com/photo-1584634731339-252c581abfc5?w=400&q=80',
+      features: ['95% Filtration', 'Comfortable', 'Adjustable']
+    },
+
+    // Welders Hand Gloves
+    { 
+      id: 20, 
+      name: 'Welding Gloves - Heavy Duty', 
+      category: 'Welders Hand Gloves', 
+      workerType: 'Welder',
+      color: 'Brown',
+      price: 'LKR 1,500',
+      image: 'https://images.unsplash.com/photo-1606814893907-c2e42943c91f?w=400&q=80',
+      features: ['Heat Resistant', 'Reinforced', 'Long Cuff']
+    },
+
+    // Safety Belt
+    { 
+      id: 21, 
+      name: 'Full Body Safety Harness', 
+      category: 'Safty Belt', 
+      workerType: 'Construction Worker',
+      color: 'Yellow',
+      price: 'LKR 8,500',
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80',
+      features: ['5-Point', 'Adjustable', 'Shock Absorber']
+    },
+
+    // Protection Pants
+    { 
+      id: 22, 
+      name: 'Reflective Safety Vest', 
+      category: 'Protection pants', 
+      workerType: 'All Workers',
+      color: 'Orange',
+      price: 'LKR 1,200',
+      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80',
+      features: ['High Visibility', 'Breathable', 'ANSI Compliant']
+    },
+
+    // CPR Mask
+    { 
+      id: 23, 
+      name: 'CPR Pocket Mask', 
+      category: 'CPR Mask', 
+      workerType: 'Safety Officer',
+      color: 'Blue',
+      price: 'LKR 2,200',
+      image: 'https://images.unsplash.com/photo-1584634731339-252c581abfc5?w=400&q=80',
+      features: ['One-Way Valve', 'Carrying Case', 'Hygienic']
+    },
+
+    // Face Shield
+    { 
+      id: 24, 
+      name: 'Full Face Shield', 
+      category: 'Face shield', 
+      workerType: 'Factory Worker',
+      color: 'Clear',
+      price: 'LKR 900',
+      image: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&q=80',
+      features: ['Anti-Fog', 'Splash Protection', 'Adjustable']
+    },
+
+    // Safety Sign Boards
+    { 
+      id: 25, 
+      name: 'Warning Sign Board Set', 
+      category: 'Safty sing bords', 
+      workerType: 'All Workers',
+      color: 'Multi',
+      price: 'LKR 5,500',
+      image: 'https://images.unsplash.com/photo-1588094367259-d32fa7dd33d0?w=400&q=80',
+      features: ['Weather Proof', 'Reflective', '10-Piece Set']
     }
+  ];
+
+  // Get unique categories and worker types
+  const categories = ['all', ...new Set(products.map(p => p.category))];
+  const workerTypes = ['all', ...new Set(products.map(p => p.workerType))];
+
+  // Helper function to get color class
+  const getColorClass = (color) => {
+    return 'color-' + color.toLowerCase().replace(/[\/\s]/g, '-');
   };
 
+  // Filtered products
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      const matchesWorkerType = selectedWorkerType === 'all' || product.workerType === selectedWorkerType;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           product.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesWorkerType && matchesSearch;
+    });
+  }, [selectedCategory, selectedWorkerType, searchQuery]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedWorkerType, searchQuery]);
+
   return (
-    <div className="products-page">
+    <div className="shieldify-products-page">
       {/* Hero Section */}
-      <div className="products-hero">
-        <div className="products-hero-content">
-          <div className="products-hero-text">
-            <h1 className="products-hero-title">Products</h1>
-            <p className="products-hero-subtitle">
-              Comprehensive ArcGIS solutions for spatial intelligence
-            </p>
-          </div>
-        </div>
-
-        <div className="products-hero-image-container">
+      <div className="shieldify-hero">
+        <div className="shieldify-hero-content">
           <img 
-            src="https://www.esri.com/content/dam/esrisites/en-us/industries/2020/business/sector/assets/overview/business-banner-large-background.jpg"
-            alt="Background"
-            className="products-hero-bg-image"
+            src="assets/images/picture-logo.png" 
+            alt="SHIELDIFY Logo" 
+            className="shieldify-hero-logo"
           />
-          <div className="products-hero-overlay" />
-        </div>
-
-        <div className="products-hero-frames">
-          <div className="products-hero-frame products-hero-frame-1">
-            <img 
-              src="https://www.esri.com/content/dam/esrisites/en-us/industries/2020/business/sector/assets/overview/business-banner-foreground-overview.png"
-              alt="GIS Map"
-            />
-          </div>
-
-          <div className="products-hero-frame products-hero-frame-2">
-            <img 
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80"
-              alt="Person using laptop"
-            />
-          </div>
-
-          <div className="products-hero-frame products-hero-frame-3">
-            <img 
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80"
-              alt="Field workers"
-            />
-          </div>
-        </div>
-
-        <div className="products-hero-gradient" />
-      </div>
-
-      {/* Purple Banner */}
-      <div className="products-banner">
-        <div className="products-banner-content">
-          <p className="products-banner-text">
-            As the authorized distributor of ESRI products in Sri Lanka, we provide access to the complete suite of ArcGIS applications. 
-            From professional desktop software to mobile field apps and cloud platforms, location intelligence informs key decisions with 
-            answers to questions including: Where are markets shifting? Where are the best customers? Where are operations at risk? 
-            In a constantly changing world, GIS technology provides greater intelligence for more successful, resilient organizations.
-          </p>
+          <h1>Safety Products Catalog</h1>
+          <p>Your trusted partner for workplace safety equipment in Sri Lanka</p>
         </div>
       </div>
 
-      {/* Product Categories */}
-      <div className="products-categories">
-        {Object.entries(productCategories).map(([key, category], catIndex) => (
-          <div key={key} className="products-category-section">
-            {/* Category Header */}
-            <div className="products-category-header">
-              <div className="products-category-badge" style={{ background: `${category.color}15` }}>
-                <span style={{ color: category.color }}>
-                  Platform {catIndex + 1}
-                </span>
+      {/* Main Content */}
+      <div className="shieldify-container">
+        {/* Sidebar Filters */}
+        <aside className="shieldify-sidebar">
+          <calcite-panel heading="Filter Products">
+            {/* Search */}
+            <calcite-block heading="Search" open>
+              <calcite-input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onCalciteInputInput={(e) => setSearchQuery(e.target.value)}
+                icon="search"
+                clearable
+              />
+            </calcite-block>
+
+            {/* Category Filter */}
+            <calcite-block heading="Category" collapsible open>
+              <calcite-label layout="inline-space-between">
+                <calcite-select
+                  label="Select Category"
+                  value={selectedCategory}
+                  onCalciteSelectChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {categories.map(category => (
+                    <calcite-option key={category} value={category}>
+                      {category === 'all' ? 'All Categories' : category}
+                    </calcite-option>
+                  ))}
+                </calcite-select>
+              </calcite-label>
+            </calcite-block>
+
+            {/* Worker Type Filter */}
+            <calcite-block heading="Worker Type" collapsible open>
+              <calcite-label layout="inline-space-between">
+                <calcite-select
+                  label="Select Worker Type"
+                  value={selectedWorkerType}
+                  onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.value)}
+                >
+                  {workerTypes.map(type => (
+                    <calcite-option key={type} value={type}>
+                      {type === 'all' ? 'All Workers' : type}
+                    </calcite-option>
+                  ))}
+                </calcite-select>
+              </calcite-label>
+            </calcite-block>
+
+            {/* Filter Summary */}
+            <calcite-block heading="Active Filters" open>
+              <div style={{ padding: '0.5rem 0', fontSize: '0.875rem', color: '#4a4a4a' }}>
+                <p style={{ marginBottom: '0.5rem' }}>
+                  <strong>{filteredProducts.length}</strong> products found
+                </p>
+                {(selectedCategory !== 'all' || selectedWorkerType !== 'all' || searchQuery) && (
+                  <p style={{ fontSize: '0.8125rem', color: '#6a6a6a' }}>
+                    {selectedCategory !== 'all' && <span>Category: {selectedCategory}<br /></span>}
+                    {selectedWorkerType !== 'all' && <span>Worker: {selectedWorkerType}<br /></span>}
+                    {searchQuery && <span>Search: "{searchQuery}"</span>}
+                  </p>
+                )}
               </div>
-              <h2 className="products-category-title">{category.name}</h2>
-              <p className="products-category-description">{category.description}</p>
+            </calcite-block>
+
+            {/* Reset */}
+            <div style={{ padding: '0.75rem' }}>
+              <calcite-button
+                width="full"
+                appearance="outline"
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setSelectedWorkerType('all');
+                  setSearchQuery('');
+                }}
+                icon-start="refresh"
+              >
+                Reset Filters
+              </calcite-button>
             </div>
 
-            {/* Products Grid */}
-            <div className="products-grid">
-              {category.products.map((product, index) => {
-                const cardKey = `${key}-${index}`;
-                return (
-                  <div
-                    key={cardKey}
-                    className={`product-card ${hoveredCard === cardKey ? 'hovered' : ''}`}
-                    onMouseEnter={() => setHoveredCard(cardKey)}
-                    onMouseLeave={() => setHoveredCard(null)}
-                    style={{
-                      borderColor: hoveredCard === cardKey ? category.color : '#e0e0e0',
-                      boxShadow: hoveredCard === cardKey 
-                        ? `0 16px 48px ${category.color}30` 
-                        : '0 2px 8px rgba(0,0,0,0.08)'
-                    }}
-                  >
-                    {/* Color Bar */}
-                    <div 
-                      className="product-card-bar"
-                      style={{
-                        background: `linear-gradient(90deg, ${category.color} 0%, ${category.color}80 100%)`,
-                        width: hoveredCard === cardKey ? '100%' : '0%'
-                      }}
+            {/* Contact */}
+            <calcite-block heading="Need Help?" open>
+              <div style={{ padding: '0.5rem 0' }}>
+                <p style={{ fontSize: '0.875rem', marginBottom: '0.75rem', color: '#4a4a4a' }}>
+                  Our safety experts are ready to assist you
+                </p>
+                <calcite-button
+                  width="full"
+                  appearance="solid"
+                  onClick={() => setPage && setPage('contact')}
+                  icon-start="phone"
+                >
+                  Contact Us
+                </calcite-button>
+              </div>
+            </calcite-block>
+          </calcite-panel>
+        </aside>
+
+        {/* Products Grid */}
+        <div className="shieldify-main">
+          <div className="shieldify-header">
+            <h2>{selectedCategory === 'all' ? 'All Products' : selectedCategory}</h2>
+            <calcite-chip>{filteredProducts.length} products</calcite-chip>
+          </div>
+
+          {/* Products */}
+          {currentProducts.length > 0 ? (
+            <>
+              <div className="shieldify-card-group">
+                {currentProducts.map(product => (
+                  <calcite-card key={product.id}>
+                    <img 
+                      slot="thumbnail" 
+                      src={product.image} 
+                      alt={product.name}
+                      style={{ height: '180px', objectFit: 'cover' }}
                     />
+                    
+                    <calcite-chip slot="header-start" scale="s" appearance="solid">
+                      {product.workerType}
+                    </calcite-chip>
 
-                    {/* Card Content */}
-                    <div className="product-card-content">
-                      {/* Product Icon */}
-                      <div 
-                        className="product-icon"
-                        style={{
-                          background: `linear-gradient(135deg, ${category.color}15 0%, ${category.color}05 100%)`,
-                          border: `3px solid ${category.color}25`
-                        }}
-                      >
-                        <img src={product.icon} alt={product.title} />
+                    <span slot="heading">{product.name}</span>
+                    <span slot="description">{product.category}</span>
+
+                    <div className="product-features">
+                      {/* Color Indicator */}
+                      <div className="color-indicator-chip">
+                        <span className={`color-circle ${getColorClass(product.color)}`}></span>
+                        <span>{product.color}</span>
                       </div>
-
-                      {/* Title */}
-                      <h3 className="product-title">{product.title}</h3>
-
-                      {/* Description */}
-                      <p className="product-description">{product.desc}</p>
-
-                      {/* Features */}
-                      <div className="product-features">
-                        {product.features.slice(0, hoveredCard === cardKey ? 4 : 2).map((feature, idx) => (
-                          <div
-                            key={idx}
-                            className="product-feature-tag"
-                            style={{
-                              background: `${category.color}10`,
-                              color: category.color,
-                              border: `1px solid ${category.color}20`
-                            }}
-                          >
-                            <calcite-icon 
-                              icon="check-circle-f" 
-                              scale="s" 
-                              style={{ color: category.color }}
-                            />
-                            {feature}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Button */}
-                      <calcite-button
-                        width="full"
-                        appearance={hoveredCard === cardKey ? 'solid' : 'outline'}
-                        icon-end="arrow-right"
-                        onClick={() => window.open(product.link, '_blank')}
-                        style={{
-                          '--calcite-button-background': category.color,
-                          '--calcite-button-text-color': hoveredCard === cardKey ? '#fff' : category.color,
-                          '--calcite-button-border-color': category.color,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Learn More
-                      </calcite-button>
+                      
+                      {/* Feature Tags - Show first 2 */}
+                      {/* {product.features.slice(0, 2).map((feature, idx) => (
+                        <calcite-chip key={idx} scale="s" appearance="outline">
+                          {feature}
+                        </calcite-chip>
+                      ))} */}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Full-Width Section */}
-      <div className="products-fullwidth-section">
-        <div className="products-fullwidth-image">
-          <img 
-            src="https://www.esri.com/content/dam/esrisites/en-us/industries/2020/business/sector/assets/overview/spatial-business-50-50.jpg"
-            alt="Spatial Business Graphics"
-          />
-        </div>
+                    <div slot="footer-start" style={{ fontWeight: '600', fontSize: '1.125rem', color: '#ff6b00' }}>
+                      {product.price}
+                    </div>
 
-        <div className="products-fullwidth-content">
-          <div className="products-fullwidth-badge">
-            <span>Your Trusted Partner</span>
-          </div>
-
-          <h2 className="products-fullwidth-title">
-            Why Choose GIS Solutions as Your ArcGIS Provider?
-          </h2>
-
-          <p className="products-fullwidth-text">
-            As the authorized ESRI distributor in Sri Lanka since 2012, we bring world-class GIS technology 
-            combined with local expertise and dedicated support.
-          </p>
-
-          <div className="products-features-grid">
-            {[
-              { icon: 'ribbon', label: 'Authorized Distributor', desc: 'Official ESRI partner since 2012, providing genuine ArcGIS licenses and complete platform access.' },
-              { icon: 'users', label: 'Expert Support', desc: 'Dedicated local technical team offering ongoing support and guidance.' },
-              { icon: 'book', label: 'Training Programs', desc: 'Comprehensive certification courses to maximize capabilities.' },
-              { icon: 'wrench', label: 'Implementation', desc: 'Full deployment support and custom solutions.' }
-            ].map((item, idx) => (
-              <div key={idx} className="products-feature-item">
-                <div className="products-feature-icon">
-                  <calcite-icon icon={item.icon} scale="s" />
-                </div>
-                <div className="products-feature-content">
-                  <h4 className="products-feature-label">{item.label}</h4>
-                  <p className="products-feature-desc">{item.desc}</p>
-                </div>
+                    <calcite-button slot="footer-end" appearance="outline" icon-end="shopping-cart" scale="s">
+                      Inquire
+                    </calcite-button>
+                  </calcite-card>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="products-fullwidth-actions">
-            <calcite-button
-              appearance="solid"
-              scale="l"
-              icon-end="arrow-right"
-              onClick={() => {
-                if (setPage) {
-                  setPage('solutions');
-                  window.scrollTo(0, 0);
-                }
-              }}
-              style={{
-                '--calcite-button-background': '#7b5fa6',
-                '--calcite-button-text-color': '#ffffff',
-                cursor: 'pointer'
-              }}
-            >
-              Explore Solutions
-            </calcite-button>
-            <calcite-button
-              appearance="outline"
-              scale="l"
-              icon-end="phone"
-              onClick={() => {
-                if (setPage) {
-                  setPage('contact');
-                  window.scrollTo(0, 0);
-                }
-              }}
-              style={{
-                '--calcite-button-border-color': '#7b5fa6',
-                '--calcite-button-text-color': '#7b5fa6',
-                cursor: 'pointer'
-              }}
-            >
-              Contact Sales
-            </calcite-button>
-          </div>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="shieldify-pagination">
+                  <calcite-pagination
+                    start-item={startIndex + 1}
+                    total-items={filteredProducts.length}
+                    page-size={itemsPerPage}
+                    onCalcitePaginationChange={(e) => setCurrentPage(e.detail)}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <calcite-notice open icon="exclamation-mark-triangle">
+              <div slot="title">No products found</div>
+              <div slot="message">Try adjusting your filters or search terms</div>
+            </calcite-notice>
+          )}
         </div>
       </div>
 
-      {/* View All Products Section */}
-      <div className="products-cta-section">
-        <div className="products-cta-content">
-          <h2 className="products-cta-title">Explore the Complete ArcGIS Platform</h2>
-          <p className="products-cta-text">
-            Discover all ArcGIS products and find the perfect solution for your organization's needs. 
-            From mobile apps to enterprise platforms, Esri offers comprehensive tools for every aspect of GIS work.
-          </p>
+      {/* Bottom CTA */}
+      <div className="shieldify-cta">
+        <img 
+src="assets/images/picture-logo.png"  
+          alt="SHIELDIFY" 
+          className="shieldify-cta-logo"
+        />
+        <h2>Can't Find What You're Looking For?</h2>
+        <p>
+          Our team can help you find the perfect safety equipment for your specific needs. 
+          Contact us for custom solutions and bulk orders.
+        </p>
+        <div className="shieldify-cta-buttons">
           <calcite-button
-            appearance="outline-fill"
+            appearance="solid"
             scale="l"
-            icon-end="launch"
-            onClick={() => window.open('https://www.esri.com/en-us/arcgis/products/index', '_blank')}
-            style={{
-              '--calcite-button-border-color': '#ffffff',
-              '--calcite-button-text-color': '#7b5fa6',
-              cursor: 'pointer'
-            }}
+            icon-end="phone"
+            onClick={() => setPage && setPage('contact')}
           >
-            View All Esri Products
+            Contact Sales
+          </calcite-button>
+          <calcite-button
+            appearance="outline"
+            scale="l"
+            icon-end="download"
+          >
+            Download Catalog
           </calcite-button>
         </div>
       </div>

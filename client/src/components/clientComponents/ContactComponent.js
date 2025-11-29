@@ -21,13 +21,13 @@ export default function ContactComponent() {
     { 
       icon: 'wrench', 
       dept: 'Technical Support', 
-      email: 'support@gislk.com', 
+      email: 'support@shieldifylk.com', 
       desc: 'Technical assistance and troubleshooting' 
     },
     { 
       icon: 'organization', 
       dept: 'Media & PR', 
-      email: 'info@gislk.com', 
+      email: 'info@shieldifylk.com', 
       desc: 'Press inquiries and media relations' 
     }
   ];
@@ -117,7 +117,7 @@ export default function ContactComponent() {
                 Head Office
               </h3>
               <p className="info-card-content">
-                <strong>GIS Solutions (Pvt) Ltd</strong><br />
+                <strong>SHIELDIFY (Pvt) Ltd</strong><br />
                 370 Galle - Colombo Rd,<br />
                 Colombo 00300
               </p>
@@ -184,12 +184,12 @@ export default function ContactComponent() {
                 Website
               </h3>
               <a 
-                href="https://www.gislk.com" 
+                href="https://www.shieldify.com" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="website-link"
               >
-                www.gislk.com
+                www.shieldifylk.com
               </a>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function ContactComponent() {
             Connect With Us
           </h2>
           <p className="social-description">
-            Follow us on social media for updates, insights, and GIS resources
+            Follow us on social media for updates, insights, and shieldify resources
           </p>
 
           <div className="social-links">

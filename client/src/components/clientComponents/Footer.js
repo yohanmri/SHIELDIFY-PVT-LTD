@@ -33,12 +33,12 @@ export default function Footer({ setPage }) {
           <div className="footer-section">
             <div className="footer-logo">
               <img 
-                src="/assets/logoGIS.png" 
+       src="assets/images/picture-logo.png" 
                 alt="GIS Solutions Logo" 
                 className="logo-image"
                 style={{maxWidth: '60px'}}
               />
-              <h3>GIS Solutions</h3>
+              <h3>SHIELDIFY</h3>
             </div>
 
             <p className="footer-description">

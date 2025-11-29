@@ -1,622 +1,545 @@
-/* Products Page Base Styles */
-.products-page {
-  background: #fff;
+/* SHIELDIFY Products Page - Calcite Design System Style */
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+.shieldify-products-page {
+  background: #f8f8f8;
+  min-height: 100vh;
+  font-family: "Avenir Next", -apple-system, sans-serif;
 }
 
-/* Hero Section */
-.products-hero {
-  position: relative;
-  height: 500px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  overflow: hidden;
-  background: #fff;
-}
-
-.products-hero-content {
-  display: flex;
-  align-items: center;
-  padding: clamp(2rem, 6vw, 4rem);
-  z-index: 10;
-  position: relative;
-  background: #fff;
-}
-
-.products-hero-title {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 400;
-  color: #2b2b2b;
-  margin-bottom: 1rem;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.products-hero-subtitle {
-  font-size: 1.125rem;
-  color: #555;
-  font-weight: 300;
-  line-height: 1.6;
-  max-width: 450px;
-  margin: 0;
-}
-
-.products-hero-image-container {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100%;
-  z-index: 1;
-}
-
-.products-hero-bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.products-hero-overlay {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(167, 119, 227, 0.65) 0%, rgba(149, 104, 213, 0.75) 100%);
-  z-index: 2;
-}
-
-.products-hero-frames {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100%;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.products-hero-frame {
-  position: absolute;
-  overflow: hidden;
-}
-
-.products-hero-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.products-hero-frame-1 {
-  top: 8%;
-  left: 15%;
-  width: 60%;
-  height: 65%;
-  z-index: 3;
-  border: 12px solid #2b2b2b;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-
-.products-hero-frame-2 {
-  bottom: 12%;
-  right: 8%;
-  width: 35%;
-  height: 32%;
-  z-index: 5;
-  border: 8px solid #ffffff;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-}
-
-.products-hero-frame-3 {
-  bottom: 18%;
-  left: 8%;
-  width: 32%;
-  height: 28%;
-  z-index: 4;
-  border: 6px solid #ffffff;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.25);
-}
-
-.products-hero-gradient {
-  position: absolute;
-  top: 0;
-  left: 40%;
-  width: 15%;
-  height: 100%;
-  background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
-  z-index: 3;
-}
-
-/* Purple Banner */
-.products-banner {
-  background: linear-gradient(135deg, #7b5fa6 0%, #6d4f96 100%);
-  padding: 4rem 2rem;
-  color: #fff;
-}
-
-.products-banner-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.products-banner-text {
-  font-size: 1.125rem;
-  line-height: 1.8;
-  font-weight: 300;
-  margin: 0;
-  opacity: 0.95;
-}
-
-/* Product Categories */
-.products-categories {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 5rem 2rem;
-}
-
-.products-category-section {
-  margin-bottom: 5rem;
-}
-
-.products-category-header {
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.shieldify-hero {
+  background: linear-gradient(135deg, #2b2b2b 0%, #151515 100%);
+  padding: 3rem 2rem;
   text-align: center;
-  margin-bottom: 3rem;
+  border-bottom: 3px solid #ff6b00;
 }
 
-.products-category-badge {
-  display: inline-block;
-  padding: 0.5rem 1.5rem;
-  border-radius: 24px;
-  margin-bottom: 1rem;
+.shieldify-hero-content {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.products-category-badge span {
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.shieldify-hero-logo {
+  max-width: 180px;
+  margin-top: 10%;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
 
-.products-category-title {
-  font-size: clamp(2rem, 4vw, 2.8rem);
+.shieldify-hero h1 {
+  font-size: 2.25rem;
   font-weight: 400;
-  color: #2b2b2b;
+  color: #fff;
   margin-bottom: 0.5rem;
 }
 
-.products-category-description {
-  font-size: 1.125rem;
-  color: #666;
-  font-weight: 300;
-}
-
-/* Products Grid */
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 2rem;
-}
-
-.product-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 2px solid #e0e0e0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-}
-
-.product-card.hovered {
-  transform: translateY(-8px);
-}
-
-.product-card-bar {
-  height: 6px;
-  transition: width 0.4s ease;
-}
-
-.product-card-content {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.product-icon {
-  width: 90px;
-  height: 90px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-  padding: 1.25rem;
-  transition: all 0.3s ease;
-}
-
-.product-card.hovered .product-icon {
-  transform: scale(1.05);
-}
-
-.product-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.product-title {
-  font-size: 2rem;
-  font-weight: 500;
-  color: #2b2b2b;
-  margin-bottom: 1rem;
-  transition: color 0.3s ease;
-}
-
-.product-description {
+.shieldify-hero p {
   font-size: 1rem;
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  flex: 1;
-}
-
-.product-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.product-feature-tag {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* Full Width Section */
-.products-fullwidth-section {
-  position: relative;
-  width: 100%;
-  min-height: 500px;
-  display: grid;
-  grid-template-columns: 45% 55%;
-  overflow: hidden;
-  background: #f8f9fa;
-}
-
-.products-fullwidth-image {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.products-fullwidth-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.products-fullwidth-content {
-  background: #fff;
-  padding: clamp(2.5rem, 5vw, 4rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.products-fullwidth-badge {
-  display: inline-block;
-  padding: 0.5rem 1.5rem;
-  background: #7b5fa615;
-  border-radius: 24px;
-  margin-bottom: 2rem;
-  align-self: flex-start;
-}
-
-.products-fullwidth-badge span {
-  color: #7b5fa6;
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.products-fullwidth-title {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  font-weight: 400;
-  color: #2b2b2b;
-  margin-bottom: 1.25rem;
-  line-height: 1.2;
-}
-
-.products-fullwidth-text {
-  font-size: 1.05rem;
-  color: #555;
-  line-height: 1.7;
-  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 300;
 }
 
-.products-features-grid {
+/* ============================================
+   CONTAINER LAYOUT
+   ============================================ */
+.shieldify-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  align-items: start;
 }
 
-.products-feature-item {
-  padding: 1.25rem;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border: 2px solid #e0e0e0;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.875rem;
+/* ============================================
+   SIDEBAR - STICKY
+   ============================================ */
+.shieldify-sidebar {
+  position: sticky;
+  top: 1.5rem;
+  height: fit-content;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ff6b00 #f0f0f0;
 }
 
-.products-feature-item:hover {
-  border-color: #7b5fa6;
-  background: #7b5fa608;
+.shieldify-sidebar::-webkit-scrollbar {
+  width: 6px;
 }
 
-.products-feature-icon {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, #7b5fa615 0%, #7b5fa605 100%);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #7b5fa625;
-  flex-shrink: 0;
+.shieldify-sidebar::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
 }
 
-.products-feature-icon calcite-icon {
-  color: #7b5fa6;
+.shieldify-sidebar::-webkit-scrollbar-thumb {
+  background: #ff6b00;
+  border-radius: 3px;
 }
 
-.products-feature-label {
-  font-size: 1.05rem;
-  color: #2b2b2b;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
+.shieldify-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #e56000;
 }
 
-.products-feature-desc {
+.shieldify-sidebar calcite-panel {
+  --calcite-panel-background-color: #fff;
+}
+
+.shieldify-sidebar calcite-block {
+  margin-bottom: 0.5rem;
+}
+
+.shieldify-sidebar calcite-input,
+.shieldify-sidebar calcite-select {
+  width: 100%;
+}
+
+.shieldify-sidebar calcite-block p {
   font-size: 0.875rem;
-  color: #666;
   line-height: 1.5;
   margin: 0;
 }
 
-.products-fullwidth-actions {
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.shieldify-main {
+  background: #fff;
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.shieldify-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.shieldify-header h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #2b2b2b;
+  margin: 0;
+}
+
+.shieldify-header calcite-chip {
+  --calcite-chip-background-color: #ff6b00;
+  --calcite-chip-text-color: #fff;
+}
+
+/* ============================================
+   CARD GROUP (4 columns on normal screens)
+   ============================================ */
+.shieldify-card-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+/* Card Styling */
+calcite-card {
+  --calcite-card-border-color: #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+calcite-card:hover {
+  --calcite-card-border-color: #ff6b00;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+calcite-card calcite-chip[slot="header-start"] {
+  --calcite-chip-background-color: #ff6b00;
+  --calcite-chip-text-color: #fff;
+}
+
+calcite-card [slot="heading"] {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2b2b2b;
+  line-height: 1.4;
+}
+
+calcite-card [slot="description"] {
+  font-size: 0.875rem;
+  color: #6a6a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* ============================================
+   COLOR INDICATOR CHIP
+   ============================================ */
+.color-indicator-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4a4a4a;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.color-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+/* Predefined color mappings */
+.color-white { background-color: #ffffff; }
+.color-yellow { background-color: #ffd700; }
+.color-blue { background-color: #0073e6; }
+.color-red { background-color: #e63946; }
+.color-green { background-color: #2a9d8f; }
+.color-black { background-color: #2b2b2b; }
+.color-brown { background-color: #8b4513; }
+.color-gray { background-color: #808080; }
+.color-orange { background-color: #ff6b00; }
+.color-clear { background-color: #f0f8ff; border: 2px solid #b0c4de; }
+.color-multi { 
+  background: linear-gradient(135deg, #e63946 0%, #ffd700 25%, #2a9d8f 50%, #0073e6 75%, #ff6b00 100%);
+}
+
+/* Feature Tags Container */
+.product-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.product-features calcite-chip {
+  --calcite-chip-background-color: transparent;
+  --calcite-chip-text-color: #6a6a6a;
+  --calcite-chip-border-color: #d0d0d0;
+}
+
+/* Card Footer */
+calcite-card [slot="footer-start"] {
+  display: flex;
+  align-items: center;
+}
+
+calcite-card [slot="footer-end"] calcite-button {
+  --calcite-button-border-color: #ff6b00;
+  --calcite-button-text-color: #ff6b00;
+}
+
+calcite-card:hover [slot="footer-end"] calcite-button {
+  --calcite-button-background: #ff6b00;
+  --calcite-button-text-color: #fff;
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+.shieldify-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0 1rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 2rem;
+}
+
+.shieldify-pagination calcite-pagination {
+  --calcite-pagination-background-color: transparent;
+}
+
+/* ============================================
+   BOTTOM CTA
+   ============================================ */
+.shieldify-cta {
+  background: #2b2b2b;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #fff;
+  margin-top: 3rem;
+}
+
+.shieldify-cta-logo {
+  max-width: 150px;
+  margin: 0 auto 1.5rem;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.shieldify-cta h2 {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.shieldify-cta p {
+  font-size: 1rem;
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.shieldify-cta-buttons {
   display: flex;
   gap: 1rem;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
-/* CTA Section */
-.products-cta-section {
-  background: linear-gradient(135deg, #7b5fa6 0%, #6d4f96 100%);
-  padding: 5rem 2rem;
-  color: #ffffff;
+.shieldify-cta calcite-button {
+  min-width: 180px;
 }
 
-.products-cta-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
+.shieldify-cta calcite-button[appearance="solid"] {
+  --calcite-button-background: #ff6b00;
+  --calcite-button-text-color: #fff;
 }
 
-.products-cta-title {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 400;
-  margin-bottom: 1.5rem;
+.shieldify-cta calcite-button[appearance="outline"] {
+  --calcite-button-border-color: #fff;
+  --calcite-button-text-color: #fff;
 }
 
-.products-cta-text {
-  font-size: 1.125rem;
-  line-height: 1.7;
-  font-weight: 300;
-  margin-bottom: 2.5rem;
-  opacity: 0.95;
-  max-width: 800px;
-  margin: 0 auto 2.5rem;
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Large Desktop (3 columns) */
+@media (max-width: 1400px) {
+  .shieldify-card-group {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-/* Tablet Responsive - 968px */
-@media (max-width: 968px) {
-  .products-hero {
+/* Tablet (2 columns) */
+@media (max-width: 1024px) {
+  .shieldify-container {
     grid-template-columns: 1fr;
-    height: auto;
-    min-height: 500px;
+    padding: 1.5rem 1rem;
   }
 
-  .products-hero-image-container {
-    width: 100%;
-    height: 300px;
-    position: relative;
+  .shieldify-sidebar {
+    position: static;
+    max-height: none;
   }
 
-  .products-hero-frames {
-    width: 100%;
-  }
-
-  .products-hero-gradient {
-    display: none;
-  }
-
-  .products-hero-content {
-    order: 2;
-  }
-
-  .products-fullwidth-section {
-    grid-template-columns: 1fr;
-  }
-
-  .products-fullwidth-image {
-    height: 300px;
-  }
-
-  .products-features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  .shieldify-card-group {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Mobile Responsive - 768px */
+/* Mobile (1 column) */
 @media (max-width: 768px) {
-  .products-hero {
-    min-height: 400px;
-  }
-
-  .products-hero-content {
+  .shieldify-hero {
     padding: 2rem 1.5rem;
   }
 
-  .products-hero-image-container {
-    height: 250px;
+  .shieldify-hero-logo {
+    max-width: 140px;
   }
 
-  .products-hero-frame-1 {
-    width: 70%;
-    height: 55%;
-    top: 10%;
-    left: 10%;
-    border-width: 8px;
-  }
-
-  .products-hero-frame-2 {
-    width: 40%;
-    height: 30%;
-    bottom: 10%;
-    right: 5%;
-    border-width: 6px;
-  }
-
-  .products-hero-frame-3 {
-    width: 35%;
-    height: 25%;
-    bottom: 15%;
-    left: 5%;
-    border-width: 4px;
-  }
-
-  .products-banner {
-    padding: 3rem 1.5rem;
-  }
-
-  .products-banner-text {
-    font-size: 1rem;
-  }
-
-  .products-categories {
-    padding: 3rem 1.5rem;
-  }
-
-  .products-category-section {
-    margin-bottom: 3rem;
-  }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .products-fullwidth-content {
-    padding: 2rem 1.5rem;
-  }
-
-  .products-fullwidth-actions {
-    flex-direction: column;
-  }
-
-  .products-fullwidth-actions calcite-button {
-    width: 100%;
-  }
-
-  .products-cta-section {
-    padding: 3rem 1.5rem;
-  }
-}
-
-/* Small Mobile - 480px */
-@media (max-width: 480px) {
-  .products-hero-title {
-    font-size: 2rem;
-  }
-
-  .products-hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .products-hero-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .products-banner {
-    padding: 2rem 1rem;
-  }
-
-  .products-categories {
-    padding: 2rem 1rem;
-  }
-
-  .product-card-content {
-    padding: 1.5rem;
-  }
-
-  .product-icon {
-    width: 70px;
-    height: 70px;
-  }
-
-  .product-title {
-    font-size: 1.25rem;
-  }
-
-  .product-description {
-    font-size: 0.9rem;
-  }
-
-  .products-fullwidth-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .products-feature-item {
-    padding: 1rem;
-    flex-direction: column;
-  }
-
-  .products-cta-section {
-    padding: 2rem 1rem;
-  }
-}
-
-/* Extra Small - 360px */
-@media (max-width: 360px) {
-  .products-hero-title {
+  .shieldify-hero h1 {
     font-size: 1.75rem;
   }
 
-  .products-category-title {
+  .shieldify-hero p {
+    font-size: 0.9375rem;
+  }
+
+  .shieldify-container {
+    padding: 1rem;
+  }
+
+  .shieldify-main {
+    padding: 1rem;
+  }
+
+  .shieldify-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .shieldify-card-group {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .shieldify-cta {
+    padding: 3rem 1.5rem;
+  }
+
+  .shieldify-cta h2 {
     font-size: 1.5rem;
   }
 
-  .product-features {
+  .shieldify-cta-buttons {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .product-feature-tag {
+  .shieldify-cta calcite-button {
     width: 100%;
   }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .shieldify-hero {
+    padding: 1.5rem 1rem;
+  }
+
+  .shieldify-hero-logo {
+    max-width: 120px;
+  }
+
+  .shieldify-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .shieldify-container {
+    padding: 0.75rem;
+  }
+
+  .shieldify-main {
+    padding: 0.75rem;
+  }
+
+  .shieldify-header h2 {
+    font-size: 1.25rem;
+  }
+
+  calcite-card img[slot="thumbnail"] {
+    height: 140px !important;
+  }
+}
+
+/* ============================================
+   CALCITE COMPONENT CUSTOMIZATION
+   ============================================ */
+
+/* Buttons */
+calcite-button {
+  --calcite-button-border-radius: 2px;
+  cursor: pointer;
+}
+
+calcite-button:hover {
+  opacity: 0.9;
+}
+
+/* Chips */
+calcite-chip {
+  --calcite-chip-border-radius: 2px;
+}
+
+/* Panel */
+calcite-panel {
+  --calcite-panel-border-color: #e0e0e0;
+}
+
+/* Blocks */
+calcite-block {
+  --calcite-block-border-color: #e0e0e0;
+}
+
+/* Input */
+calcite-input {
+  --calcite-input-border-color: #c7c7c7;
+}
+
+calcite-input:focus {
+  --calcite-input-border-color: #007ac2;
+}
+
+/* Select */
+calcite-select {
+  --calcite-select-border-color: #c7c7c7;
+}
+
+/* Notice */
+calcite-notice {
+  margin-top: 2rem;
+}
+
+/* Pagination */
+calcite-pagination {
+  --calcite-button-background-color: transparent;
+  --calcite-button-text-color: #4a4a4a;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  calcite-card {
+    --calcite-card-border-color: #000;
+    border-width: 2px;
+  }
+
+  .shieldify-header {
+    border-bottom-width: 2px;
+    border-bottom-color: #000;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  .shieldify-sidebar,
+  .shieldify-cta,
+  .shieldify-pagination {
+    display: none;
+  }
+
+  .shieldify-container {
+    grid-template-columns: 1fr;
+  }
+
+  calcite-card {
+    break-inside: avoid;
+  }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+:focus-visible {
+  outline: 2px solid #007ac2;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #ff6b00;
+  color: #fff;
 }

@@ -1,49 +1,83 @@
-/* Hero Section Base Styles */
+/* Hero Section - Esri Style */
 .gis-hero-section {
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 600px;
+  min-height: 700px;
   overflow: hidden;
   padding: 0;
   margin: 0;
   display: flex;
   align-items: center;
+  background: #000000;
 }
 
-.gis-video-background {
+/* Background Video */
+.gis-hero-bg-video {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.gis-hero-bg-video.fade-out {
+  opacity: 0;
+}
+
+.gis-hero-bg-video.fade-in {
+  opacity: 1;
+}
+
+.gis-hero-bg-video video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: translate(-50%, -50%);
-  z-index: 1;
 }
 
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 2;
+}
+
+/* Container */
 .gis-hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 4rem 2rem;
+  padding: 4rem 3rem;
   width: 100%;
   position: relative;
-  z-index: 2;
+  z-index: 3;
+  height: 100%;
   display: flex;
   align-items: center;
-  height: 100%;
 }
 
 .gis-hero-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
+  gap: 6rem;
 }
 
-.gis-hero-text {
+/* Left Content */
+.gis-hero-left {
+  flex: 1;
   max-width: 600px;
-  text-align: left;
-  animation: fadeInUp 1s ease-out 0.2s both;
+  animation: fadeInUp 1s ease-out 0.3s both;
 }
 
 @keyframes fadeInUp {
@@ -57,103 +91,61 @@
   }
 }
 
-.gis-hero-logo-wrapper {
-  margin-bottom: 2rem;
-  animation: fadeInScale 1s ease-out both;
-  text-align: left;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.gis-hero-logo-main {
-  width: 120px;
-  height: auto;
-  filter: drop-shadow(0 4px 12px rgba(0, 122, 194, 0.3));
-}
-
 .gis-hero-title {
   font-size: 4rem;
   font-weight: 300;
-  color: #151515;
+  color: #ffffff;
   margin: 0 0 1.5rem 0;
   line-height: 1.15;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .gis-hero-subtitle {
-  font-size: 1.25rem;
-  color: #6a6a6a;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 300;
-  line-height: 1.8;
-  margin: 0 0 2.5rem 0;
+  line-height: 1.6;
+  margin: 0 0 3rem 0;
 }
 
 .gis-hero-actions {
   display: flex;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  gap: 1.5rem;
 }
 
 .gis-hero-actions calcite-button {
-  --calcite-button-padding-x-l: 2.5rem;
-  --calcite-button-padding-y-l: 1rem;
+  --calcite-button-padding-x-l: 2rem;
+  --calcite-button-padding-y-l: 0.875rem;
 }
 
 .gis-hero-actions calcite-button::part(button) {
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 400;
   transition: all 0.3s ease;
   letter-spacing: 0.3px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
 }
 
-.gis-hero-actions calcite-button[appearance="solid"]::part(button) {
-  background: linear-gradient(135deg, #007ac2 0%, #005a8f 100%);
-  border: none;
-  box-shadow: 0 4px 15px rgba(0, 122, 194, 0.4);
+.gis-hero-actions calcite-button:hover::part(button) {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
-.gis-hero-actions calcite-button[appearance="solid"]:hover::part(button) {
-  background: linear-gradient(135deg, #0090e0 0%, #007ac2 100%);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 122, 194, 0.6);
+/* Right Content - Frame */
+.gis-hero-right {
+  flex: 0 0 auto;
+  position: relative;
+  animation: fadeInRight 1s ease-out 0.5s both;
 }
 
-.gis-hero-actions calcite-button[appearance="outline"]::part(button) {
-  border: 2px solid #6a6a6a;
-  color: #151515;
-  background-color: transparent;
-}
-
-.gis-hero-actions calcite-button[appearance="outline"]:hover::part(button) {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-color: #151515;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Event Notification Popup Styles */
-.event-notification-popup {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1000;
-  animation: slideInRight 0.6s ease-out;
-}
-
-@keyframes slideInRight {
+@keyframes fadeInRight {
   from {
     opacity: 0;
-    transform: translateX(100px);
+    transform: translateX(40px);
   }
   to {
     opacity: 1;
@@ -161,140 +153,162 @@
   }
 }
 
-.event-notification-content {
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
+.gis-hero-frame {
   position: relative;
-  max-width: 620px;
-}
-
-.event-notification-close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #d4d4d4;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
+  width: 450px;
+  height: 450px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s ease;
-  padding: 0;
 }
 
-.event-notification-close:hover {
-  background: #f0f0f0;
-  border-color: #323232;
+/* Frame Borders */
+.frame-border {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
 }
 
-.event-notification-close calcite-icon {
-  color: #323232;
+.frame-top-left {
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 5px;
+  border-top: 5px solid rgba(255, 255, 255, 0.8);
 }
 
-.event-notification-grid {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 0;
+.frame-top-left::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 5px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.4);
+  border-left: 5px solid rgba(255, 255, 255, 0.8);
 }
 
-.event-notification-image {
-  background: #f8f9fa;
-  overflow: hidden;
-  padding: 0.75rem;
+.frame-top-right {
+  top: 0;
+  right: 0;
+  width: 180px;
+  height: 5px;
+  border-top: 5px solid rgba(255, 255, 255, 0.8);
 }
 
-.event-notification-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
+.frame-top-right::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 0;
+  width: 5px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.4);
+  border-right: 5px solid rgba(255, 255, 255, 0.8);
 }
 
-.event-notification-text {
-  padding: 1.25rem 1.5rem;
+.frame-bottom-left {
+  bottom: 0;
+  left: 0;
+  width: 140px;
+  height: 5px;
+  border-bottom: 5px solid rgba(255, 255, 255, 0.8);
+}
+
+.frame-bottom-left::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 5px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.4);
+  border-left: 5px solid rgba(255, 255, 255, 0.8);
+}
+
+.frame-bottom-right {
+  bottom: 0;
+  right: 0;
+  width: 220px;
+  height: 5px;
+  border-bottom: 5px solid rgba(255, 255, 255, 0.8);
+}
+
+.frame-bottom-right::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  right: 0;
+  width: 5px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.4);
+  border-right: 5px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Logo Container */
+.gis-hero-logo-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.event-notification-header {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 1.5rem;
+  animation: logoFloat 3s ease-in-out infinite;
 }
 
-.event-notification-header calcite-icon {
-  color: #0079c1;
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
-.event-notification-badge {
-  background: linear-gradient(135deg, #0079c1 0%, #005a8f 100%);
+.gis-hero-frame-logo {
+  width: 180px;
+  height: auto;
+  filter: drop-shadow(0 10px 30px rgba(255, 255, 255, 0.3))
+          brightness(1.1);
+}
+
+.gis-hero-logo-text {
+  font-size: 2.5rem;
+  font-weight: 700;
   color: #ffffff;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.event-notification-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #151515;
   margin: 0;
-  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-shadow: 0 4px 20px rgba(255, 255, 255, 0.4);
 }
 
-.event-notification-description {
-  font-size: 0.875rem;
-  color: #6a6a6a;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.event-notification-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.event-detail-item {
+/* Bottom Right Company Badge */
+.gis-hero-company-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0%;
+  width: 35%;
+  height: 10%;
+  z-index: 10;
+  animation: fadeIn 1s ease-out 1s both;
+  background: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #323232;
+  justify-content: center;
 }
 
-.event-detail-item calcite-icon {
-  color: #0079c1;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.event-notification-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.event-notification-actions calcite-button {
-  --calcite-button-padding-x-s: 1rem;
-  --calcite-button-padding-y-s: 0.5rem;
-}
-
-.event-notification-actions calcite-button::part(button) {
+.company-badge-text {
   font-size: 0.875rem;
+  font-weight: 400;
+  color: #2b2b2b;
+  letter-spacing: 0.05em;
 }
 
 /* Tablet Responsive - 1024px */
@@ -303,29 +317,42 @@
     padding: 3rem 2rem;
   }
 
+  .gis-hero-content {
+    gap: 4rem;
+  }
+
   .gis-hero-title {
     font-size: 3.5rem;
   }
 
   .gis-hero-subtitle {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
   }
 
-  .gis-hero-logo-main {
-    width: 100px;
+  .gis-hero-frame {
+    width: 380px;
+    height: 380px;
   }
 
-  .event-notification-popup {
-    right: 1rem;
-    bottom: 1rem;
+  .gis-hero-frame-logo {
+    width: 150px;
   }
 
-  .event-notification-content {
-    max-width: 500px;
+  .gis-hero-logo-text {
+    font-size: 2rem;
   }
 
-  .event-notification-grid {
-    grid-template-columns: 180px 1fr;
+  .frame-top-left,
+  .frame-top-right {
+    width: 150px;
+  }
+
+  .frame-bottom-left {
+    width: 120px;
+  }
+
+  .frame-bottom-right {
+    width: 180px;
   }
 }
 
@@ -335,21 +362,19 @@
     min-height: 100vh;
   }
 
-  .gis-video-background {
-    height: 100vh;
-  }
-
   .gis-hero-container {
     padding: 2rem 1.5rem;
-    min-height: 100vh;
   }
 
   .gis-hero-content {
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 3rem;
+    justify-content: center;
   }
 
-  .gis-hero-text {
+  .gis-hero-left {
     max-width: 100%;
+    text-align: center;
   }
 
   .gis-hero-title {
@@ -357,52 +382,63 @@
   }
 
   .gis-hero-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .gis-hero-logo-main {
-    width: 90px;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
   }
 
   .gis-hero-actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 1rem;
+    justify-content: center;
   }
 
-  .gis-hero-actions calcite-button {
-    width: 100%;
+  .gis-hero-frame {
+    width: 320px;
+    height: 320px;
   }
 
-  .event-notification-popup {
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
+  .gis-hero-frame-logo {
+    width: 120px;
   }
 
-  .event-notification-content {
-    max-width: 100%;
+  .gis-hero-logo-text {
+    font-size: 1.75rem;
   }
 
-  .event-notification-grid {
-    grid-template-columns: 120px 1fr;
+  .frame-top-left,
+  .frame-top-right {
+    width: 120px;
   }
 
-  .event-notification-text {
-    padding: 1rem;
-    gap: 0.5rem;
+  .frame-top-left::after {
+    height: 100px;
   }
 
-  .event-notification-title {
-    font-size: 1rem;
+  .frame-top-right::after {
+    height: 140px;
   }
 
-  .event-notification-description {
+  .frame-bottom-left {
+    width: 100px;
+  }
+
+  .frame-bottom-left::after {
+    height: 140px;
+  }
+
+  .frame-bottom-right {
+    width: 150px;
+  }
+
+  .frame-bottom-right::after {
+    height: 100px;
+  }
+
+  .gis-hero-company-badge {
+    width: 25%;
+    height: 6%;
+  }
+
+  .company-badge-text {
     font-size: 0.8rem;
-  }
-
-  .event-detail-item {
-    font-size: 0.75rem;
   }
 }
 
@@ -412,56 +448,72 @@
     padding: 1.5rem 1rem;
   }
 
-  .gis-hero-logo-wrapper {
-    margin-bottom: 1.5rem;
-  }
-
   .gis-hero-title {
     font-size: 2rem;
-    margin-bottom: 1rem;
   }
 
   .gis-hero-subtitle {
     font-size: 1rem;
-    margin-bottom: 2rem;
   }
 
-  .gis-hero-logo-main {
+  .gis-hero-actions calcite-button {
+    --calcite-button-padding-x-l: 1.5rem;
+    --calcite-button-padding-y-l: 0.75rem;
+  }
+
+  .gis-hero-actions calcite-button::part(button) {
+    font-size: 0.9rem;
+  }
+
+  .gis-hero-frame {
+    width: 280px;
+    height: 280px;
+  }
+
+  .gis-hero-frame-logo {
+    width: 100px;
+  }
+
+  .gis-hero-logo-text {
+    font-size: 1.5rem;
+  }
+
+  .frame-top-left,
+  .frame-top-right {
+    width: 100px;
+  }
+
+  .frame-top-left::after {
+    height: 80px;
+  }
+
+  .frame-top-right::after {
+    height: 120px;
+  }
+
+  .frame-bottom-left {
     width: 80px;
   }
 
-  .event-notification-grid {
-    grid-template-columns: 1fr;
+  .frame-bottom-left::after {
+    height: 120px;
   }
 
-  .event-notification-image {
-    height: 140px;
-    padding: 0.5rem;
+  .frame-bottom-right {
+    width: 130px;
   }
 
-  .event-notification-text {
-    padding: 1rem 0.75rem;
+  .frame-bottom-right::after {
+    height: 80px;
   }
 
-  .event-notification-title {
-    font-size: 0.95rem;
+  .gis-hero-company-badge {
+    width: 30%;
+    height: 7%;
   }
 
-  .event-notification-description {
+  .company-badge-text {
     font-size: 0.75rem;
-  }
-
-  .event-notification-details {
-    padding: 0.5rem 0;
-    gap: 0.4rem;
-  }
-
-  .event-detail-item {
-    font-size: 0.7rem;
-  }
-
-  .event-notification-actions {
-    gap: 0.4rem;
   }
 }
 
@@ -472,10 +524,57 @@
   }
 
   .gis-hero-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
-  .gis-hero-logo-main {
-    width: 70px;
+  .gis-hero-frame {
+    width: 240px;
+    height: 240px;
+  }
+
+  .gis-hero-frame-logo {
+    width: 80px;
+  }
+
+  .gis-hero-logo-text {
+    font-size: 1.25rem;
+  }
+
+  .frame-top-left,
+  .frame-top-right {
+    width: 80px;
+  }
+
+  .frame-top-left::after {
+    height: 60px;
+  }
+
+  .frame-top-right::after {
+    height: 100px;
+  }
+
+  .frame-bottom-left {
+    width: 60px;
+  }
+
+  .frame-bottom-left::after {
+    height: 100px;
+  }
+
+  .frame-bottom-right {
+    width: 110px;
+  }
+
+  .frame-bottom-right::after {
+    height: 60px;
+  }
+
+  .gis-hero-company-badge {
+    width: 40%;
+    height: 8%;
+  }
+
+  .company-badge-text {
+    font-size: 0.7rem;
   }
 }

@@ -18,7 +18,7 @@ export default function ProductsPage({ setPage }) {
       <Navbar setPage={setPage} activePage="products" />
       
       <ProductsComponent setPage={setPage} />
-      <ProductCircle />
+      {/* <ProductCircle /> */}
       <Footer />
     </div>
   );

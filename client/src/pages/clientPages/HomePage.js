@@ -1,14 +1,12 @@
+// HomePage.js
 import React from 'react';
 import Navbar from '../../components/clientComponents/Navbar';
-import Hero from '../../components/clientComponents/Hero';
-
-
+import HomeHero from '../../components/clientComponents/HomeHero';
 import Footer from '../../components/clientComponents/Footer';
-import HomeArcGIS from '../../components/clientComponents/HomeArcGIS';
-import HomeCapabilities from '../../components/clientComponents/HomeCapabilities';
 import HomeInitiatives from '../../components/clientComponents/HomeInitiatives';
+import ProductCircle from '../../components/clientComponents/ProductCircle';
 
-export default function HomePage({ setPage }) {
+export default function HomePage() {
   return (
     <div className="home-page" style={{ 
       margin: 0, 
@@ -17,11 +15,10 @@ export default function HomePage({ setPage }) {
       maxWidth: '100%',
       overflow: 'hidden'
     }}>
-      <Navbar setPage={setPage} activePage="home" />
-      <Hero setPage={setPage} />
+      <Navbar />
+      <HomeHero />
       <HomeInitiatives />
-      <HomeArcGIS />
-      <HomeCapabilities />
+      <ProductCircle />
       <Footer />
     </div>
   );
