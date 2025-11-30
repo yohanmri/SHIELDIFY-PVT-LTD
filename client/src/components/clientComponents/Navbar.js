@@ -15,6 +15,9 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+
+
+
   // Get active page from current route
   const activePage = location.pathname === '/' ? 'home' : location.pathname.slice(1);
 
@@ -130,7 +133,7 @@ export default function Navbar() {
               icon="user"
               text="Sign In"
               scale="l"
-              onClick={handleSignIn}
+              onClick={() => navigate('/admin/login')}
             ></calcite-action>
           </div>
 

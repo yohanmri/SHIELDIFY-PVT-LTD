@@ -144,10 +144,10 @@ export default function AdminSidebar() {
                 onClick={() => handleNavigation('/admin/product-add')}
                 style={{ cursor: 'pointer' }}
               >
-                <calcite-icon slot="content-start" icon="plus" scale="s"></calcite-icon>
+        <calcite-icon slot="content-start" icon="plus-circle" scale="s"></calcite-icon>
               </calcite-list-item>
 
-              <calcite-list-item
+              {/* <calcite-list-item
                 value="categories"
                 label="Categories"
                 description="Manage product categories"
@@ -155,7 +155,7 @@ export default function AdminSidebar() {
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="folder" scale="s"></calcite-icon>
-              </calcite-list-item>
+              </calcite-list-item> */}
             </calcite-list-item-group>
 
             <calcite-list-item-group heading="Bundle Management">
@@ -163,7 +163,7 @@ export default function AdminSidebar() {
                 value="bundles"
                 label="Product Bundles"
                 description="Manage product bundles"
-                onClick={() => handleNavigation('/admin/bundles')}
+                onClick={() => handleNavigation('/admin/bundle-list')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="layer" scale="s"></calcite-icon>

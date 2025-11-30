@@ -12,6 +12,9 @@ import AdminProductList from './pages/adminPages/ProductList';
 import './styles/global.css';
 import { defineCustomElements } from '@esri/calcite-components/loader';
 import AdminProductAdd from './pages/adminPages/ProductAdd';
+import ShieldifyLogin from './pages/adminPages/LoginPage';
+import AdminBundleList from './pages/adminPages/BundleList';
+import AdminBundleAdd from './pages/adminPages/BundleAdd';
 function App() {
   // Initialize Calcite Components
   useEffect(() => {
@@ -32,12 +35,14 @@ function App() {
           <Route path="/projects" element={<ProjectsPage />} />
 
           {/* Admin Routes */}
+          <Route path="admin/login" element={<ShieldifyLogin/>} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/product-list" element={<AdminProductList />} />
           <Route path="/admin/product-add" element={<AdminProductAdd />} /> 
-          <Route path="/admin/categories" element={<AdminProductList />} /> 
-          <Route path="/admin/bundles" element={<AdminProductList />} /> 
-          <Route path="/admin/bundle-add" element={<AdminProductList />} /> 
+            <Route path="/admin/bundle-list" element={<AdminBundleList />} /> 
+          <Route path="/admin/bundle-add" element={<AdminBundleAdd />} /> 
+          {/* <Route path="/admin/categories" element={<AdminProductList />} />  */}
+       
           <Route path="/admin/orders" element={<AdminProductList />} /> 
           <Route path="/admin/orders/pending" element={<AdminProductList />} /> 
           <Route path="/admin/orders/completed" element={<AdminProductList />} /> 

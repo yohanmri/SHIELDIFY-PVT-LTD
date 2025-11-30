@@ -17,86 +17,143 @@ import '@esri/calcite-components/components/calcite-input-number';
 import '@esri/calcite-components/components/calcite-text-area';
 import '@esri/calcite-components/components/calcite-notice';
 import '@esri/calcite-components/components/calcite-action';
-import '@esri/calcite-components/components/calcite-tooltip';
 import '@esri/calcite-components/components/calcite-list';
 import '@esri/calcite-components/components/calcite-list-item';
 import '@esri/calcite-components/components/calcite-loader';
+import '@esri/calcite-components/components/calcite-switch';
 
-
-export default function AdminProductList() {
+export default function AdminBundleList() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedBundle, setSelectedBundle] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
   
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // TEMPORARY: Mock data with web images - Remove when implementing CRUD
+  const [bundles, setBundles] = useState([
+    {
+      _id: '1',
+      name: 'Safety Helmet Bundle - 100 Units',
+      category: 'Safety Helmets',
+      quantity: 100,
+      originalPrice: 250000,
+      discountPrice: 200000,
+      description: 'Bulk purchase of 100 safety helmets with 20% discount',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80'
+    },
+    {
+      _id: '2',
+      name: 'Safety Jacket Bundle - 500 Units',
+      category: 'Safety Jacket',
+      quantity: 500,
+      originalPrice: 750000,
+      discountPrice: 600000,
+      description: 'High visibility safety vests - Bulk discount 20%',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80'
+    },
+    {
+      _id: '3',
+      name: 'Gum Boots Bulk - 200 Pairs',
+      category: 'Gum Boots',
+      quantity: 200,
+      originalPrice: 700000,
+      discountPrice: 560000,
+      description: 'Industrial waterproof boots - 20% off bulk order',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?w=400&q=80'
+    },
+    {
+      _id: '4',
+      name: 'Safety Gloves Bundle - 1000 Pairs',
+      category: 'Safety Hand Gloves',
+      quantity: 1000,
+      originalPrice: 800000,
+      discountPrice: 640000,
+      description: 'Leather work gloves - Mega bulk discount',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=400&q=80'
+    },
+    {
+      _id: '5',
+      name: 'Starter Safety Kit - 50 Sets',
+      category: 'Starter Kit',
+      quantity: 50,
+      originalPrice: 500000,
+      discountPrice: 375000,
+      description: 'Complete safety kit: helmet, vest, gloves, goggles - 25% OFF',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80'
+    },
+    {
+      _id: '6',
+      name: 'Premium Worker Package - 30 Sets',
+      category: 'Premium Package',
+      quantity: 30,
+      originalPrice: 600000,
+      discountPrice: 450000,
+      description: 'Full worker protection kit with premium items',
+      isActive: false,
+      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80'
+    },
+    {
+      _id: '7',
+      name: 'Safety Goggles Bundle - 300 Units',
+      category: 'Safety Goggles',
+      quantity: 300,
+      originalPrice: 180000,
+      discountPrice: 135000,
+      description: 'Anti-fog safety goggles - Bulk discount 25%',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1574594143321-fd5ec44c0b18?w=400&q=80'
+    },
+    {
+      _id: '8',
+      name: 'Mixed Safety Bundle - 100 Sets',
+      category: 'Mixed Bundle',
+      quantity: 100,
+      originalPrice: 800000,
+      discountPrice: 640000,
+      description: 'Assorted safety equipment for construction sites',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1590845947670-c009801ffa74?w=400&q=80'
+    }
+  ]);
+  
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Dropdown options
   const categories = [
     'Safety Helmets',
     'Gum Boots',
     'Safety Hand Gloves',
     'Safety Jacket',
     'Safety Goggles',
-    'Ear Muff',
-    'First Aid Boxes',
-    'Eye Protection',
-    'Dust Mask',
-    'Welders Hand Gloves',
-    'Safty Belt',
-    'Protection pants',
-    'CPR Mask',
-    'Face shield',
-    'Safty sing bords'
-  ];
-
-  const workerTypes = [
-    'Engineer',
-    'Construction Worker',
-    'Electrician',
-    'Supervisor',
-    'Visitor',
-    'Factory Worker',
-    'Welder',
-    'Safety Officer',
-    'All Workers'
-  ];
-
-  const colors = [
-    'White',
-    'Yellow',
-    'Blue',
-    'Red',
-    'Green',
-    'Black',
-    'Orange',
-    'Brown',
-    'Gray',
-    'Clear',
-    'Multi'
+    'Mixed Bundle',
+    'Starter Kit',
+    'Premium Package'
   ];
 
   useEffect(() => {
-    fetchProducts();
+    // TEMPORARY: Comment out API call until CRUD is ready
+    // fetchBundles();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchBundles = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/products');
-      setProducts(response.data.data);
+      const response = await API.get('/bundles');
+      setBundles(response.data.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('Failed to load products. Please try again.');
+      console.error('Error fetching bundles:', err);
+      setError('Failed to load bundles. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -104,65 +161,59 @@ export default function AdminProductList() {
 
   const filterCategories = ['all', ...categories];
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.category.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredBundles = useMemo(() => {
+    return bundles.filter(bundle => {
+      const matchesCategory = selectedCategory === 'all' || bundle.category === selectedCategory;
+      const matchesSearch = bundle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           bundle.category.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery, products]);
+  }, [selectedCategory, searchQuery, bundles]);
 
-  const handleEdit = (product) => {
-    const productToEdit = {
-      ...product,
-      features: Array.isArray(product.features) 
-        ? product.features.join(', ') 
-        : product.features
-    };
-    setSelectedProduct(productToEdit);
+  const handleEdit = (bundle) => {
+    setSelectedBundle(bundle);
     setEditModalOpen(true);
   };
 
-  const handleDelete = (product) => {
-    setSelectedProduct(product);
+  const handleDelete = (bundle) => {
+    setSelectedBundle(bundle);
     setDeleteModalOpen(true);
   };
 
   const confirmDelete = async () => {
     try {
-      await API.delete(`/products/${selectedProduct._id}`);
-      setProducts(products.filter(p => p._id !== selectedProduct._id));
+      // TEMPORARY: Local delete until API is ready
+      // await API.delete(`/bundles/${selectedBundle._id}`);
+      setBundles(bundles.filter(b => b._id !== selectedBundle._id));
       setDeleteModalOpen(false);
-      setSelectedProduct(null);
+      setSelectedBundle(null);
     } catch (err) {
-      console.error('Error deleting product:', err);
-      alert('Failed to delete product. Please try again.');
+      console.error('Error deleting bundle:', err);
+      alert('Failed to delete bundle. Please try again.');
     }
   };
 
   const handleSaveEdit = async () => {
     try {
       const updateData = {
-        name: selectedProduct.name,
-        category: selectedProduct.category,
-        workerType: selectedProduct.workerType,
-        color: selectedProduct.color,
-        price: parseFloat(selectedProduct.price),
-        stock: parseInt(selectedProduct.stock),
-        features: selectedProduct.features,
-        description: selectedProduct.description,
-        image: selectedProduct.image
+        name: selectedBundle.name,
+        category: selectedBundle.category,
+        quantity: parseInt(selectedBundle.quantity),
+        originalPrice: parseFloat(selectedBundle.originalPrice),
+        discountPrice: parseFloat(selectedBundle.discountPrice),
+        description: selectedBundle.description,
+        isActive: selectedBundle.isActive,
+        image: selectedBundle.image
       };
 
-      const response = await API.put(`/products/${selectedProduct._id}`, updateData);
-      
-      setProducts(products.map(p => p._id === selectedProduct._id ? response.data.data : p));
+      // TEMPORARY: Local update until API is ready
+      // const response = await API.put(`/bundles/${selectedBundle._id}`, updateData);
+      setBundles(bundles.map(b => b._id === selectedBundle._id ? { ...selectedBundle, ...updateData } : b));
       setEditModalOpen(false);
-      setSelectedProduct(null);
+      setSelectedBundle(null);
     } catch (err) {
-      console.error('Error updating product:', err);
-      alert(`Failed to update product: ${err.response?.data?.message || err.message}`);
+      console.error('Error updating bundle:', err);
+      alert(`Failed to update bundle: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -179,10 +230,22 @@ export default function AdminProductList() {
   };
 
   const applyCrop = () => {
-    setSelectedProduct({ ...selectedProduct, image: imageToCrop });
+    setSelectedBundle({ ...selectedBundle, image: imageToCrop });
     setCropModalOpen(false);
     setImageToCrop(null);
     setCropData({ zoom: 1, x: 0, y: 0 });
+  };
+
+  const calculateDiscount = (original, discount) => {
+    if (!original || !discount) return 0;
+    return Math.round(((original - discount) / original) * 100);
+  };
+
+  const handleBundleChange = (field, value) => {
+    setSelectedBundle(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -202,17 +265,17 @@ export default function AdminProductList() {
           }}>
             <div>
               <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600' }}>
-                All Products
+                Bundle Promotions
               </h1>
               <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
-                Manage your product catalog
+                Manage bundle deals and bulk promotions
               </p>
             </div>
             <calcite-button 
               icon-start="plus-circle"
-              onClick={() => navigate('/admin/product-add')}
+              onClick={() => navigate('/admin/bundle-add')}
             >
-              Add New Product
+              Add New Bundle
             </calcite-button>
           </div>
 
@@ -232,7 +295,7 @@ export default function AdminProductList() {
           }}>
             <calcite-input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search bundles..."
               value={searchQuery}
               onCalciteInputInput={(e) => setSearchQuery(e.target.value)}
               icon="search"
@@ -269,60 +332,69 @@ export default function AdminProductList() {
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <calcite-chip>{filteredProducts.length} products</calcite-chip>
+            <calcite-chip>{filteredBundles.length} bundles</calcite-chip>
           </div>
 
           {loading && (
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <calcite-loader scale="l"></calcite-loader>
               <p style={{ marginTop: '16px', color: 'var(--calcite-ui-text-3)' }}>
-                Loading products...
+                Loading bundles...
               </p>
             </div>
           )}
 
+          {/* Card View */}
           {!loading && viewMode === 'card' && (
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '20px'
             }}>
-              {filteredProducts.map(product => (
-                <calcite-card key={product._id}>
+              {filteredBundles.map(bundle => (
+                <calcite-card key={bundle._id}>
                   <img 
                     slot="thumbnail" 
-                    src={product.image} 
-                    alt={product.name}
+                    src={bundle.image} 
+                    alt={bundle.name}
                     style={{ height: '180px', objectFit: 'cover' }}
                   />
                   
-                  <calcite-chip slot="header-start" scale="s" appearance="solid">
-                    {product.workerType}
-                  </calcite-chip>
-
-                  <span slot="heading">{product.name}</span>
-                  <span slot="description">{product.category}</span>
-
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '8px',
-                    flexWrap: 'wrap',
-                    margin: '12px 0'
-                  }}>
-                    <calcite-chip scale="s" appearance="outline">
-                      {product.color}
+                  <div slot="header-start" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    <calcite-chip scale="s" appearance="solid" kind="danger">
+                      {calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF
                     </calcite-chip>
-                    <calcite-chip scale="s" appearance="outline">
-                      Stock: {product.stock}
+                    {!bundle.isActive && (
+                      <calcite-chip scale="s" appearance="outline" kind="neutral">
+                        Inactive
+                      </calcite-chip>
+                    )}
+                  </div>
+
+                  <span slot="heading">{bundle.name}</span>
+                  <span slot="description">{bundle.category}</span>
+
+                  <div style={{ margin: '12px 0' }}>
+                    <calcite-chip scale="s" appearance="outline" icon="collection">
+                      Qty: {bundle.quantity} items
                     </calcite-chip>
                   </div>
 
-                  <div slot="footer-start" style={{ 
-                    fontWeight: '600', 
-                    fontSize: '1.125rem', 
-                    color: '#ff6b00' 
-                  }}>
-                    LKR {product.price.toLocaleString()}
+                  <div slot="footer-start" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ 
+                      fontSize: '14px',
+                      color: '#6b6b6b',
+                      textDecoration: 'line-through'
+                    }}>
+                      LKR {bundle.originalPrice.toLocaleString()}
+                    </div>
+                    <div style={{ 
+                      fontWeight: '600', 
+                      fontSize: '1.25rem', 
+                      color: '#dc3545' 
+                    }}>
+                      LKR {bundle.discountPrice.toLocaleString()}
+                    </div>
                   </div>
 
                   <div slot="footer-end" style={{ display: 'flex', gap: '4px' }}>
@@ -330,7 +402,7 @@ export default function AdminProductList() {
                       appearance="outline" 
                       icon-start="pencil"
                       scale="s"
-                      onClick={() => handleEdit(product)}
+                      onClick={() => handleEdit(bundle)}
                     >
                       Edit
                     </calcite-button>
@@ -339,7 +411,7 @@ export default function AdminProductList() {
                       kind="danger"
                       icon-start="trash"
                       scale="s"
-                      onClick={() => handleDelete(product)}
+                      onClick={() => handleDelete(bundle)}
                     >
                       Delete
                     </calcite-button>
@@ -349,19 +421,20 @@ export default function AdminProductList() {
             </div>
           )}
 
+          {/* List View */}
           {!loading && viewMode === 'list' && (
             <calcite-list>
-              {filteredProducts.map(product => (
+              {filteredBundles.map(bundle => (
                 <calcite-list-item
-                  key={product._id}
-                  label={product.name}
-                  description={`${product.category} • ${product.workerType} • Stock: ${product.stock}`}
-                  value={product._id}
+                  key={bundle._id}
+                  label={bundle.name}
+                  description={`${bundle.category} • ${bundle.quantity} items • ${calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF`}
+                  value={bundle._id}
                 >
                   <img 
                     slot="content-start"
-                    src={product.image}
-                    alt={product.name}
+                    src={bundle.image}
+                    alt={bundle.name}
                     style={{ 
                       width: '60px', 
                       height: '60px', 
@@ -374,20 +447,19 @@ export default function AdminProductList() {
                     gap: '8px',
                     alignItems: 'center'
                   }}>
-                    <span style={{ 
-                      fontWeight: '600', 
-                      fontSize: '16px',
-                      color: '#ff6b00',
-                      minWidth: '100px',
-                      textAlign: 'right'
-                    }}>
-                      LKR {product.price.toLocaleString()}
-                    </span>
+                    <div style={{ textAlign: 'right', marginRight: '12px' }}>
+                      <div style={{ fontSize: '12px', color: '#6b6b6b', textDecoration: 'line-through' }}>
+                        LKR {bundle.originalPrice.toLocaleString()}
+                      </div>
+                      <div style={{ fontWeight: '600', fontSize: '16px', color: '#dc3545' }}>
+                        LKR {bundle.discountPrice.toLocaleString()}
+                      </div>
+                    </div>
                     <calcite-button 
                       appearance="outline" 
                       icon-start="pencil"
                       scale="s"
-                      onClick={() => handleEdit(product)}
+                      onClick={() => handleEdit(bundle)}
                     >
                       Edit
                     </calcite-button>
@@ -396,7 +468,7 @@ export default function AdminProductList() {
                       kind="danger"
                       icon-start="trash"
                       scale="s"
-                      onClick={() => handleDelete(product)}
+                      onClick={() => handleDelete(bundle)}
                     >
                       Delete
                     </calcite-button>
@@ -406,27 +478,27 @@ export default function AdminProductList() {
             </calcite-list>
           )}
 
-          {!loading && filteredProducts.length === 0 && (
+          {!loading && filteredBundles.length === 0 && (
             <calcite-notice open icon="exclamation-mark-triangle" kind="warning">
-              <div slot="title">No products found</div>
+              <div slot="title">No bundles found</div>
               <div slot="message">Try adjusting your filters or search terms</div>
             </calcite-notice>
           )}
         </div>
       </div>
 
-      {/* Edit Modal - NOW WITH DROPDOWNS */}
+      {/* Edit Modal */}
       <calcite-modal 
         open={editModalOpen}
         onCalciteModalClose={() => setEditModalOpen(false)}
         width-scale="l"
       >
-        <div slot="header">Edit Product</div>
+        <div slot="header">Edit Bundle</div>
         <div slot="content" style={{ padding: '20px' }}>
-          {selectedProduct && (
+          {selectedBundle && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <calcite-label>Product Image</calcite-label>
+                <calcite-label>Bundle Image</calcite-label>
                 <div style={{ 
                   display: 'flex', 
                   gap: '16px', 
@@ -434,10 +506,10 @@ export default function AdminProductList() {
                   marginTop: '8px'
                 }}>
                   <img 
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
+                    src={selectedBundle.image}
+                    alt={selectedBundle.name}
                     style={{ 
-                      width: '180px', 
+                      width: '280px', 
                       height: '180px', 
                       objectFit: 'cover',
                       borderRadius: '4px',
@@ -463,101 +535,86 @@ export default function AdminProductList() {
               </div>
 
               <calcite-label>
-                Product Name
+                Bundle Name *
                 <calcite-input-text
-                  value={selectedProduct.name}
-                  onInput={(e) => 
-                    setSelectedProduct({ ...selectedProduct, name: e.target.value })
-                  }
+                  value={selectedBundle.name}
+                  onCalciteInputInput={(e) => handleBundleChange('name', e.target.value)}
                 />
               </calcite-label>
 
               <calcite-label>
-                Description
-                <calcite-text-area
-                  value={selectedProduct.description || ''}
-                  rows="3"
-                  onInput={(e) => 
-                    setSelectedProduct({ ...selectedProduct, description: e.target.value })
-                  }
-                />
-              </calcite-label>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <calcite-label>
-                  Category
-                  <calcite-select
-                    value={selectedProduct.category}
-                 onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, category: e.target.selectedOption.value })
-}
-                  >
-                    {categories.map(cat => (
-                      <calcite-option key={cat} value={cat}>{cat}</calcite-option>
-                    ))}
-                  </calcite-select>
-                </calcite-label>
-
-                <calcite-label>
-                  Worker Type
-                  <calcite-select
-                    value={selectedProduct.workerType}
-                   onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, workerType: e.target.selectedOption.value })
-}
-                  >
-                    {workerTypes.map(type => (
-                      <calcite-option key={type} value={type}>{type}</calcite-option>
-                    ))}
-                  </calcite-select>
-                </calcite-label>
-              </div>
-
-              <calcite-label>
-                Color
+                Category *
                 <calcite-select
-                  value={selectedProduct.color}
-                  onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, color: e.target.selectedOption.value })
-}
+                  value={selectedBundle.category}
+                  onCalciteSelectChange={(e) => handleBundleChange('category', e.target.value)}
                 >
-                  {colors.map(color => (
-                    <calcite-option key={color} value={color}>{color}</calcite-option>
+                  {categories.map(cat => (
+                    <calcite-option key={cat} value={cat}>{cat}</calcite-option>
                   ))}
                 </calcite-select>
               </calcite-label>
 
+              <calcite-label>
+                Quantity *
+                <calcite-input-number
+                  value={selectedBundle.quantity.toString()}
+                  onCalciteInputNumberInput={(e) => handleBundleChange('quantity', e.target.value)}
+                  min="1"
+                />
+              </calcite-label>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <calcite-label>
-                  Price (LKR)
+                  Original Price (LKR) *
                   <calcite-input-number
-                    value={selectedProduct.price.toString()}
-                    onInput={(e) => 
-                      setSelectedProduct({ ...selectedProduct, price: parseFloat(e.target.value) || 0 })
-                    }
+                    value={selectedBundle.originalPrice.toString()}
+                    onCalciteInputNumberInput={(e) => handleBundleChange('originalPrice', e.target.value)}
+                    min="0"
                   />
                 </calcite-label>
 
                 <calcite-label>
-                  Stock
+                  Discount Price (LKR) *
                   <calcite-input-number
-                    value={selectedProduct.stock.toString()}
-                    onInput={(e) => 
-                      setSelectedProduct({ ...selectedProduct, stock: parseInt(e.target.value) || 0 })
-                    }
+                    value={selectedBundle.discountPrice.toString()}
+                    onCalciteInputNumberInput={(e) => handleBundleChange('discountPrice', e.target.value)}
+                    min="0"
                   />
                 </calcite-label>
               </div>
 
+              <div style={{
+                padding: '12px',
+                background: 'var(--calcite-ui-foreground-2)',
+                borderRadius: '4px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontWeight: '600' }}>
+                  Discount: {calculateDiscount(selectedBundle.originalPrice, selectedBundle.discountPrice)}% OFF
+                </span>
+                <span style={{ color: '#28a745', fontWeight: '600' }}>
+                  Save: LKR {(selectedBundle.originalPrice - selectedBundle.discountPrice).toLocaleString()}
+                </span>
+              </div>
+
               <calcite-label>
-                Features (comma-separated)
+                Description
                 <calcite-text-area
-                  value={selectedProduct.features}
+                  value={selectedBundle.description || ''}
                   rows="3"
-                  onInput={(e) => 
-                    setSelectedProduct({ ...selectedProduct, features: e.target.value })
-                  }
+                  onCalciteTextAreaInput={(e) => handleBundleChange('description', e.target.value)}
+                  placeholder="Brief description of the bundle..."
                 />
+              </calcite-label>
+
+              <calcite-label layout="inline">
+                <span>Active Status</span>
+                <calcite-switch
+                  checked={selectedBundle.isActive}
+                  onCalciteSwitchChange={(e) => handleBundleChange('isActive', e.target.checked)}
+                ></calcite-switch>
               </calcite-label>
             </div>
           )}
@@ -576,17 +633,17 @@ export default function AdminProductList() {
         onCalciteModalClose={() => setDeleteModalOpen(false)}
         width-scale="s"
       >
-        <div slot="header">Delete Product</div>
+        <div slot="header">Delete Bundle</div>
         <div slot="content" style={{ padding: '20px' }}>
           <calcite-notice open icon="exclamation-mark-triangle" kind="danger">
             <div slot="title">Are you sure?</div>
             <div slot="message">
-              This will permanently delete "{selectedProduct?.name}". This action cannot be undone.
+              This will permanently delete "{selectedBundle?.name}". This action cannot be undone.
             </div>
           </calcite-notice>
         </div>
         <calcite-button slot="primary" kind="danger" onClick={confirmDelete}>
-          Delete Product
+          Delete Bundle
         </calcite-button>
         <calcite-button slot="secondary" appearance="outline" onClick={() => setDeleteModalOpen(false)}>
           Cancel
@@ -605,9 +662,10 @@ export default function AdminProductList() {
             <div>
               <div style={{ 
                 width: '100%',
-                height: '400px',
-                overflow: 'hidden',
+                height: '0',
+                paddingBottom: '56.25%',
                 position: 'relative',
+                overflow: 'hidden',
                 backgroundColor: '#f0f0f0',
                 borderRadius: '4px',
                 marginBottom: '20px'
@@ -616,16 +674,20 @@ export default function AdminProductList() {
                   src={imageToCrop}
                   alt="Crop preview"
                   style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
-                    transform: `scale(${cropData.zoom}) translate(${cropData.x}px, ${cropData.y}px)`
+                    objectFit: 'cover',
+                    transform: `translate(-50%, -50%) scale(${cropData.zoom})`,
+                    transition: 'transform 0.1s ease'
                   }}
                 />
               </div>
 
               <calcite-label>
-                Zoom
+                Zoom Level: {cropData.zoom.toFixed(1)}x
                 <input
                   type="range"
                   min="0.5"
@@ -633,7 +695,7 @@ export default function AdminProductList() {
                   step="0.1"
                   value={cropData.zoom}
                   onChange={(e) => setCropData({ ...cropData, zoom: parseFloat(e.target.value) })}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', marginTop: '8px' }}
                 />
               </calcite-label>
             </div>

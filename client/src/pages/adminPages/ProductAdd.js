@@ -28,6 +28,7 @@ export default function AdminProductAdd() {
     price: 0,
     stock: 0,
     features: '',
+    description: '', 
     image: null,
     imagePreview: null
   });
@@ -156,6 +157,7 @@ export default function AdminProductAdd() {
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
           features: formData.features,
+           description: formData.description,
           image: formData.image
         };
 
@@ -324,13 +326,22 @@ export default function AdminProductAdd() {
                     )}
                   </calcite-label>
 
+                  <calcite-label>
+  Description
+  <calcite-text-area
+    placeholder="Brief description of the product (optional)"
+    value={formData.description}
+    rows="3"
+    onInput={(e) => handleInputChange('description', e.target.value)}
+  />
+</calcite-label>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <calcite-label>
-                      Category *
-                      <calcite-select
-                        value={formData.category}
-                        onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOption.value)}
-                      >
+  Category *
+  <calcite-select
+    value={formData.category}
+onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOption.value)}  >
                         {categories.map(cat => (
                           <calcite-option key={cat} value={cat}>{cat}</calcite-option>
                         ))}
