@@ -21,13 +21,16 @@ export default function AdminSidebar() {
   };
 
   useEffect(() => {
-  if (location.pathname.includes('/admin/product') || 
-      location.pathname.includes('/admin/categories') ||
-      location.pathname.includes('/admin/bundle')) {
+  if (location.pathname.includes('/admin/product-list') || 
+  location.pathname.includes('/admin/product-add') || 
+  location.pathname.includes('/admin/bundle-list') || 
+      location.pathname.includes('/admin/bundle-add')) {
     setActivePanel('products');
-  } else if (location.pathname.includes('/admin/order') || 
-             location.pathname.includes('/admin/refund') ||
-             location.pathname.includes('/admin/cancellation')) {
+  } else if (location.pathname.includes('/admin/order-list') || 
+              location.pathname.includes('/admin/order-completed') || 
+              location.pathname.includes('/admin/order-pending') || 
+             location.pathname.includes('/admin/requests-refund') ||
+             location.pathname.includes('/admin/requests-cancel')) {
     setActivePanel('orders');
   } else if (location.pathname.includes('/admin/analytics')) {
     setActivePanel('analytics');
@@ -192,7 +195,7 @@ export default function AdminSidebar() {
                 value="orders-all"
                 label="All Orders"
                 description="View all orders"
-                onClick={() => handleNavigation('/admin/orders')}
+                onClick={() => handleNavigation('/admin/order-list')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="list-check" scale="s"></calcite-icon>
@@ -202,7 +205,7 @@ export default function AdminSidebar() {
                 value="orders-pending"
                 label="Pending Orders"
                 description="Orders awaiting action"
-                onClick={() => handleNavigation('/admin/orders/pending')}
+                onClick={() => handleNavigation('/admin/order-pending')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="exclamation-mark-circle" scale="s"></calcite-icon>
@@ -212,7 +215,7 @@ export default function AdminSidebar() {
                 value="orders-completed"
                 label="Completed Orders"
                 description="Fulfilled orders"
-                onClick={() => handleNavigation('/admin/orders/completed')}
+                onClick={() => handleNavigation('/admin/order-completed')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="check-circle" scale="s"></calcite-icon>
@@ -224,7 +227,7 @@ export default function AdminSidebar() {
                 value="refunds"
                 label="Refund Requests"
                 description="Handle refund requests"
-                onClick={() => handleNavigation('/admin/refunds')}
+                onClick={() => handleNavigation('/admin/requests-refunds')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="undo" scale="s"></calcite-icon>
@@ -234,7 +237,7 @@ export default function AdminSidebar() {
                 value="cancellations"
                 label="Cancel Requests"
                 description="Handle cancellations"
-                onClick={() => handleNavigation('/admin/cancellations')}
+                onClick={() => handleNavigation('/admin/requests-cancel')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="x-circle" scale="s"></calcite-icon>

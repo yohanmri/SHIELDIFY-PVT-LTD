@@ -15,6 +15,11 @@ import AdminProductAdd from './pages/adminPages/ProductAdd';
 import ShieldifyLogin from './pages/adminPages/LoginPage';
 import AdminBundleList from './pages/adminPages/BundleList';
 import AdminBundleAdd from './pages/adminPages/BundleAdd';
+import AdminOrdersList from './pages/adminPages/OrdersList';
+import AdminOrdersPending from './pages/adminPages/OrdersPending';
+import AdminOrdersCompleted from './pages/adminPages/OrdersCompleted';
+import AdminRequestsRefund from './pages/adminPages/RequestsRefund';
+import AdminRequestsCancel from './pages/adminPages/RequestsCancel';
 function App() {
   // Initialize Calcite Components
   useEffect(() => {
@@ -37,17 +42,26 @@ function App() {
           {/* Admin Routes */}
           <Route path="admin/login" element={<ShieldifyLogin/>} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
           <Route path="/admin/product-list" element={<AdminProductList />} />
           <Route path="/admin/product-add" element={<AdminProductAdd />} /> 
+
             <Route path="/admin/bundle-list" element={<AdminBundleList />} /> 
           <Route path="/admin/bundle-add" element={<AdminBundleAdd />} /> 
+
+            <Route path="/admin/order-list" element={<AdminOrdersList />} /> 
+            <Route path="/admin/order-completed" element={<AdminOrdersCompleted />} /> 
+            <Route path="/admin/order-pending" element={<AdminOrdersPending />} /> 
           {/* <Route path="/admin/categories" element={<AdminProductList />} />  */}
        
-          <Route path="/admin/orders" element={<AdminProductList />} /> 
+        
           <Route path="/admin/orders/pending" element={<AdminProductList />} /> 
           <Route path="/admin/orders/completed" element={<AdminProductList />} /> 
-          <Route path="/admin/refunds" element={<AdminProductList />} /> 
-          <Route path="/admin/cancellations" element={<AdminProductList />} /> 
+
+
+          <Route path="/admin/requests-refunds" element={<AdminRequestsRefund />} /> 
+          <Route path="/admin/requests-cancel" element={<AdminRequestsCancel />} /> 
+
           <Route path="/admin/analytics/visitors" element={<AdminProductList />} /> 
           <Route path="/admin/analytics/live" element={<AdminProductList />} /> 
           <Route path="/admin/analytics/traffic" element={<AdminProductList />} /> 
