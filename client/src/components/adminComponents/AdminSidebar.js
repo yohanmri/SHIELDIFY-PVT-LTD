@@ -20,21 +20,37 @@ export default function AdminSidebar() {
     navigate(path);
   };
 
-  useEffect(() => {
-  if (location.pathname.includes('/admin/product-list') || 
-  location.pathname.includes('/admin/product-add') || 
-  location.pathname.includes('/admin/bundle-list') || 
-      location.pathname.includes('/admin/bundle-add')) {
+useEffect(() => {
+  if (
+    location.pathname.includes('/admin/product-list') || 
+    location.pathname.includes('/admin/product-add') || 
+    location.pathname.includes('/admin/bundle-list') || 
+    location.pathname.includes('/admin/bundle-add')
+  ) {
     setActivePanel('products');
-  } else if (location.pathname.includes('/admin/order-list') || 
-              location.pathname.includes('/admin/order-completed') || 
-              location.pathname.includes('/admin/order-pending') || 
-             location.pathname.includes('/admin/requests-refund') ||
-             location.pathname.includes('/admin/requests-cancel')) {
+
+  } else if (
+    location.pathname.includes('/admin/order-list') || 
+    location.pathname.includes('/admin/order-completed') || 
+    location.pathname.includes('/admin/order-pending') || 
+    location.pathname.includes('/admin/requests-refund') ||
+    location.pathname.includes('/admin/requests-cancel')
+  ) {
     setActivePanel('orders');
-  } else if (location.pathname.includes('/admin/analytics')) {
+
+  } else if (
+    location.pathname.includes('/admin/total-visitors') ||
+    location.pathname.includes('/admin/live-visitors') ||
+    location.pathname.includes('/admin/popular-pages') ||
+    location.pathname.includes('/admin/devices-locations')
+  ) {
     setActivePanel('analytics');
-  } else {
+
+  } else if (
+    location.pathname.includes('/admin/dashboard') ||
+    location.pathname.includes('/admin/recent-activity') ||
+    location.pathname.includes('/admin/devices-locations')
+  ) {
     setActivePanel('dashboard');
   }
 }, [location.pathname]);
@@ -102,13 +118,13 @@ export default function AdminSidebar() {
               value="recent-activity"
               label="Recent Activity"
               description="Latest updates"
-              onClick={() => handleNavigation('/admin/activity')}
+              onClick={() => handleNavigation('/admin/recent-activity')}
               style={{ cursor: 'pointer' }}
             >
               <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
             </calcite-list-item>
 
-            <calcite-list-item
+            {/* <calcite-list-item
               value="quick-stats"
               label="Quick Stats"
               description="Today's metrics"
@@ -116,7 +132,7 @@ export default function AdminSidebar() {
               style={{ cursor: 'pointer' }}
             >
               <calcite-icon slot="content-start" icon="graph-bar" scale="s"></calcite-icon>
-            </calcite-list-item>
+            </calcite-list-item> */}
           </calcite-list>
         </calcite-panel>
       )}
@@ -256,7 +272,7 @@ export default function AdminSidebar() {
                 value="visitors-total"
                 label="Total Visitors"
                 description="All-time visitor stats"
-                onClick={() => handleNavigation('/admin/analytics/visitors')}
+                onClick={() => handleNavigation('/admin/total-visitors')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="users" scale="s"></calcite-icon>
@@ -266,13 +282,13 @@ export default function AdminSidebar() {
                 value="visitors-live"
                 label="Live Visitors"
                 description="Current active users"
-                onClick={() => handleNavigation('/admin/analytics/live')}
+                onClick={() => handleNavigation('/admin/live-visitors')}
                 style={{ cursor: 'pointer' }}
               >
-                <calcite-icon slot="content-start" icon="pulse" scale="s"></calcite-icon>
+                <calcite-icon slot="content-start" icon="rss" scale="s"></calcite-icon>
               </calcite-list-item>
 
-              <calcite-list-item
+              {/* <calcite-list-item
                 value="traffic-sources"
                 label="Traffic Sources"
                 description="Where visitors come from"
@@ -280,7 +296,7 @@ export default function AdminSidebar() {
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="link" scale="s"></calcite-icon>
-              </calcite-list-item>
+              </calcite-list-item> */}
             </calcite-list-item-group>
 
             <calcite-list-item-group heading="Page Analytics">
@@ -288,7 +304,7 @@ export default function AdminSidebar() {
                 value="popular-pages"
                 label="Popular Pages"
                 description="Most visited pages"
-                onClick={() => handleNavigation('/admin/analytics/pages')}
+                onClick={() => handleNavigation('/admin/popular-pages')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="file" scale="s"></calcite-icon>
@@ -298,7 +314,7 @@ export default function AdminSidebar() {
                 value="devices-locations"
                 label="Devices & Locations"
                 description="Device and geo data"
-                onClick={() => handleNavigation('/admin/analytics/devices')}
+                onClick={() => handleNavigation('/admin/devices-locations')}
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="mobile" scale="s"></calcite-icon>
