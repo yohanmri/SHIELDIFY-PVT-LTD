@@ -1,3 +1,7 @@
+// ============================================
+// FILE: AdminProductList.js 
+// Path: src/pages/adminPages/AdminProductList.js
+// ============================================
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
@@ -17,10 +21,10 @@ import '@esri/calcite-components/components/calcite-input-number';
 import '@esri/calcite-components/components/calcite-text-area';
 import '@esri/calcite-components/components/calcite-notice';
 import '@esri/calcite-components/components/calcite-action';
-import '@esri/calcite-components/components/calcite-tooltip';
 import '@esri/calcite-components/components/calcite-list';
 import '@esri/calcite-components/components/calcite-list-item';
 import '@esri/calcite-components/components/calcite-loader';
+import '../../styles/clientStyles/productsCard.css';
 
 
 export default function AdminProductList() {
@@ -185,6 +189,29 @@ export default function AdminProductList() {
     setCropData({ zoom: 1, x: 0, y: 0 });
   };
 
+  const handleViewProduct = (productId) => {
+    navigate(`/admin/products/${productId}`);
+  };
+
+  const handleCategoryChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedProduct(prev => ({ ...prev, category: newValue }));
+  };
+
+  const handleWorkerTypeChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedProduct(prev => ({ ...prev, workerType: newValue }));
+  };
+
+  const handleColorChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedProduct(prev => ({ ...prev, color: newValue }));
+  };
+
+  const getColorClass = (color) => {
+    return 'color-' + color.toLowerCase().replace(/[\/\s]/g, '-');
+  };
+
   return (
     <calcite-shell>
       <AdminNavbar />
@@ -260,10 +287,10 @@ export default function AdminProductList() {
                 onClick={() => setViewMode('card')}
               ></calcite-action>
               <calcite-action
-                text="List View"
+                text="Table View"
                 icon="list"
-                active={viewMode === 'list'}
-                onClick={() => setViewMode('list')}
+                active={viewMode === 'table'}
+                onClick={() => setViewMode('table')}
               ></calcite-action>
             </div>
           </div>
@@ -281,14 +308,15 @@ export default function AdminProductList() {
             </div>
           )}
 
+          {/* Card View */}
           {!loading && viewMode === 'card' && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '20px'
-            }}>
+            <div className="shieldify-card-group">
               {filteredProducts.map(product => (
-                <calcite-card key={product._id}>
+                <calcite-card 
+                  key={product._id}
+                  onClick={() => handleViewProduct(product._id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <img 
                     slot="thumbnail" 
                     src={product.image} 
@@ -303,43 +331,62 @@ export default function AdminProductList() {
                   <span slot="heading">{product.name}</span>
                   <span slot="description">{product.category}</span>
 
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '8px',
-                    flexWrap: 'wrap',
-                    margin: '12px 0'
-                  }}>
-                    <calcite-chip scale="s" appearance="outline">
-                      {product.color}
-                    </calcite-chip>
-                    <calcite-chip scale="s" appearance="outline">
-                      Stock: {product.stock}
-                    </calcite-chip>
+                  <div className="product-features">
+                    <div className="color-indicator-chip">
+                      <span className={`color-circle ${getColorClass(product.color)}`}></span>
+                      <span>{product.color}</span>
+                    </div>
                   </div>
 
-                  <div slot="footer-start" style={{ 
-                    fontWeight: '600', 
-                    fontSize: '1.125rem', 
-                    color: '#ff6b00' 
-                  }}>
+                  <div slot="footer-start" style={{ fontWeight: '600', fontSize: '1.125rem', color: '#ff6b00' }}>
                     LKR {product.price.toLocaleString()}
                   </div>
 
-                  <div slot="footer-end" style={{ display: 'flex', gap: '4px' }}>
+                  <div slot="footer-end" style={{ display: 'flex', gap: '8px' }}>
                     <calcite-button 
-                      appearance="outline" 
+                      appearance="outline"
                       icon-start="pencil"
                       scale="s"
-                      onClick={() => handleEdit(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(product);
+                      }}
+                      style={{
+                        color: '#2563eb',
+                        borderColor: '#2563eb'
+                      }}
+                      onMouseEnter={(el) => {
+                        el.currentTarget.style.backgroundColor = '#2563eb';
+                        el.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(el) => {
+                        el.currentTarget.style.backgroundColor = '';
+                        el.currentTarget.style.color = '#2563eb';
+                      }}
                     >
                       Edit
                     </calcite-button>
                     <calcite-button 
-                      appearance="outline" 
+                      appearance="outline"
                       kind="danger"
                       icon-start="trash"
                       scale="s"
-                      onClick={() => handleDelete(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(product);
+                      }}
+                      style={{
+                        color: '#dc2626',
+                        borderColor: '#dc2626'
+                      }}
+                      onMouseEnter={(el) => {
+                        el.currentTarget.style.backgroundColor = '#dc2626';
+                        el.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(el) => {
+                        el.currentTarget.style.backgroundColor = '';
+                        el.currentTarget.style.color = '#dc2626';
+                      }}
                     >
                       Delete
                     </calcite-button>
@@ -349,61 +396,147 @@ export default function AdminProductList() {
             </div>
           )}
 
-          {!loading && viewMode === 'list' && (
-            <calcite-list>
-              {filteredProducts.map(product => (
-                <calcite-list-item
-                  key={product._id}
-                  label={product.name}
-                  description={`${product.category} • ${product.workerType} • Stock: ${product.stock}`}
-                  value={product._id}
-                >
-                  <img 
-                    slot="content-start"
-                    src={product.image}
-                    alt={product.name}
+          {/* Table View - Using calcite-list */}
+          {!loading && viewMode === 'table' && (
+            <div style={{
+              background: 'white',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}>
+              <calcite-list style={{ borderRadius: '8px' }}>
+                {filteredProducts.map((product, index) => (
+                  <calcite-list-item
+                    key={product._id}
+                    label={product.name}
+                    description={`${product.category} • ${product.workerType}`}
+                    value={product._id}
                     style={{ 
-                      width: '60px', 
-                      height: '60px', 
-                      objectFit: 'cover',
-                      borderRadius: '4px'
+                      cursor: 'pointer',
+                      borderBottom: index !== filteredProducts.length - 1 ? '1px solid #f1f5f9' : 'none',
+                      transition: 'all 0.2s ease'
                     }}
-                  />
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
-                    gap: '8px',
-                    alignItems: 'center'
-                  }}>
-                    <span style={{ 
-                      fontWeight: '600', 
-                      fontSize: '16px',
-                      color: '#ff6b00',
-                      minWidth: '100px',
-                      textAlign: 'right'
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={() => handleViewProduct(product._id)}
+                  >
+                    <img 
+                      slot="content-start"
+                      src={product.image}
+                      alt={product.name}
+                      style={{ 
+                        width: '70px', 
+                        height: '70px', 
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        border: '2px solid #e2e8f0',
+                        marginRight: '12px'
+                      }}
+                    />
+                    
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        alignItems: 'center',
+                        marginBottom: '4px'
+                      }}>
+                        <calcite-chip scale="s" appearance="solid">
+                          {product.stock > 0 ? '✓ In Stock' : '✗ Out'}
+                        </calcite-chip>
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          fontWeight: '500'
+                        }}>
+                          Stock: {product.stock}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div slot="content-end" style={{ 
+                      display: 'flex', 
+                      gap: '16px',
+                      alignItems: 'center',
+                      marginLeft: '16px'
                     }}>
-                      LKR {product.price.toLocaleString()}
-                    </span>
-                    <calcite-button 
-                      appearance="outline" 
-                      icon-start="pencil"
-                      scale="s"
-                      onClick={() => handleEdit(product)}
-                    >
-                      Edit
-                    </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
-                      kind="danger"
-                      icon-start="trash"
-                      scale="s"
-                      onClick={() => handleDelete(product)}
-                    >
-                      Delete
-                    </calcite-button>
-                  </div>
-                </calcite-list-item>
-              ))}
-            </calcite-list>
+                      <div style={{
+                        textAlign: 'right',
+                        minWidth: '140px'
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#9ca3af',
+                          marginBottom: '4px'
+                        }}>
+                          Price
+                        </div>
+                        <div style={{ 
+                          fontWeight: '700', 
+                          fontSize: '18px',
+                          color: '#ff6b00'
+                        }}>
+                          LKR {product.price.toLocaleString()}
+                        </div>
+                      </div>
+
+                      <calcite-button 
+                        appearance="outline" 
+                        icon-start="pencil"
+                        scale="s"
+                        style={{
+                          color: '#2563eb',
+                          borderColor: '#2563eb'
+                        }}
+                        onMouseEnter={(el) => {
+                          el.currentTarget.style.backgroundColor = '#2563eb';
+                          el.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(el) => {
+                          el.currentTarget.style.backgroundColor = '';
+                          el.currentTarget.style.color = '#2563eb';
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(product);
+                        }}
+                      >
+                        Edit
+                      </calcite-button>
+                      <calcite-button 
+                        appearance="outline" 
+                        kind="danger"
+                        icon-start="trash"
+                        scale="s"
+                        style={{
+                          color: '#dc2626',
+                          borderColor: '#dc2626'
+                        }}
+                        onMouseEnter={(el) => {
+                          el.currentTarget.style.backgroundColor = '#dc2626';
+                          el.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(el) => {
+                          el.currentTarget.style.backgroundColor = '';
+                          el.currentTarget.style.color = '#dc2626';
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(product);
+                        }}
+                      >
+                        Delete
+                      </calcite-button>
+                    </div>
+                  </calcite-list-item>
+                ))}
+              </calcite-list>
+            </div>
           )}
 
           {!loading && filteredProducts.length === 0 && (
@@ -415,7 +548,7 @@ export default function AdminProductList() {
         </div>
       </div>
 
-      {/* Edit Modal - NOW WITH DROPDOWNS */}
+      {/* Edit Modal */}
       <calcite-modal 
         open={editModalOpen}
         onCalciteModalClose={() => setEditModalOpen(false)}
@@ -484,48 +617,96 @@ export default function AdminProductList() {
               </calcite-label>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <calcite-label>
-                  Category
-                  <calcite-select
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Category
+                  </label>
+                  <select
                     value={selectedProduct.category}
-                 onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, category: e.target.selectedOption.value })
-}
+                    onChange={handleCategoryChange}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
                   >
                     {categories.map(cat => (
-                      <calcite-option key={cat} value={cat}>{cat}</calcite-option>
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
-                  </calcite-select>
-                </calcite-label>
+                  </select>
+                </div>
 
-                <calcite-label>
-                  Worker Type
-                  <calcite-select
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Worker Type
+                  </label>
+                  <select
                     value={selectedProduct.workerType}
-                   onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, workerType: e.target.selectedOption.value })
-}
+                    onChange={handleWorkerTypeChange}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
                   >
                     {workerTypes.map(type => (
-                      <calcite-option key={type} value={type}>{type}</calcite-option>
+                      <option key={type} value={type}>{type}</option>
                     ))}
-                  </calcite-select>
-                </calcite-label>
+                  </select>
+                </div>
               </div>
 
-              <calcite-label>
-                Color
-                <calcite-select
+              <div>
+                <label style={{ 
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'var(--calcite-ui-text-1)'
+                }}>
+                  Color
+                </label>
+                <select
                   value={selectedProduct.color}
-                  onCalciteSelectChange={(e) => 
-  setSelectedProduct({ ...selectedProduct, color: e.target.selectedOption.value })
-}
+                  onChange={handleColorChange}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '14px',
+                    border: '1px solid var(--calcite-ui-border-2)',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--calcite-ui-background)',
+                    color: 'var(--calcite-ui-text-1)',
+                    cursor: 'pointer'
+                  }}
                 >
                   {colors.map(color => (
-                    <calcite-option key={color} value={color}>{color}</calcite-option>
+                    <option key={color} value={color}>{color}</option>
                   ))}
-                </calcite-select>
-              </calcite-label>
+                </select>
+              </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <calcite-label>

@@ -2,20 +2,23 @@ import React, { useState, useMemo, useEffect } from 'react';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productsCard.css';
 import API from '../../api/axios';
+import { useNavigate } from 'react-router-dom';
+import '@esri/calcite-components/components/calcite-list';
+import '@esri/calcite-components/components/calcite-list-item';
 
 export default function ProductsCard({ setPage }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedWorkerType, setSelectedWorkerType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12; // 4 columns x 3 rows
+  const [viewMode, setViewMode] = useState('card');
+  const itemsPerPage = 12;
+  const navigate = useNavigate();
 
-  // API state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch products from API
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -34,16 +37,13 @@ export default function ProductsCard({ setPage }) {
     }
   };
 
-  // Get unique categories and worker types
   const categories = ['all', ...new Set(products.map(p => p.category))];
   const workerTypes = ['all', ...new Set(products.map(p => p.workerType))];
 
-  // Helper function to get color class
   const getColorClass = (color) => {
     return 'color-' + color.toLowerCase().replace(/[\/\s]/g, '-');
   };
 
-  // Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
@@ -54,38 +54,25 @@ export default function ProductsCard({ setPage }) {
     });
   }, [selectedCategory, selectedWorkerType, searchQuery, products]);
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, selectedWorkerType, searchQuery]);
 
   return (
     <div className="shieldify-products-page">
-      {/* Hero Section */}
       <div className="shieldify-hero">
         <div className="shieldify-hero-content">
-          {/* <img 
-            src="assets/images/picture-logo.png" 
-            alt="SHIELDIFY Logo" 
-            className="shieldify-hero-logo"
-          /> */}
-          {/* <h1>Safety Products Catalog</h1> */}
-          {/* <p>Your trusted partner for workplace safety equipment in Sri Lanka</p> */}
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="shieldify-container">
-        {/* Sidebar Filters */}
         <aside className="shieldify-sidebar">
           <calcite-panel heading="Filter Products">
-            {/* Search */}
             <calcite-block heading="Search" open>
               <calcite-input
                 type="text"
@@ -97,13 +84,13 @@ export default function ProductsCard({ setPage }) {
               />
             </calcite-block>
 
-            {/* Category Filter */}
             <calcite-block heading="Category" collapsible open>
               <calcite-label layout="inline-space-between">
                 <calcite-select
                   label="Select Category"
                   value={selectedCategory}
-onCalciteSelectChange={(e) => setSelectedCategory(e.target.selectedOption.value)}                >
+                  onCalciteSelectChange={(e) => setSelectedCategory(e.target.value)}
+                >
                   {categories.map(category => (
                     <calcite-option key={category} value={category}>
                       {category === 'all' ? 'All Categories' : category}
@@ -113,13 +100,13 @@ onCalciteSelectChange={(e) => setSelectedCategory(e.target.selectedOption.value)
               </calcite-label>
             </calcite-block>
 
-            {/* Worker Type Filter */}
             <calcite-block heading="Worker Type" collapsible open>
               <calcite-label layout="inline-space-between">
                 <calcite-select
                   label="Select Worker Type"
                   value={selectedWorkerType}
-onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.value)}                >
+                  onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.value)}
+                >
                   {workerTypes.map(type => (
                     <calcite-option key={type} value={type}>
                       {type === 'all' ? 'All Workers' : type}
@@ -129,7 +116,6 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
               </calcite-label>
             </calcite-block>
 
-            {/* Filter Summary */}
             <calcite-block heading="Active Filters" open>
               <div style={{ padding: '0.5rem 0', fontSize: '0.875rem', color: '#4a4a4a' }}>
                 <p style={{ marginBottom: '0.5rem' }}>
@@ -145,7 +131,6 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
               </div>
             </calcite-block>
 
-            {/* Reset */}
             <div style={{ padding: '0.75rem' }}>
               <calcite-button
                 width="full"
@@ -161,7 +146,6 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
               </calcite-button>
             </div>
 
-            {/* Contact */}
             <calcite-block heading="Need Help?" open>
               <div style={{ padding: '0.5rem 0' }}>
                 <p style={{ fontSize: '0.875rem', marginBottom: '0.75rem', color: '#4a4a4a' }}>
@@ -180,14 +164,28 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
           </calcite-panel>
         </aside>
 
-        {/* Products Grid */}
         <div className="shieldify-main">
-          <div className="shieldify-header">
-            <h2>{selectedCategory === 'all' ? 'All Products' : selectedCategory}</h2>
-            <calcite-chip>{filteredProducts.length} products</calcite-chip>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div className="shieldify-header">
+              <h2>{selectedCategory === 'all' ? 'All Products' : selectedCategory}</h2>
+              <calcite-chip>{filteredProducts.length} products</calcite-chip>
+            </div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <calcite-action
+                text="Card View"
+                icon="apps"
+                active={viewMode === 'card'}
+                onClick={() => setViewMode('card')}
+              ></calcite-action>
+              <calcite-action
+                text="Table View"
+                icon="list"
+                active={viewMode === 'table'}
+                onClick={() => setViewMode('table')}
+              ></calcite-action>
+            </div>
           </div>
 
-          {/* Loading State */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <calcite-loader scale="l"></calcite-loader>
@@ -196,49 +194,176 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
               </p>
             </div>
           ) : error ? (
-            /* Error State */
             <calcite-notice open icon="exclamation-mark-triangle" kind="danger">
               <div slot="title">Error</div>
               <div slot="message">{error}</div>
             </calcite-notice>
           ) : currentProducts.length > 0 ? (
-            /* Products Display */
             <>
-              <div className="shieldify-card-group">
-                {currentProducts.map(product => (
-                  <calcite-card key={product._id}>
-                    <img 
-                      slot="thumbnail" 
-                      src={product.image} 
-                      alt={product.name}
-                      style={{ height: '180px', objectFit: 'cover' }}
-                    />
-                    
-                    <calcite-chip slot="header-start" scale="s" appearance="solid">
-                      {product.workerType}
-                    </calcite-chip>
+              {/* Card View */}
+              {viewMode === 'card' && (
+                <div className="shieldify-card-group">
+                  {currentProducts.map(product => (
+                    <calcite-card 
+                      key={product._id}
+                      onClick={() => navigate(`/product/${product._id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <img 
+                        slot="thumbnail" 
+                        src={product.image} 
+                        alt={product.name}
+                        style={{ height: '180px', objectFit: 'cover' }}
+                      />
+                      
+                      <calcite-chip slot="header-start" scale="s" appearance="solid">
+                        {product.workerType}
+                      </calcite-chip>
 
-                    <span slot="heading">{product.name}</span>
-                    <span slot="description">{product.category}</span>
+                      <span slot="heading">{product.name}</span>
+                      <span slot="description">{product.category}</span>
 
-                    <div className="product-features">
-                      {/* Color Indicator */}
-                      <div className="color-indicator-chip">
-                        <span className={`color-circle ${getColorClass(product.color)}`}></span>
-                        <span>{product.color}</span>
+                      <div className="product-features">
+                        <div className="color-indicator-chip">
+                          <span className={`color-circle ${getColorClass(product.color)}`}></span>
+                          <span>{product.color}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div slot="footer-start" style={{ fontWeight: '600', fontSize: '1.125rem', color: '#ff6b00' }}>
-                      LKR {product.price.toLocaleString()}
-                    </div>
+                      <div slot="footer-start" style={{ fontWeight: '600', fontSize: '1.125rem', color: '#ff6b00' }}>
+                        LKR {product.price.toLocaleString()}
+                      </div>
 
-                    <calcite-button slot="footer-end" appearance="outline" icon-end="shopping-cart" scale="s">
-                      Inquire
-                    </calcite-button>
-                  </calcite-card>
-                ))}
-              </div>
+                      <calcite-button 
+                        slot="footer-end" 
+                        appearance="outline" 
+                        icon-end="arrow-right" 
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/product/${product._id}`);
+                        }}
+                      >
+                        View
+                      </calcite-button>
+                    </calcite-card>
+                  ))}
+                </div>
+              )}
+
+              {/* Table View */}
+              {viewMode === 'table' && (
+                <div style={{
+                  background: 'white',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                }}>
+                  <calcite-list style={{ borderRadius: '8px' }}>
+                    {currentProducts.map((product, index) => (
+                      <calcite-list-item
+                        key={product._id}
+                        label={product.name}
+                        description={`${product.category} • ${product.workerType}`}
+                        value={product._id}
+                        style={{ 
+                          cursor: 'pointer',
+                          borderBottom: index !== currentProducts.length - 1 ? '1px solid #f1f5f9' : 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f8fafc';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        onClick={() => navigate(`/product/${product._id}`)}
+                      >
+                        <img 
+                          slot="content-start"
+                          src={product.image}
+                          alt={product.name}
+                          style={{ 
+                            width: '70px', 
+                            height: '70px', 
+                            objectFit: 'cover',
+                            borderRadius: '6px',
+                            border: '2px solid #e2e8f0',
+                            marginRight: '12px'
+                          }}
+                        />
+                        
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            alignItems: 'center',
+                            marginBottom: '4px'
+                          }}>
+                            <calcite-chip scale="s" appearance="solid">
+                              {product.stock > 0 ? '✓ In Stock' : '✗ Out'}
+                            </calcite-chip>
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#6b7280',
+                              fontWeight: '500'
+                            }}>
+                              Stock: {product.stock}
+                            </span>
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#6b7280',
+                              fontWeight: '500'
+                            }}>
+                              • Color: {product.color}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div slot="content-end" style={{ 
+                          display: 'flex', 
+                          gap: '16px',
+                          alignItems: 'center',
+                          marginLeft: '16px'
+                        }}>
+                          <div style={{
+                            textAlign: 'right',
+                            minWidth: '140px'
+                          }}>
+                            <div style={{
+                              fontSize: '12px',
+                              color: '#9ca3af',
+                              marginBottom: '4px'
+                            }}>
+                              Price
+                            </div>
+                            <div style={{ 
+                              fontWeight: '700', 
+                              fontSize: '18px',
+                              color: '#ff6b00'
+                            }}>
+                              LKR {product.price.toLocaleString()}
+                            </div>
+                          </div>
+
+                          <calcite-button 
+                            appearance="outline"
+                            icon-end="arrow-right"
+                            scale="s"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/product/${product._id}`);
+                            }}
+                          >
+                            View
+                          </calcite-button>
+                        </div>
+                      </calcite-list-item>
+                    ))}
+                  </calcite-list>
+                </div>
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -253,7 +378,6 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
               )}
             </>
           ) : (
-            /* No Results */
             <calcite-notice open icon="exclamation-mark-triangle">
               <div slot="title">No products found</div>
               <div slot="message">Try adjusting your filters or search terms</div>
@@ -262,7 +386,6 @@ onCalciteSelectChange={(e) => setSelectedWorkerType(e.target.selectedOption.valu
         </div>
       </div>
 
-      {/* Bottom CTA */}
       <div className="shieldify-cta">
         <img 
           src="assets/images/picture-logo.png"  

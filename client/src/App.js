@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/clientPages/HomePage';
 import ProductsPage from './pages/clientPages/ProductsPage';
+import ProductDetailsPage from './pages/clientPages/ProductDetailsPage'; // CHANGED: Use wrapper component
 import SolutionsPage from './pages/clientPages/SolutionsPage';
 import ServicesPage from './pages/clientPages/ServicesPage';
 import ContactPage from './pages/clientPages/ContactPage';
@@ -25,6 +26,7 @@ import PopularPages from './pages/adminPages/PopularPages';
 import DeviceLocations from './pages/adminPages/DeviceLocations';
 import LiveVisitors from './pages/adminPages/LIveVisitors';
 import RecentActivity from './pages/adminPages/RecentActivity';
+import AdminProductDetail from './pages/adminPages/ProductDetails';
 
 function App() {
   // Initialize Calcite Components
@@ -36,50 +38,67 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Landing Page Routes */}
+          {/* ============================================
+              CLIENT SIDE ROUTES
+              ============================================ */}
+          
+          {/* Main Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
+          
+          {/* FIXED: Product Details - Now uses ProductDetailsPage wrapper */}
+          <Route path="/product/:id" element={<ProductDetailsPage />} />
+          
           <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
 
-          {/* Admin Routes */}
-          <Route path="admin/login" element={<ShieldifyLogin/>} />
+          {/* ============================================
+              ADMIN ROUTES
+              ============================================ */}
+          
+          {/* Authentication */}
+          <Route path="/admin/login" element={<ShieldifyLogin/>} />
 
+          {/* Dashboard & Activity */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/recent-activity" element={<RecentActivity/>}/>
 
+          {/* Product Management */}
           <Route path="/admin/product-list" element={<AdminProductList />} />
-          <Route path="/admin/product-add" element={<AdminProductAdd />} /> 
+          <Route path="/admin/products/:id" element={<AdminProductDetail />} />
+          <Route path="/admin/product-add" element={<AdminProductAdd />} />
 
-            <Route path="/admin/bundle-list" element={<AdminBundleList />} /> 
-          <Route path="/admin/bundle-add" element={<AdminBundleAdd />} /> 
+          {/* Bundle Management */}
+          <Route path="/admin/bundle-list" element={<AdminBundleList />} />
+          <Route path="/admin/bundle-add" element={<AdminBundleAdd />} />
 
-            <Route path="/admin/order-list" element={<AdminOrdersList />} /> 
-            <Route path="/admin/order-completed" element={<AdminOrdersCompleted />} /> 
-            <Route path="/admin/order-pending" element={<AdminOrdersPending />} /> 
-          {/* <Route path="/admin/categories" element={<AdminProductList />} />  */}
-       
-      
-          <Route path="/admin/requests-refunds" element={<AdminRequestsRefund />} /> 
-          <Route path="/admin/requests-cancel" element={<AdminRequestsCancel />} /> 
+          {/* Order Management */}
+          <Route path="/admin/order-list" element={<AdminOrdersList />} />
+          <Route path="/admin/order-completed" element={<AdminOrdersCompleted />} />
+          <Route path="/admin/order-pending" element={<AdminOrdersPending />} />
 
+          {/* Request Management */}
+          <Route path="/admin/requests-refunds" element={<AdminRequestsRefund />} />
+          <Route path="/admin/requests-cancel" element={<AdminRequestsCancel />} />
+
+          {/* Analytics - Visitors */}
           <Route path="/admin/total-visitors" element={<TotalVisitors />} />
           <Route path="/admin/popular-pages" element={<PopularPages />} />
           <Route path="/admin/devices-locations" element={<DeviceLocations />} />
+          <Route path="/admin/live-visitors" element={<LiveVisitors />} />
 
-
-          
-          <Route path="/admin/live-visitors" element={<LiveVisitors />} /> 
-
-          <Route path="/admin/analytics/traffic" element={<AdminProductList />} /> 
-          <Route path="/admin/analytics/pages" element={<AdminProductList />} /> 
-      
-          <Route path="/admin/activity" element={<AdminProductList />} /> 
-          <Route path="/admin/stats" element={<AdminProductList />} /> 
-          <Route path="/admin/settings" element={<AdminProductList />} /> 
+          {/* Future Analytics Routes (placeholder) */}
+          {/* 
+          <Route path="/admin/categories" element={<AdminProductList />} />
+          <Route path="/admin/analytics/traffic" element={<AdminProductList />} />
+          <Route path="/admin/analytics/pages" element={<AdminProductList />} />
+          <Route path="/admin/activity" element={<AdminProductList />} />
+          <Route path="/admin/stats" element={<AdminProductList />} />
+          <Route path="/admin/settings" element={<AdminProductList />} />
+          */}
         </Routes>
       </div>
     </Router>
