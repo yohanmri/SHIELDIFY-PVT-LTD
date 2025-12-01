@@ -8,43 +8,113 @@ import '@esri/calcite-components/dist/components/calcite-link';
 import '@esri/calcite-components/dist/components/calcite-notice';
 import '@esri/calcite-components/dist/components/calcite-card';
 import { setAssetPath } from '@esri/calcite-components/dist/components';
+import { useNavigate } from 'react-router-dom';
+import API from '../../api/axios';
 
 setAssetPath('https://cdn.jsdelivr.net/npm/@esri/calcite-components/dist/calcite/assets');
 
 export default function ShieldifyLogin() {
+  const navigate = useNavigate();
+  
+  // State management
+  const [step, setStep] = useState('email'); // 'email' or 'login'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showError, setShowError] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      setShowError(true);
-      setShowSuccess(false);
+  // Step 1: Request OTP
+  const handleRequestOTP = async () => {
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail) {
+      setError('Please enter your email address');
       return;
     }
-    
+
     setLoading(true);
-    setShowError(false);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      setShowSuccess(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await API.post('/auth/request-otp', { email: trimmedEmail });
       
-      setTimeout(() => {
-        setShowSuccess(false);
-        // Redirect to admin dashboard
-        console.log('Redirecting to admin dashboard...');
-      }, 1500);
-    }, 1000);
+      if (response.data.success) {
+        setSuccess(response.data.message);
+        setStep('login');
+      }
+    } catch (err) {
+      console.error('Request OTP Error:', err);
+      setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Login with email, password, and OTP
+  const handleLogin = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const trimmedOtp = otp.trim();
+    
+    if (!trimmedEmail || !trimmedPassword || !trimmedOtp) {
+      setError('Please provide email, password, and OTP');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await API.post('/auth/login', {
+        email: trimmedEmail,
+        password: trimmedPassword,
+        otp: trimmedOtp
+      });
+
+      if (response.data.success) {
+        // Store token and admin data
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('admin', JSON.stringify(response.data.admin));
+
+        setSuccess('Login successful!');
+
+        // Redirect based on password type
+        setTimeout(() => {
+          if (response.data.admin.isTemporaryPassword) {
+            navigate('/admin/change-password');
+          } else {
+            navigate('/admin/dashboard');
+          }
+        }, 1500);
+      }
+    } catch (err) {
+      console.error('Login Error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleLogin();
+      if (step === 'email') {
+        handleRequestOTP();
+      } else {
+        handleLogin();
+      }
     }
+  };
+
+  const handleBackToEmail = () => {
+    setStep('email');
+    setPassword('');
+    setOtp('');
+    setError('');
+    setSuccess('');
   };
 
   return (
@@ -66,7 +136,6 @@ export default function ShieldifyLogin() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Background Pattern */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -83,7 +152,6 @@ export default function ShieldifyLogin() {
           )`
         }}></div>
 
-        {/* Decorative circles */}
         <div style={{
           position: 'absolute',
           top: '10%',
@@ -106,7 +174,6 @@ export default function ShieldifyLogin() {
         }}></div>
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '500px' }}>
-          {/* Logo */}
           <div style={{
             width: '180px',
             height: '180px',
@@ -127,6 +194,10 @@ export default function ShieldifyLogin() {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div style="font-size: 80px; color: #1e3a8a">🛡️</div>';
               }}
             />
           </div>
@@ -149,27 +220,6 @@ export default function ShieldifyLogin() {
           }}>
             Your trusted partner for workplace safety equipment in Sri Lanka
           </p>
-
-          <div style={{
-            display: 'flex',
-            gap: '30px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginTop: '40px'
-          }}>
-            {/* <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '5px' }}>500+</div>
-              <div style={{ fontSize: '14px', opacity: 0.8 }}>Products</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '5px' }}>1000+</div>
-              <div style={{ fontSize: '14px', opacity: 0.8 }}>Happy Clients</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '5px' }}>15+</div>
-              <div style={{ fontSize: '14px', opacity: 0.8 }}>Categories</div>
-            </div> */}
-          </div>
         </div>
       </div>
 
@@ -213,91 +263,130 @@ export default function ShieldifyLogin() {
                 fontWeight: '600',
                 color: '#1e3a8a'
               }}>
-                Login
+                {step === 'email' ? 'Admin Login' : 'Enter Credentials'}
               </h2>
               <p style={{
                 margin: 0,
                 color: '#64748b',
                 fontSize: '15px'
               }}>
-                Sign in to access admin dashboard
+                {step === 'email' 
+                  ? 'Enter your email to receive OTP'
+                  : 'Enter password and OTP to login'
+                }
               </p>
             </div>
 
             {/* Error Notice */}
-            {showError && (
+            {error && (
               <calcite-notice open icon="exclamation-mark-triangle" kind="danger" style={{ marginBottom: '20px' }}>
-                <div slot="message">Please enter both email and password</div>
+                <div slot="message">{error}</div>
               </calcite-notice>
             )}
 
             {/* Success Notice */}
-            {showSuccess && (
+            {success && (
               <calcite-notice open icon="check-circle" kind="success" style={{ marginBottom: '20px' }}>
-                <div slot="message">Login successful! Redirecting to dashboard...</div>
+                <div slot="message">{success}</div>
               </calcite-notice>
             )}
 
-            {/* Login Form */}
-            <div>
-              <calcite-label style={{ marginBottom: '16px' }}>
-                Email Address
-                <calcite-input
-                  type="email"
-                  placeholder="admin@shieldify.com"
-                  value={email}
-                  onCalciteInputInput={(e) => setEmail(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  icon="envelope"
-                  clearable
-                />
-              </calcite-label>
+            {/* Step 1: Email Input */}
+            {step === 'email' && (
+              <div>
+                <calcite-label style={{ marginBottom: '20px' }}>
+                  Email Address
+                  <calcite-input
+                    type="email"
+                    placeholder="admin@shieldify.com"
+                    value={email}
+                    onInput={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    icon="envelope"
+                    clearable
+                  />
+                </calcite-label>
 
-              <calcite-label style={{ marginBottom: '20px' }}>
-                Password
-                <calcite-input
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onCalciteInputInput={(e) => setPassword(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  icon="lock"
-                  clearable
-                />
-              </calcite-label>
-
-              {/* Remember Me & Forgot Password */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '24px',
-                fontSize: '14px'
-              }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                  <input type="checkbox" />
-                  <span style={{ color: '#475569' }}>Remember me</span>
-                </label>
-                <calcite-link href="#" style={{ fontSize: '14px' }}>
-                  Forgot password?
-                </calcite-link>
+                <calcite-button
+                  onClick={handleRequestOTP}
+                  width="full"
+                  loading={loading}
+                  disabled={loading}
+                  icon-start="mail"
+                  style={{ 
+                    marginBottom: '20px',
+                    '--calcite-button-background': 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
+                  }}
+                >
+                  {loading ? 'Sending OTP...' : 'Request OTP'}
+                </calcite-button>
               </div>
+            )}
 
-              {/* Login Button */}
-              <calcite-button
-                onClick={handleLogin}
-                width="full"
-                loading={loading}
-                disabled={loading}
-                icon-start="sign-in"
-                style={{ 
-                  marginBottom: '20px',
-                  '--calcite-button-background': 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
-                }}
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </calcite-button>
-            </div>
+            {/* Step 2: Password & OTP */}
+            {step === 'login' && (
+              <div>
+                <calcite-label style={{ marginBottom: '16px' }}>
+                  Email Address
+                  <calcite-input
+                    type="email"
+                    value={email}
+                    disabled
+                    icon="envelope"
+                  />
+                </calcite-label>
+
+                <calcite-label style={{ marginBottom: '16px' }}>
+                  Password
+                  <calcite-input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onInput={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    icon="lock"
+                    clearable
+                  />
+                </calcite-label>
+
+                <calcite-label style={{ marginBottom: '20px' }}>
+                  OTP Code
+                  <calcite-input
+                    type="text"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onInput={(e) => setOtp(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    icon="key"
+                    maxLength="6"
+                    clearable
+                  />
+                </calcite-label>
+
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                  <calcite-button
+                    appearance="outline"
+                    onClick={handleBackToEmail}
+                    icon-start="chevron-left"
+                    width="full"
+                  >
+                    Back
+                  </calcite-button>
+                  <calcite-button
+                    onClick={handleLogin}
+                    width="full"
+                    loading={loading}
+                    disabled={loading}
+                    icon-start="sign-in"
+                    style={{ 
+                      '--calcite-button-background': 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
+                    }}
+                  >
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </calcite-button>
+                </div>
+              </div>
+            )}
 
             {/* Help Section */}
             <div style={{
@@ -334,7 +423,7 @@ export default function ShieldifyLogin() {
         </calcite-card>
       </div>
 
-      {/* Mobile Responsive - Stack Vertically */}
+      {/* Mobile Responsive */}
       <style>{`
         @media (max-width: 968px) {
           div[style*="minHeight: 100vh"] {
