@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import '@esri/calcite-components/components/calcite-button';
 import '../../styles/clientStyles/hero.css';
-
+import { useNavigate } from 'react-router-dom';
 export default function Hero({ setPage }) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+const navigate = useNavigate();
 
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    navigate('/products');
+    
+    // Wait a tick for the new page to render
+    setTimeout(() => {
+      const element = document.getElementById('products-top');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50); // 50ms delay
+  };
   const videos = [
     '/assets/videos/helmet-puton.mp4',
     '/assets/videos/jacket-puton.mp4',
@@ -86,9 +100,9 @@ export default function Hero({ setPage }) {
                 kind="inverse" 
                 scale="l"
                 icon-end="play"
-                onClick={handleGetStarted}
+                onClick={handleClick}
               >
-                Watch the video
+                Explore Products
               </calcite-button>
             </div>
           </div>

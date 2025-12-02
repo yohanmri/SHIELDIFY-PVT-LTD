@@ -1,3 +1,5 @@
+//server->controllers->authController.js
+
 const Admin = require('../models/adminModel');
 
 // Utils
@@ -7,7 +9,84 @@ const { sendTokenResponse } = require('../utils/jwtToken');
 
 //
 // =====================================================================
-// REQUEST OTP
+// LOGIN WITH EMAIL AND PASSWORD (NO OTP REQUIRED)
+// =====================================================================
+//
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const admin = await Admin.findOne({ email: normalizedEmail })
+      .select('+password +isLocked +lockUntil')
+      .populate('role');
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invalid login credentials'
+      });
+    }
+
+    // Check if active
+    if (!admin.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Your account has been deactivated.'
+      });
+    }
+
+    // Check lock
+    if (admin.isLocked && admin.lockUntil > Date.now()) {
+      const mins = Math.ceil((admin.lockUntil - Date.now()) / 60000);
+      return res.status(403).json({
+        success: false,
+        message: `Account locked. Try again in ${mins} minutes.`
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await admin.comparePassword(password);
+    
+    if (!isPasswordValid) {
+      await admin.incLoginAttempts();
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid login credentials'
+      });
+    }
+
+    // Reset login attempts on successful login
+    await admin.resetLoginAttempts();
+
+    // Update last login
+    admin.lastLogin = Date.now();
+    await admin.save();
+
+    // Send JWT token
+    return sendTokenResponse(admin, 200, res);
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+      error: error.message
+    });
+  }
+};
+
+//
+// =====================================================================
+// REQUEST OTP (FOR FORGOT PASSWORD)
 // =====================================================================
 //
 exports.requestOTP = async (req, res) => {
@@ -40,15 +119,6 @@ exports.requestOTP = async (req, res) => {
       });
     }
 
-    // If account is locked
-    if (admin.isLocked && admin.lockUntil > Date.now()) {
-      const mins = Math.ceil((admin.lockUntil - Date.now()) / 60000);
-      return res.status(403).json({
-        success: false,
-        message: `Account locked due to failed attempts. Try again in ${mins} minutes.`
-      });
-    }
-
     // Generate OTP
     const otp = generateOTP();
     const otpExpires = getOTPExpiration();
@@ -59,17 +129,18 @@ exports.requestOTP = async (req, res) => {
 
     // Email body
     const htmlBody = `
-      <h2>Welcome to SHIELDIFY</h2>
+      <h2>SHIELDIFY Password Reset</h2>
       <p>Hi ${admin.name},</p>
-      <p>Your login OTP is:</p>
-      <h1>${otp}</h1>
+      <p>Your password reset OTP is:</p>
+      <h1 style="color: #1e3a8a; font-size: 32px; letter-spacing: 5px;">${otp}</h1>
       <p>This OTP will expire in ${process.env.OTP_EXPIRE_MINUTES || 10} minutes.</p>
+      <p>If you didn't request this, please ignore this email.</p>
     `;
 
     // Send Email
     await sendEmail({
       to: admin.email,
-      subject: 'Your SHIELDIFY Login OTP',
+      subject: 'SHIELDIFY Password Reset OTP',
       htmlContent: htmlBody
     });
 
@@ -91,38 +162,29 @@ exports.requestOTP = async (req, res) => {
 
 //
 // =====================================================================
-// LOGIN WITH OTP
+// VERIFY OTP AND RESET PASSWORD
 // =====================================================================
 //
-exports.login = async (req, res) => {
+exports.resetPasswordWithOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, newPassword } = req.body;
 
-    if (!email || !otp) {
+    if (!email || !otp || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Email and OTP are required'
+        message: 'Email, OTP and new password are required'
       });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
     const admin = await Admin.findOne({ email: normalizedEmail })
-      .select('+otp +otpExpires +isLocked +lockUntil');
+      .select('+otp +otpExpires +password');
 
     if (!admin) {
       return res.status(404).json({
         success: false,
-        message: 'Invalid login credentials'
-      });
-    }
-
-    // Check lock
-    if (admin.isLocked && admin.lockUntil > Date.now()) {
-      const mins = Math.ceil((admin.lockUntil - Date.now()) / 60000);
-      return res.status(403).json({
-        success: false,
-        message: `Account locked. Try again in ${mins} minutes.`
+        message: 'Invalid request'
       });
     }
 
@@ -142,21 +204,21 @@ exports.login = async (req, res) => {
       });
     }
 
-    // OTP correct → clear OTP
+    // OTP correct → update password
+    admin.password = newPassword;
     admin.otp = undefined;
     admin.otpExpires = undefined;
-
-    // Unlock account if needed
-    admin.isLocked = false;
-    admin.lockUntil = undefined;
+    admin.isTemporaryPassword = false;
 
     await admin.save();
 
-    // Send JWT token
-    return sendTokenResponse(admin, 200, res);
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You can now login with your new password.'
+    });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Reset password error:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error. Please try again later.',
@@ -172,7 +234,7 @@ exports.login = async (req, res) => {
 //
 exports.getMe = async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin.id);
+    const admin = await Admin.findById(req.admin.id).populate('role');
 
     if (!admin) {
       return res.status(404).json({
@@ -203,7 +265,14 @@ exports.getMe = async (req, res) => {
 //
 exports.changePassword = async (req, res) => {
   try {
-    const { newPassword } = req.body;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
 
     const admin = await Admin.findById(req.admin.id).select('+password');
 
@@ -214,7 +283,18 @@ exports.changePassword = async (req, res) => {
       });
     }
 
+    // Verify current password
+    const isPasswordValid = await admin.comparePassword(currentPassword);
+    
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
     admin.password = newPassword;
+    admin.isTemporaryPassword = false;
     await admin.save();
 
     return res.status(200).json({

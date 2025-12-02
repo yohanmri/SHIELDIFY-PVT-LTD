@@ -1,3 +1,5 @@
+//server->controllers->adminController.js
+
 const Admin = require('../models/adminModel');
 const Role = require('../models/roleModel');
 const { generateTemporaryPassword } = require('../utils/otpGenerator');

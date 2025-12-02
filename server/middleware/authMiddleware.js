@@ -1,3 +1,5 @@
+//server->middleware->authMiddleware.js
+
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/adminModel');
 

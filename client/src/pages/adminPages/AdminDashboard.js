@@ -1,3 +1,5 @@
+//src->pages->adminPages->AdminDashboard.js
+
 import React from 'react';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';

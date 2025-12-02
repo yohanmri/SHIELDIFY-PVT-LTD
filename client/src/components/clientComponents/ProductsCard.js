@@ -64,7 +64,7 @@ export default function ProductsCard({ setPage }) {
   }, [selectedCategory, selectedWorkerType, searchQuery]);
 
   return (
-    <div className="shieldify-products-page">
+    <div id="products-top" className="shieldify-products-page">
       <div className="shieldify-hero">
         <div className="shieldify-hero-content">
         </div>

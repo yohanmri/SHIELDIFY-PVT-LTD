@@ -1,3 +1,5 @@
+//server->middleware->permissionMiddleware.js
+
 // Check if user has specific permission
 const checkPermission = (resource, action) => {
   return (req, res, next) => {

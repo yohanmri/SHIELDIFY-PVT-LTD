@@ -4,8 +4,8 @@ import Navbar from '../../components/clientComponents/Navbar';
 import HomeHero from '../../components/clientComponents/HomeHero';
 import Footer from '../../components/clientComponents/Footer';
 import HomeInitiatives from '../../components/clientComponents/HomeInitiatives';
-import ProductCircle from '../../components/clientComponents/ProductCircle';
-
+import HomeSectors from '../../components/clientComponents/HomeSectors';
+import HomeChooseUs from '../../components/clientComponents/HomeChooseUs'
 export default function HomePage() {
   return (
     <div className="home-page" style={{ 
@@ -18,7 +18,8 @@ export default function HomePage() {
       <Navbar />
       <HomeHero />
       <HomeInitiatives />
-      <ProductCircle />
+      <HomeChooseUs/>
+      <HomeSectors/>
       <Footer />
     </div>
   );

@@ -1,253 +1,283 @@
 import React from 'react';
 
-export default function HomeInitiatives() {
-  const initiatives = [
+export default function ShieldifyServices() {
+  const services = [
     {
-      title: 'Sustainable Development Goals',
-      description: 'Collect, analyze, and share SDG data for planning, policymaking, and decision-making with GIS.',
-      link: 'More on SDGs',
-      url: 'https://www.esri.com/en-us/industries/sustainable-development/sdg',
-      gradient: 'linear-gradient(135deg, #0d4d6b 0%, #1e5a7a 100%)'
+      title: 'Individual Equipment',
+      description: 'Pick exactly what you need! From safety helmets to gloves, vests, goggles, and more. Choose the perfect equipment for your specific needs.',
+      image: 'service1.png'
     },
     {
-      title: 'Humanitarian Assistance',
-      description: 'Prepare, manage, and deliver effective humanitarian assistance programs with GIS.',
-      link: 'More on assistance',
-      url: 'https://www.esri.com/en-us/industries/humanitarian/overview',
-      gradient: 'linear-gradient(135deg, #1e5a7a 0%, #2a6d8f 100%)'
+      title: 'Safety Bundles',
+      description: 'Smart combinations of complementary items! Get helmet + goggles bundles, protective gear sets, and more - all bundled for great value.',
+      image: 'service2.png'
     },
     {
-      title: 'Conservation',
-      description: 'Preserve biodiversity with GIS.',
-      link: 'More on conservation',
-      url: 'https://www.esri.com/en-us/industries/conservation/overview',
-      gradient: 'linear-gradient(135deg, #2a6d8f 0%, #3680a4 100%)'
+      title: 'Full Kits',
+      description: 'Complete all-in-one solutions! Get fully equipped with our Construction Worker Kits, Medical Worker Kits, Industrial Kits, and more. Everything you need in one go!',
+      image: 'service3.png'
     },
     {
-      title: 'Racial Equity',
-      description: 'Advance racial equity and social justice with GIS.',
-      link: 'More on racial equity',
-      url: 'https://www.esri.com/en-us/racial-equity/overview',
-      gradient: 'linear-gradient(135deg, #3680a4 0%, #4293b9 100%)'
+      title: 'Island-Wide Delivery',
+      description: 'We bring safety to your doorstep! Enjoy fast, reliable delivery across the entire island. For reasonable charges, we\'ll get your equipment to you wherever you are!',
+      image: 'service4.png'
     }
   ];
 
   return (
-    <section className="initiatives-section">
-      <div className="initiatives-header">
-        <h2 className="initiatives-title">Initiatives that support nonprofits and NGOs</h2>
+    <section className="services-section">
+      <div className="services-header">
+        <h2 className="services-title">Shieldify Safety Solutions</h2>
+        <p className="services-subtitle">We provide quality safety equipment island wide</p>
       </div>
       
-      <div className="initiatives-grid">
-        {initiatives.map((initiative, index) => (
-          <div 
-            key={index} 
-            className="initiative-card"
-            style={{ background: initiative.gradient }}
-          >
-            <div className="initiative-content">
-              <h3 className="initiative-heading">{initiative.title}</h3>
-              <p className="initiative-description">{initiative.description}</p>
+      <div className="services-grid">
+        {services.map((service, index) => (
+          <div key={index} className="service-card">
+            <div className="service-card-inner">
+              {/* Front side */}
+              <div className="service-card-front">
+                <img 
+                  src={`/assets/images/${service.image}`}
+                  alt={service.title}
+                  className="service-image"
+                />
+                <div className="service-overlay"></div>
+                <h3 className="service-title">{service.title}</h3>
+              </div>
+
+              {/* Back side */}
+              <div className="service-card-back">
+                <div className="service-content">
+                  <h3 className="service-title-back">{service.title}</h3>
+                  <p className="service-description">{service.description}</p>
+                </div>
+              </div>
             </div>
-            <a 
-              href={initiative.url} 
-              className="initiative-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {initiative.link} →
-            </a>
           </div>
         ))}
       </div>
 
-  
       <style>{`
-        .initiatives-section {
+        .services-section {
           background: #ffffff;
           padding: 0;
           margin: 0;
+          font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
         }
 
-        .initiatives-header {
-          background: #f8f8f8;
-          padding: 3rem 2rem;
+        .services-header {
+          background: linear-gradient(5deg, #141929ff  0%, #192349 100%);
+          padding: 4rem 2rem;
           text-align: center;
+          color: #ffffff;
         }
 
-        .initiatives-title {
-          font-size: 2rem;
+        .services-title {
+          font-size: 2.5rem;
           font-weight: 400;
-          color: #151515;
-          margin: 0;
-          max-width: 1400px;
-          margin: 0 auto;
+          color: #ffffff;
+          margin: 0 0 1rem 0;
+          max-width: 900px;
+          margin-left: auto;
+          margin-right: auto;
+          letter-spacing: -0.5px;
         }
 
-        .initiatives-grid {
+        .services-subtitle {
+          font-size: 1.125rem;
+          color: rgba(255, 255, 255, 0.9);
+          margin: 0;
+          font-weight: 300;
+        }
+
+        .services-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           max-width: 100%;
           margin: 0;
+          gap: 0;
         }
 
-        .initiative-card {
-          padding: 3rem 2rem;
-          color: #ffffff;
-          min-height: 320px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          border-right: 1px solid rgba(255, 255, 255, 0.15);
-          transition: all 0.3s ease;
+        .service-card {
+          min-height: 380px;
+          cursor: pointer;
+          perspective: 1000px;
+        }
+
+        .service-card-inner {
           position: relative;
-          box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0);
+          width: 100%;
+          height: 100%;
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-style: preserve-3d;
         }
 
-        .initiative-card:last-child {
-          border-right: none;
+        .service-card:hover .service-card-inner {
+          transform: rotateY(180deg);
         }
 
-        .initiative-card::before {
-          content: '';
+        .service-card-front,
+        .service-card-back {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          top: 0;
+          left: 0;
+        }
+
+        .service-card-front {
+          position: relative;
+        }
+
+        .service-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .service-overlay {
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.05) 100%
-          );
-          opacity: 0;
-          transition: opacity 0.3s ease;
+          background: rgba(13, 77, 107, 0.5);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .initiative-card:hover {
-          box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.5);
+        .service-card:hover .service-overlay {
+          background: rgba(13, 77, 107, 0.3);
         }
 
-        .initiative-card:hover::before {
-          opacity: 1;
-        }
-
-        .initiative-content {
-          flex-grow: 1;
-        }
-
-        .initiative-heading {
-          font-size: 1.75rem;
-          font-weight: 400;
-          margin: 0 0 1.5rem 0;
-          line-height: 1.3;
-        }
-
-        .initiative-description {
-          font-size: 1rem;
-          line-height: 1.6;
-          margin: 0 0 2rem 0;
-          opacity: 0.95;
-        }
-
-        .initiative-link {
-          color: #ffffff;
-          text-decoration: none;
-          font-size: 1rem;
-          font-weight: 400;
-          display: inline-flex;
-          align-items: center;
-          transition: all 0.3s ease;
-          position: relative;
-        }
-
-        .initiative-link::after {
-          content: '';
+        .service-title {
           position: absolute;
-          bottom: -2px;
-          left: 0;
-          width: 0;
-          height: 1px;
-          background: #ffffff;
-          transition: width 0.3s ease;
+          font-size: 2rem;
+          font-weight: 500;
+          color: #ffffff;
+          margin: 0;
+          text-align: center;
+          padding: 2rem;
+          line-height: 1.3;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          z-index: 2;
+          letter-spacing: -0.25px;
         }
 
-        .initiative-link:hover {
-          opacity: 0.9;
+        .service-card-back {
+          background: linear-gradient(5deg, #141929ff  0%, #192349 100%)!important;
+          transform: rotateY(180deg);
+          padding: 2rem;
+          flex-direction: column;
         }
 
-        .initiative-link:hover::after {
+        .service-content {
+          text-align: center;
+          color: #ffffff;
           width: 100%;
         }
 
+        .service-title-back {
+          font-size: 2rem;
+          font-weight: 500;
+          color: #ffffff;
+          margin: 0 0 1.5rem 0;
+          line-height: 1.3;
+          letter-spacing: -0.25px;
+        }
+
+        .service-description {
+          font-size: 1.125rem;
+          line-height: 1.65;
+          margin: 0;
+          opacity: 0.95;
+          color: #ffffff;
+          font-weight: 300;
+        }
+
         @media (max-width: 1200px) {
-          .initiatives-grid {
+          .services-grid {
             grid-template-columns: repeat(2, 1fr);
           }
 
-          .initiative-card {
-            border-right: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+          .services-title {
+            font-size: 2rem;
           }
 
-          .initiative-card:nth-child(odd) {
-            border-right: 1px solid rgba(255, 255, 255, 0.15);
-          }
-
-          .initiative-card:nth-child(3),
-          .initiative-card:nth-child(4) {
-            border-bottom: none;
+          .service-card {
+            min-height: 350px;
           }
         }
 
         @media (max-width: 768px) {
-          .initiatives-grid {
+          .services-grid {
             grid-template-columns: 1fr;
           }
 
-          .initiative-card {
-            border-right: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            min-height: 280px;
-            padding: 2.5rem 2rem;
+          .services-header {
+            padding: 3rem 1.5rem;
           }
 
-          .initiative-card:nth-child(odd) {
-            border-right: none;
-          }
-
-          .initiative-card:last-child {
-            border-bottom: none;
-          }
-
-          .initiatives-title {
+          .services-title {
             font-size: 1.75rem;
           }
 
-          .initiatives-header {
-            padding: 2rem 1.5rem;
+          .services-subtitle {
+            font-size: 1rem;
           }
 
-          .initiative-heading {
-            font-size: 1.5rem;
+          .service-card {
+            min-height: 300px;
+          }
+
+          .service-title {
+            font-size: 1.375rem;
+            padding: 1.5rem;
+          }
+
+          .service-title-back {
+            font-size: 1.375rem;
+          }
+
+          .service-description {
+            font-size: 0.9375rem;
           }
         }
 
         @media (max-width: 480px) {
-          .initiatives-title {
+          .services-title {
             font-size: 1.5rem;
           }
 
-          .initiative-card {
-            padding: 2rem 1.5rem;
+          .services-subtitle {
+            font-size: 0.9375rem;
           }
 
-          .initiative-heading {
-            font-size: 1.35rem;
+          .service-card {
+            min-height: 280px;
           }
 
-          .initiative-description {
-            font-size: 0.95rem;
+          .service-title {
+            font-size: 1.125rem;
+            padding: 1rem;
+          }
+
+          .service-card-back {
+            padding: 1.5rem;
+          }
+
+          .service-title-back {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+          }
+
+          .service-description {
+            font-size: 0.875rem;
           }
         }
       `}</style>
