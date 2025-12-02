@@ -47,9 +47,14 @@ useEffect(() => {
     setActivePanel('analytics');
 
   } else if (
+    location.pathname.includes('/admin/roles') ||
+    location.pathname.includes('/admin/settings')
+  ) {
+    setActivePanel('admin');
+
+  } else if (
     location.pathname.includes('/admin/dashboard') ||
-    location.pathname.includes('/admin/recent-activity') ||
-    location.pathname.includes('/admin/devices-locations')
+    location.pathname.includes('/admin/recent-activity')
   ) {
     setActivePanel('dashboard');
   }
@@ -89,6 +94,13 @@ useEffect(() => {
             active={activePanel === 'analytics'}
             onClick={() => setActivePanel('analytics')}
           ></calcite-action>
+
+          <calcite-action
+            text="Admin"
+            icon="user"
+            active={activePanel === 'admin'}
+            onClick={() => setActivePanel('admin')}
+          ></calcite-action>
         </calcite-action-group>
 
         <calcite-action-group slot="actions-end">
@@ -123,16 +135,6 @@ useEffect(() => {
             >
               <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
             </calcite-list-item>
-
-            {/* <calcite-list-item
-              value="quick-stats"
-              label="Quick Stats"
-              description="Today's metrics"
-              onClick={() => handleNavigation('/admin/stats')}
-              style={{ cursor: 'pointer' }}
-            >
-              <calcite-icon slot="content-start" icon="graph-bar" scale="s"></calcite-icon>
-            </calcite-list-item> */}
           </calcite-list>
         </calcite-panel>
       )}
@@ -165,16 +167,6 @@ useEffect(() => {
               >
         <calcite-icon slot="content-start" icon="plus-circle" scale="s"></calcite-icon>
               </calcite-list-item>
-
-              {/* <calcite-list-item
-                value="categories"
-                label="Categories"
-                description="Manage product categories"
-                onClick={() => handleNavigation('/admin/categories')}
-                style={{ cursor: 'pointer' }}
-              >
-                <calcite-icon slot="content-start" icon="folder" scale="s"></calcite-icon>
-              </calcite-list-item> */}
             </calcite-list-item-group>
 
             <calcite-list-item-group heading="Bundle Management">
@@ -287,16 +279,6 @@ useEffect(() => {
               >
                 <calcite-icon slot="content-start" icon="rss" scale="s"></calcite-icon>
               </calcite-list-item>
-
-              {/* <calcite-list-item
-                value="traffic-sources"
-                label="Traffic Sources"
-                description="Where visitors come from"
-                onClick={() => handleNavigation('/admin/analytics/traffic')}
-                style={{ cursor: 'pointer' }}
-              >
-                <calcite-icon slot="content-start" icon="link" scale="s"></calcite-icon>
-              </calcite-list-item> */}
             </calcite-list-item-group>
 
             <calcite-list-item-group heading="Page Analytics">
@@ -318,6 +300,37 @@ useEffect(() => {
                 style={{ cursor: 'pointer' }}
               >
                 <calcite-icon slot="content-start" icon="mobile" scale="s"></calcite-icon>
+              </calcite-list-item>
+            </calcite-list-item-group>
+          </calcite-list>
+        </calcite-panel>
+      )}
+
+      {/* Admin Panel */}
+      {activePanel === 'admin' && (
+        <calcite-panel heading="Admin" description="User and role management">
+          <calcite-list>
+            <calcite-list-item-group heading="Role Management">
+              <calcite-list-item
+                value="roles"
+                label="Roles & Permissions"
+                description="Manage roles and permissions"
+                onClick={() => handleNavigation('/admin/roles')}
+                style={{ cursor: 'pointer' }}
+              >
+                <calcite-icon slot="content-start" icon="shield" scale="s"></calcite-icon>
+              </calcite-list-item>
+            </calcite-list-item-group>
+
+            <calcite-list-item-group heading="Account">
+              <calcite-list-item
+                value="settings"
+                label="Account Settings"
+                description="Change password and preferences"
+                onClick={() => handleNavigation('/admin/settings')}
+                style={{ cursor: 'pointer' }}
+              >
+                <calcite-icon slot="content-start" icon="gear" scale="s"></calcite-icon>
               </calcite-list-item>
             </calcite-list-item-group>
           </calcite-list>

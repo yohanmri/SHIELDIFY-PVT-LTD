@@ -28,6 +28,9 @@ import LiveVisitors from './pages/adminPages/LIveVisitors';
 import RecentActivity from './pages/adminPages/RecentActivity';
 import AdminProductDetail from './pages/adminPages/ProductDetails';
 
+import CreateRole from './pages/adminPages/CreateRole';
+import Settings from './pages/adminPages/Settings';
+
 function App() {
   // Initialize Calcite Components
   useEffect(() => {
@@ -89,6 +92,11 @@ function App() {
           <Route path="/admin/popular-pages" element={<PopularPages />} />
           <Route path="/admin/devices-locations" element={<DeviceLocations />} />
           <Route path="/admin/live-visitors" element={<LiveVisitors />} />
+
+
+
+<Route path="/admin/roles" element={<CreateRole />} />
+<Route path="/admin/settings" element={<Settings />} />
 
           {/* Future Analytics Routes (placeholder) */}
           {/* 
