@@ -10,6 +10,7 @@ const adminProductRoutes = require('./routes/adminProductRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const adminBundleRoutes = require('./routes/adminBundleRoutes')
+const bundleRoutes = require('./routes/bundleRoutes');
 
 const app = express();
 
@@ -36,8 +37,9 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/products', productRoutes); // Public routes (landing page)
-app.use('/api/admin/products', adminProductRoutes); // Admin routes (protected)
+app.use('/api/products', productRoutes); 
+app.use('/api/bundles', bundleRoutes);
+app.use('/api/admin/products', adminProductRoutes); 
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/admin/bundles', adminBundleRoutes);

@@ -44,8 +44,9 @@ export default function Navbar() {
   const menuItems = [
     { page: 'home', text: 'Home', path: '/' },
     { page: 'products', text: 'Products', path: '/products' },
+    { page: 'Collections', text: 'Collections', path: '/bundles' },
     { page: 'services', text: 'Services', path: '/services' },
-    // { page: 'solutions', text: 'Solutions', path: '/solutions' },
+
     // { page: 'projects', text: 'Projects', path: '/projects' },
     { page: 'about', text: 'About', path: '/about' },
     { page: 'contact', text: 'Contact', path: '/contact' }

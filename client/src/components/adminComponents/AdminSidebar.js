@@ -172,7 +172,7 @@ useEffect(() => {
             <calcite-list-item-group heading="Bundle Management">
               <calcite-list-item
                 value="bundles"
-                label="Product Bundles"
+                label="All Bundles"
                 description="Manage product bundles"
                 onClick={() => handleNavigation('/admin/bundle-list')}
                 style={{ cursor: 'pointer' }}

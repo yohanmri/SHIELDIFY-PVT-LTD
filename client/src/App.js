@@ -30,7 +30,9 @@ import AdminProductDetail from './pages/adminPages/ProductDetails';
 
 import CreateRole from './pages/adminPages/CreateRole';
 import Settings from './pages/adminPages/Settings';
-
+import AdminBundleDetail from './pages/adminPages/BundleDetails';
+import BundlesPage from './pages/clientPages/BundlePage';
+import BundleDetailsPage from './pages/clientPages/BundleDetailsPage';
 function App() {
   // Initialize Calcite Components
   useEffect(() => {
@@ -48,10 +50,11 @@ function App() {
           {/* Main Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
-          
-          {/* FIXED: Product Details - Now uses ProductDetailsPage wrapper */}
           <Route path="/product/:id" element={<ProductDetailsPage />} />
-          
+          <Route path="/bundles" element={<BundlesPage />} />
+           <Route path="/bundle/:id" element={<BundleDetailsPage />} />
+
+
           <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -77,6 +80,7 @@ function App() {
           {/* Bundle Management */}
           <Route path="/admin/bundle-list" element={<AdminBundleList />} />
           <Route path="/admin/bundle-add" element={<AdminBundleAdd />} />
+          <Route path="/admin/bundles/:id" element={<AdminBundleDetail />} />
 
           {/* Order Management */}
           <Route path="/admin/order-list" element={<AdminOrdersList />} />

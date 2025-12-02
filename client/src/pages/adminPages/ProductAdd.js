@@ -5,40 +5,37 @@ import AdminSidebar from '../../components/adminComponents/AdminSidebar';
 import API from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
-import '@esri/calcite-components/components/calcite-card';
+import '@esri/calcite-components/components/calcite-panel';
 import '@esri/calcite-components/components/calcite-label';
 import '@esri/calcite-components/components/calcite-input-text';
 import '@esri/calcite-components/components/calcite-input-number';
 import '@esri/calcite-components/components/calcite-text-area';
-import '@esri/calcite-components/components/calcite-select';
-import '@esri/calcite-components/components/calcite-option';
 import '@esri/calcite-components/components/calcite-notice';
+import '@esri/calcite-components/components/calcite-card';
+import '@esri/calcite-components/components/calcite-loader';
 import '@esri/calcite-components/components/calcite-modal';
-import '@esri/calcite-components/components/calcite-chip';
 
 export default function AdminProductAdd() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
+
   const [formData, setFormData] = useState({
     name: '',
     category: 'Safety Helmets',
     workerType: 'Engineer',
-    color: 'White', // Set default color
-    price: 0,
-    stock: 0,
+    color: 'White',
+    price: '',
+    stock: '',
     features: '',
-    description: '', 
-    image: null,
-    imagePreview: null
+    description: '',
+    image: ''
   });
-
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [tempImage, setTempImage] = useState(null);
-  const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
-  const [errors, setErrors] = useState({});
-  const [successNotice, setSuccessNotice] = useState(false);
-  const [loading, setLoading] = useState(false); // NEW: Loading state
 
   const categories = [
     'Safety Helmets',
@@ -84,25 +81,29 @@ export default function AdminProductAdd() {
     'Multi'
   ];
 
-  const handleInputChange = (field, value) => {
-    console.log('Changing field:', field, 'Value:', value); // Debug log
-    setFormData({ ...formData, [field]: value });
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: '' });
-    }
+  const handleChange = (field, value) => {
+    console.log('Changing field:', field, 'Value:', value);
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setError(null);
   };
 
-  const handleImageSelect = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        setErrors({ ...errors, image: 'Please select a valid image file' });
+      if (file.size > 5000000) {
+        setError('Image size should be less than 5MB');
         return;
       }
-      
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
-        setTempImage(event.target.result);
+        setImageToCrop(event.target.result);
         setCropModalOpen(true);
       };
       reader.readAsDataURL(file);
@@ -110,81 +111,104 @@ export default function AdminProductAdd() {
   };
 
   const applyCrop = () => {
-    setFormData({ 
-      ...formData, 
-      image: tempImage,
-      imagePreview: tempImage 
-    });
+    setFormData(prev => ({ ...prev, image: imageToCrop }));
     setCropModalOpen(false);
-    setTempImage(null);
+    setImageToCrop(null);
     setCropData({ zoom: 1, x: 0, y: 0 });
-    if (errors.image) {
-      setErrors({ ...errors, image: '' });
-    }
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    console.log('Validating form data:', formData);
     
-    console.log('Validating form data:', formData); // Debug log
-    
-    if (!formData.name.trim()) newErrors.name = 'Product name is required';
-    if (!formData.color || formData.color === '') newErrors.color = 'Color is required';
-    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'Valid price is required';
-    if (formData.stock === '' || parseInt(formData.stock) < 0) newErrors.stock = 'Valid stock quantity is required';
-    if (!formData.image) newErrors.image = 'Product image is required';
-    if (!formData.features.trim()) newErrors.features = 'At least one feature is required';
-
-    console.log('Validation errors:', newErrors); // Debug log
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!formData.name.trim()) {
+      setError('Product name is required');
+      return false;
+    }
+    if (!formData.category) {
+      setError('Please select a category');
+      return false;
+    }
+    if (!formData.workerType) {
+      setError('Please select a worker type');
+      return false;
+    }
+    if (!formData.color) {
+      setError('Please select a color');
+      return false;
+    }
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      setError('Price must be greater than 0');
+      return false;
+    }
+    if (formData.stock === '' || parseInt(formData.stock) < 0) {
+      setError('Stock quantity must be 0 or greater');
+      return false;
+    }
+    if (!formData.features.trim()) {
+      setError('At least one feature is required');
+      return false;
+    }
+    if (!formData.image) {
+      setError('Please upload a product image');
+      return false;
+    }
+    return true;
   };
 
-  // NEW: Updated handleSubmit with API call
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      setLoading(true);
-      
-      try {
-        const productData = {
-          name: formData.name,
-          category: formData.category,
-          workerType: formData.workerType,
-          color: formData.color,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
-          features: formData.features,
-           description: formData.description,
-          image: formData.image
-        };
+    if (!validateForm()) {
+      return;
+    }
 
-        const response = await API.post('/admin/products', productData);
-        
-        console.log('Product created:', response.data);
-        
-        setSuccessNotice(true);
-        setTimeout(() => {
-          navigate('/admin/product-list');
-        }, 2000);
-        
-      } catch (err) {
-        console.error('Error creating product:', err);
-        setErrors({ 
-          submit: err.response?.data?.message || 'Failed to create product. Please try again.' 
-        });
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setLoading(true);
+      setError(null);
+
+      const productData = {
+        name: formData.name.trim(),
+        category: formData.category,
+        workerType: formData.workerType,
+        color: formData.color,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        features: formData.features.trim(),
+        description: formData.description.trim(),
+        image: formData.image
+      };
+
+      console.log('Submitting product data:', productData);
+
+      await API.post('/admin/products', productData);
+
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/admin/product-list');
+      }, 1500);
+
+    } catch (err) {
+      console.error('Error creating product:', err);
+      setError(err.response?.data?.message || 'Failed to create product. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-      navigate('/admin/product-list');
-    }
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      category: 'Safety Helmets',
+      workerType: 'Engineer',
+      color: 'White',
+      price: '',
+      stock: '',
+      features: '',
+      description: '',
+      image: ''
+    });
+    setError(null);
+    setSuccess(false);
   };
 
   return (
@@ -194,15 +218,22 @@ export default function AdminProductAdd() {
       
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          {/* Header */}
           <div style={{ marginBottom: '24px' }}>
+            <calcite-button
+              appearance="outline"
+              icon-start="arrow-left"
+              onClick={() => navigate('/admin/product-list')}
+              style={{ marginBottom: '16px' }}
+            >
+              Back to Products
+            </calcite-button>
+            
             <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600' }}>
               Add New Product
             </h1>
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
-              Fill in the product details below
+              Create a new product with details and features
             </p>
-            {/* Debug button - Remove this after testing */}
             <calcite-button 
               appearance="outline" 
               scale="s"
@@ -213,268 +244,280 @@ export default function AdminProductAdd() {
             </calcite-button>
           </div>
 
-          {/* Success Notice */}
-          {successNotice && (
-            <div style={{ marginBottom: '20px' }}>
-              <calcite-notice open icon="check-circle" kind="success">
-                <div slot="title">Product Added Successfully!</div>
-                <div slot="message">Redirecting to product list...</div>
-              </calcite-notice>
-            </div>
+          {error && (
+            <calcite-notice open icon="exclamation-mark-triangle" kind="danger" style={{ marginBottom: '20px' }}>
+              <div slot="title">Error</div>
+              <div slot="message">{error}</div>
+            </calcite-notice>
           )}
 
-          {/* Error Notice */}
-          {errors.submit && (
-            <div style={{ marginBottom: '20px' }}>
-              <calcite-notice open icon="exclamation-mark-triangle" kind="danger">
-                <div slot="title">Error</div>
-                <div slot="message">{errors.submit}</div>
-              </calcite-notice>
-            </div>
+          {success && (
+            <calcite-notice open icon="check-circle" kind="success" style={{ marginBottom: '20px' }}>
+              <div slot="title">Success!</div>
+              <div slot="message">Product created successfully. Redirecting...</div>
+            </calcite-notice>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gap: '24px' }}>
-              {/* Image Upload Section */}
-              <calcite-card>
-                <div slot="heading">Product Image</div>
-                <div slot="description">Upload and adjust your product image (Ratio: 16:9)</div>
-                
-                <div style={{ padding: '20px' }}>
-                  {formData.imagePreview ? (
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ 
-                        width: '100%',
-                        maxWidth: '400px',
-                        margin: '0 auto 16px',
-                        border: '2px solid var(--calcite-ui-border-2)',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
-                        <img 
-                          src={formData.imagePreview}
-                          alt="Product preview"
-                          style={{ 
-                            width: '100%',
-                            height: '225px',
-                            objectFit: 'cover'
-                          }}
-                        />
-                      </div>
-                      <calcite-button
-                        icon-start="image"
-                        appearance="outline"
-                        onClick={() => fileInputRef.current.click()}
-                      >
-                        Change Image
-                      </calcite-button>
-                    </div>
-                  ) : (
-                    <div 
-                      style={{ 
-                        border: '2px dashed var(--calcite-ui-border-2)',
-                        borderRadius: '8px',
-                        padding: '40px',
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        backgroundColor: 'var(--calcite-ui-foreground-2)'
-                      }}
-                      onClick={() => fileInputRef.current.click()}
-                    >
-                      <calcite-icon icon="image-plus" scale="l" style={{ marginBottom: '12px' }}></calcite-icon>
-                      <p style={{ margin: '0 0 8px 0', fontWeight: '500' }}>
-                        Click to upload product image
-                      </p>
-                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </div>
-                  )}
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    style={{ display: 'none' }}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              {/* Left Column - Form Fields */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <calcite-label>
+                  Product Name *
+                  <calcite-input-text
+                    value={formData.name}
+                    onInput={(e) => handleChange('name', e.target.value)}
+                    placeholder="e.g., Engineer Safety Helmet"
+                    required
                   />
-                  
-                  {errors.image && (
-                    <calcite-notice open icon="exclamation-mark-triangle" kind="danger" style={{ marginTop: '12px' }}>
-                      <div slot="message">{errors.image}</div>
-                    </calcite-notice>
-                  )}
-                </div>
-              </calcite-card>
+                </calcite-label>
 
-              {/* Basic Information */}
-              <calcite-card>
-                <div slot="heading">Basic Information</div>
-                
-                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <calcite-label status={errors.name ? 'invalid' : 'idle'}>
-                    Product Name *
-                    <calcite-input-text
-                      placeholder="e.g., Engineer Safety Helmet"
-                      value={formData.name}
-                      onInput={(e) => handleInputChange('name', e.target.value)}
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Worker Type *
+                  </label>
+                  <select
+                    value={formData.workerType}
+                    onChange={(e) => handleChange('workerType', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {workerTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Color *
+                  </label>
+                  <select
+                    value={formData.color}
+                    onChange={(e) => handleChange('color', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {colors.map(color => (
+                      <option key={color} value={color}>{color}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <calcite-label>
+                    Price (LKR) *
+                    <calcite-input-number
+                      value={formData.price}
+                      onInput={(e) => handleChange('price', e.target.value)}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      required
                     />
-                    {errors.name && (
-                      <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
-                        {errors.name}
-                      </span>
-                    )}
                   </calcite-label>
 
                   <calcite-label>
-  Description
-  <calcite-text-area
-    placeholder="Brief description of the product (optional)"
-    value={formData.description}
-    rows="3"
-    onInput={(e) => handleInputChange('description', e.target.value)}
-  />
-</calcite-label>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <calcite-label>
-  Category *
-  <calcite-select
-    value={formData.category}
-onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOption.value)}  >
-                        {categories.map(cat => (
-                          <calcite-option key={cat} value={cat}>{cat}</calcite-option>
-                        ))}
-                      </calcite-select>
-                    </calcite-label>
-
-                    <calcite-label>
-                      Worker Type *
-                      <calcite-select
-                        value={formData.workerType}
-                        onCalciteSelectChange={(e) => handleInputChange('workerType', e.target.selectedOption.value)}
-                      >
-                        {workerTypes.map(type => (
-                          <calcite-option key={type} value={type}>{type}</calcite-option>
-                        ))}
-                      </calcite-select>
-                    </calcite-label>
-                  </div>
-
-                  <calcite-label status={errors.color ? 'invalid' : 'idle'}>
-                    Color *
-                    <calcite-select
-                      value={formData.color}
-                      onCalciteSelectChange={(e) => handleInputChange('color', e.target.selectedOption.value)}
-                    >
-                      {colors.map(color => (
-                        <calcite-option key={color} value={color}>{color}</calcite-option>
-                      ))}
-                    </calcite-select>
-                    {errors.color && (
-                      <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
-                        {errors.color}
-                      </span>
-                    )}
-                  </calcite-label>
-                </div>
-              </calcite-card>
-
-              {/* Pricing & Stock */}
-              <calcite-card>
-                <div slot="heading">Pricing & Inventory</div>
-                
-                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <calcite-label status={errors.price ? 'invalid' : 'idle'}>
-                    Price (LKR) *
-                    <calcite-input-number
-                      placeholder="2500"
-                      value={formData.price}
-                      min="0"
-                      onInput={(e) => handleInputChange('price', e.target.value)}
-                    />
-                    {errors.price && (
-                      <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
-                        {errors.price}
-                      </span>
-                    )}
-                  </calcite-label>
-
-                  <calcite-label status={errors.stock ? 'invalid' : 'idle'}>
                     Stock Quantity *
                     <calcite-input-number
-                      placeholder="100"
                       value={formData.stock}
+                      onInput={(e) => handleChange('stock', e.target.value)}
+                      placeholder="0"
                       min="0"
-                      onInput={(e) => handleInputChange('stock', e.target.value)}
+                      required
                     />
-                    {errors.stock && (
-                      <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
-                        {errors.stock}
-                      </span>
-                    )}
                   </calcite-label>
                 </div>
-              </calcite-card>
 
-              {/* Features */}
-              <calcite-card>
-                <div slot="heading">Product Features</div>
-                <div slot="description">Enter features separated by commas</div>
-                
-                <div style={{ padding: '20px' }}>
-                  <calcite-label status={errors.features ? 'invalid' : 'idle'}>
-                    Features *
-                    <calcite-text-area
-                      placeholder="e.g., ABS Material, Adjustable, Ventilated, UV Protection"
-                      value={formData.features}
-                      rows="4"
-                      onInput={(e) => handleInputChange('features', e.target.value)}
-                    />
-                    {errors.features && (
-                      <span style={{ color: 'var(--calcite-ui-danger)', fontSize: '12px' }}>
-                        {errors.features}
-                      </span>
-                    )}
-                  </calcite-label>
-                  
-                  {formData.features && (
-                    <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {formData.features.split(',').map((feature, idx) => 
-                        feature.trim() && (
-                          <calcite-chip key={idx} scale="s" appearance="outline">
-                            {feature.trim()}
-                          </calcite-chip>
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              </calcite-card>
+                <calcite-label>
+                  Features *
+                  <calcite-text-area
+                    value={formData.features}
+                    onInput={(e) => handleChange('features', e.target.value)}
+                    placeholder="e.g., ABS Material, Adjustable, Ventilated, UV Protection"
+                    rows="3"
+                  />
+                </calcite-label>
 
-              {/* Action Buttons */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '12px', 
-                justifyContent: 'flex-end',
-                paddingTop: '8px'
-              }}>
-                <calcite-button 
-                  appearance="outline"
-                  onClick={handleCancel}
-                  disabled={loading}
-                >
-                  Cancel
-                </calcite-button>
-                <calcite-button 
-                  type="submit"
-                  icon-start="save"
-                  loading={loading}
-                  disabled={loading}
-                >
-                  {loading ? 'Adding Product...' : 'Add Product'}
-                </calcite-button>
+                <calcite-label>
+                  Description
+                  <calcite-text-area
+                    value={formData.description}
+                    onInput={(e) => handleChange('description', e.target.value)}
+                    placeholder="Brief description of the product..."
+                    rows="4"
+                  />
+                </calcite-label>
               </div>
+
+              {/* Right Column - Image Upload & Preview */}
+              <div>
+                <calcite-label>Product Image *</calcite-label>
+                <div style={{ marginTop: '8px' }}>
+                  {!formData.image ? (
+                    <div style={{
+                      border: '2px dashed var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      padding: '40px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      height: '400px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'var(--calcite-ui-foreground-2)'
+                    }}
+                    onClick={() => fileInputRef.current.click()}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--calcite-ui-brand)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--calcite-ui-border-2)'}
+                    >
+                      <calcite-icon icon="image-plus" scale="l" style={{ marginBottom: '16px' }}></calcite-icon>
+                      <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>
+                        Click to upload product image
+                      </p>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
+                        PNG, JPG up to 5MB
+                      </p>
+                    </div>
+                  ) : (
+                    <calcite-card>
+                      <img 
+                        slot="thumbnail"
+                        src={formData.image}
+                        alt="Product preview"
+                        style={{ height: '300px', objectFit: 'cover' }}
+                      />
+                      <div style={{ padding: '16px', display: 'flex', gap: '8px' }}>
+                        <calcite-button
+                          appearance="outline"
+                          icon-start="image"
+                          onClick={() => fileInputRef.current.click()}
+                          style={{ flex: 1 }}
+                        >
+                          Change Image
+                        </calcite-button>
+                        <calcite-button
+                          appearance="outline"
+                          kind="danger"
+                          icon-start="trash"
+                          onClick={() => handleChange('image', '')}
+                        >
+                          Remove
+                        </calcite-button>
+                      </div>
+                    </calcite-card>
+                  )}
+                  
+                  <input 
+                    ref={fileInputRef}
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+
+                {formData.image && (
+                  <calcite-notice open icon="lightbulb" kind="brand" style={{ marginTop: '16px' }}>
+                    <div slot="message">
+                      Image uploaded successfully. You can change it anytime before saving.
+                    </div>
+                  </calcite-notice>
+                )}
+              </div>
+            </div>
+
+            <div style={{ 
+              display: 'flex', 
+              gap: '12px', 
+              marginTop: '32px',
+              paddingTop: '24px',
+              borderTop: '1px solid var(--calcite-ui-border-2)'
+            }}>
+              <calcite-button 
+                type="submit"
+                icon-start="save"
+                loading={loading}
+                disabled={loading}
+                style={{ flex: 1 }}
+              >
+                {loading ? 'Creating Product...' : 'Create Product'}
+              </calcite-button>
+              <calcite-button 
+                appearance="outline"
+                onClick={handleReset}
+                disabled={loading}
+              >
+                Reset Form
+              </calcite-button>
+              <calcite-button 
+                appearance="outline"
+                kind="neutral"
+                onClick={() => navigate('/admin/product-list')}
+                disabled={loading}
+              >
+                Cancel
+              </calcite-button>
             </div>
           </form>
         </div>
@@ -488,11 +531,11 @@ onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOpt
       >
         <div slot="header">Crop & Adjust Image</div>
         <div slot="content" style={{ padding: '20px' }}>
-          {tempImage && (
+          {imageToCrop && (
             <div>
               <calcite-notice open icon="information" kind="info" style={{ marginBottom: '16px' }}>
                 <div slot="message">
-                  Adjust the zoom level to fit your image. The image will be cropped to 16:9 ratio (same as product cards).
+                  Adjust the zoom level to fit your image. The image will be cropped to 16:9 ratio.
                 </div>
               </calcite-notice>
 
@@ -517,26 +560,25 @@ onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOpt
                   padding: '20px'
                 }}>
                   <img 
-                    src={tempImage}
+                    src={imageToCrop}
                     alt="Crop preview"
                     style={{
                       maxWidth: '100%',
                       maxHeight: '100%',
                       objectFit: 'contain',
-                      transform: `scale(${cropData.zoom}) translate(${cropData.x}px, ${cropData.y}px)`,
+                      transform: `scale(${cropData.zoom})`,
                       transition: 'transform 0.1s ease'
                     }}
                   />
                 </div>
 
-                {/* 16:9 Crop Guide Overlay */}
                 <div style={{
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
                   width: '80%',
-                  paddingBottom: '45%', // 16:9 ratio
+                  paddingBottom: '45%',
                   border: '2px dashed #ff6b00',
                   pointerEvents: 'none',
                   borderRadius: '4px'
@@ -552,10 +594,7 @@ onCalciteSelectChange={(e) => handleInputChange('category', e.target.selectedOpt
                   step="0.1"
                   value={cropData.zoom}
                   onChange={(e) => setCropData({ ...cropData, zoom: parseFloat(e.target.value) })}
-                  style={{ 
-                    width: '100%',
-                    marginTop: '8px'
-                  }}
+                  style={{ width: '100%', marginTop: '8px' }}
                 />
               </calcite-label>
 

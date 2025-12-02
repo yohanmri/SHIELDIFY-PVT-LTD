@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
@@ -10,8 +10,6 @@ import '@esri/calcite-components/components/calcite-label';
 import '@esri/calcite-components/components/calcite-input-text';
 import '@esri/calcite-components/components/calcite-input-number';
 import '@esri/calcite-components/components/calcite-text-area';
-import '@esri/calcite-components/components/calcite-select';
-import '@esri/calcite-components/components/calcite-option';
 import '@esri/calcite-components/components/calcite-notice';
 import '@esri/calcite-components/components/calcite-card';
 import '@esri/calcite-components/components/calcite-switch';
@@ -20,6 +18,7 @@ import '@esri/calcite-components/components/calcite-modal';
 
 export default function AdminBundleAdd() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -29,7 +28,7 @@ export default function AdminBundleAdd() {
 
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
+    category: 'Safety Helmets',
     quantity: '',
     originalPrice: '',
     discountPrice: '',
@@ -50,6 +49,7 @@ export default function AdminBundleAdd() {
   ];
 
   const handleChange = (field, value) => {
+    console.log('Changing field:', field, 'Value:', value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -62,6 +62,10 @@ export default function AdminBundleAdd() {
     if (file) {
       if (file.size > 5000000) {
         setError('Image size should be less than 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
         return;
       }
       const reader = new FileReader();
@@ -94,6 +98,8 @@ export default function AdminBundleAdd() {
   };
 
   const validateForm = () => {
+    console.log('Validating form data:', formData);
+    
     if (!formData.name.trim()) {
       setError('Bundle name is required');
       return false;
@@ -132,42 +138,42 @@ export default function AdminBundleAdd() {
       return;
     }
 
-   try {
-  setLoading(true);
-  setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-  const bundleData = {
-    name: formData.name.trim(),
-    category: formData.category,
-    quantity: parseInt(formData.quantity),
-    originalPrice: parseFloat(formData.originalPrice),
-    discountPrice: parseFloat(formData.discountPrice),
-    description: formData.description.trim(),
-    isActive: formData.isActive,
-    image: formData.image
-  };
+      const bundleData = {
+        name: formData.name.trim(),
+        category: formData.category,
+        quantity: parseInt(formData.quantity),
+        originalPrice: parseFloat(formData.originalPrice),
+        discountPrice: parseFloat(formData.discountPrice),
+        description: formData.description.trim(),
+        isActive: formData.isActive,
+        image: formData.image
+      };
 
-  // SEND TO BACKEND
-  const response = await API.post('/admin/bundles', bundleData);
+      console.log('Submitting bundle data:', bundleData);
 
-  setSuccess(true);
-  setTimeout(() => {
-    navigate('/admin/bundle-list');
-  }, 1500);
+      await API.post('/admin/bundles', bundleData);
 
-} catch (err) {
-  console.error('Error creating bundle:', err);
-  setError(err.response?.data?.message || 'Failed to create bundle. Please try again.');
-} finally {
-  setLoading(false);
-}
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/admin/bundle-list');
+      }, 1500);
 
+    } catch (err) {
+      console.error('Error creating bundle:', err);
+      setError(err.response?.data?.message || 'Failed to create bundle. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
     setFormData({
       name: '',
-      category: '',
+      category: 'Safety Helmets',
       quantity: '',
       originalPrice: '',
       discountPrice: '',
@@ -178,8 +184,6 @@ export default function AdminBundleAdd() {
     setError(null);
     setSuccess(false);
   };
-
-  
 
   return (
     <calcite-shell>
@@ -192,7 +196,7 @@ export default function AdminBundleAdd() {
             <calcite-button
               appearance="outline"
               icon-start="arrow-left"
-              onClick={() => navigate('/admin/bundles')}
+              onClick={() => navigate('/admin/bundle-list')}
               style={{ marginBottom: '16px' }}
             >
               Back to Bundles
@@ -204,6 +208,14 @@ export default function AdminBundleAdd() {
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
               Create a new bundle promotion with bulk discount
             </p>
+            <calcite-button 
+              appearance="outline" 
+              scale="s"
+              onClick={() => console.log('Current form data:', formData)}
+              style={{ marginTop: '8px' }}
+            >
+              Debug: Show Form Data
+            </calcite-button>
           </div>
 
           {error && (
@@ -228,35 +240,48 @@ export default function AdminBundleAdd() {
                   Bundle Name *
                   <calcite-input-text
                     value={formData.name}
-onInput={(e) => handleChange('name', e.target.value)}
+                    onInput={(e) => handleChange('name', e.target.value)}
                     placeholder="e.g., Safety Helmet Bundle - 100 Units"
                     required
                   />
                 </calcite-label>
 
-                <calcite-label>
-                  Category *
-<calcite-select
-  value={formData.category}
-  onCalciteSelectChange={(e) =>
-    handleChange('category', e.target.selectedOption.value)
-  }
-  required
->
-                              
-  <calcite-option value="">Select category</calcite-option>
-  {categories.map(cat => (
-    <calcite-option key={cat} value={cat}>{cat}</calcite-option>
-  ))}
-                  </calcite-select>
-                </calcite-label>
+                <div>
+                  <label style={{ 
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'var(--calcite-ui-text-1)'
+                  }}>
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '14px',
+                      border: '1px solid var(--calcite-ui-border-2)',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--calcite-ui-background)',
+                      color: 'var(--calcite-ui-text-1)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
 
                 <calcite-label>
                   Quantity *
                   <calcite-input-number
                     value={formData.quantity}
-onInput={(e) => handleChange('quantity', e.target.value)}                    
-placeholder="Number of items in bundle"
+                    onInput={(e) => handleChange('quantity', e.target.value)}
+                    placeholder="Number of items in bundle"
                     min="1"
                     required
                   />
@@ -267,8 +292,8 @@ placeholder="Number of items in bundle"
                     Original Price (LKR) *
                     <calcite-input-number
                       value={formData.originalPrice}
-onInput={(e) => handleChange('originalPrice', e.target.value)}                      
-placeholder="0.00"
+                      onInput={(e) => handleChange('originalPrice', e.target.value)}
+                      placeholder="0.00"
                       min="0"
                       step="0.01"
                       required
@@ -279,8 +304,8 @@ placeholder="0.00"
                     Discount Price (LKR) *
                     <calcite-input-number
                       value={formData.discountPrice}
-onInput={(e) => handleChange('discountPrice', e.target.value)}                      
-placeholder="0.00"
+                      onInput={(e) => handleChange('discountPrice', e.target.value)}
+                      placeholder="0.00"
                       min="0"
                       step="0.01"
                       required
@@ -310,8 +335,8 @@ placeholder="0.00"
                   Description
                   <calcite-text-area
                     value={formData.description}
-onInput={(e) => handleChange('description', e.target.value)}                    
-placeholder="Brief description of the bundle..."
+                    onInput={(e) => handleChange('description', e.target.value)}
+                    placeholder="Brief description of the bundle..."
                     rows="4"
                   />
                 </calcite-label>
@@ -320,7 +345,7 @@ placeholder="Brief description of the bundle..."
                   <span>Active Status</span>
                   <calcite-switch
                     checked={formData.isActive}
-                    onSwitchChange={(e) => handleChange('isActive', e.target.checked)}
+                    onCalciteSwitchChange={(e) => handleChange('isActive', e.target.checked)}
                   ></calcite-switch>
                 </calcite-label>
               </div>
@@ -341,9 +366,10 @@ placeholder="Brief description of the bundle..."
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      backgroundColor: 'var(--calcite-ui-foreground-2)'
                     }}
-                    onClick={() => document.getElementById('bundle-image-upload').click()}
+                    onClick={() => fileInputRef.current.click()}
                     onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--calcite-ui-brand)'}
                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--calcite-ui-border-2)'}
                     >
@@ -367,7 +393,7 @@ placeholder="Brief description of the bundle..."
                         <calcite-button
                           appearance="outline"
                           icon-start="image"
-                          onClick={() => document.getElementById('bundle-image-upload').click()}
+                          onClick={() => fileInputRef.current.click()}
                           style={{ flex: 1 }}
                         >
                           Change Image
@@ -385,11 +411,11 @@ placeholder="Brief description of the bundle..."
                   )}
                   
                   <input 
+                    ref={fileInputRef}
                     type="file" 
                     accept="image/*"
                     onChange={handleImageChange}
                     style={{ display: 'none' }}
-                    id="bundle-image-upload"
                   />
                 </div>
 
@@ -429,7 +455,7 @@ placeholder="Brief description of the bundle..."
               <calcite-button 
                 appearance="outline"
                 kind="neutral"
-                onClick={() => navigate('/admin/bundles')}
+                onClick={() => navigate('/admin/bundle-list')}
                 disabled={loading}
               >
                 Cancel
@@ -443,36 +469,62 @@ placeholder="Brief description of the bundle..."
       <calcite-modal 
         open={cropModalOpen}
         onCalciteModalClose={() => setCropModalOpen(false)}
-        width-scale="m"
+        width-scale="l"
       >
         <div slot="header">Crop & Adjust Image</div>
         <div slot="content" style={{ padding: '20px' }}>
           {imageToCrop && (
             <div>
+              <calcite-notice open icon="information" kind="info" style={{ marginBottom: '16px' }}>
+                <div slot="message">
+                  Adjust the zoom level to fit your image. The image will be cropped to 16:9 ratio.
+                </div>
+              </calcite-notice>
+
               <div style={{ 
                 width: '100%',
-                height: '0',
-                paddingBottom: '56.25%',
-                position: 'relative',
+                height: '450px',
                 overflow: 'hidden',
+                position: 'relative',
                 backgroundColor: '#f0f0f0',
                 borderRadius: '4px',
-                marginBottom: '20px'
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
-                <img 
-                  src={imageToCrop}
-                  alt="Crop preview"
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transform: `translate(-50%, -50%) scale(${cropData.zoom})`,
-                    transition: 'transform 0.1s ease'
-                  }}
-                />
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px'
+                }}>
+                  <img 
+                    src={imageToCrop}
+                    alt="Crop preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      transform: `scale(${cropData.zoom})`,
+                      transition: 'transform 0.1s ease'
+                    }}
+                  />
+                </div>
+
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '80%',
+                  paddingBottom: '45%',
+                  border: '2px dashed #ff6b00',
+                  pointerEvents: 'none',
+                  borderRadius: '4px'
+                }}></div>
               </div>
 
               <calcite-label>
@@ -487,11 +539,20 @@ placeholder="Brief description of the bundle..."
                   style={{ width: '100%', marginTop: '8px' }}
                 />
               </calcite-label>
+
+              <p style={{ 
+                fontSize: '13px', 
+                color: 'var(--calcite-ui-text-3)',
+                marginTop: '12px',
+                textAlign: 'center'
+              }}>
+                💡 Tip: Use the zoom slider to adjust the image size within the orange guide box
+              </p>
             </div>
           )}
         </div>
-        <calcite-button slot="primary" onClick={applyCrop}>
-          Apply
+        <calcite-button slot="primary" icon-start="check" onClick={applyCrop}>
+          Apply & Continue
         </calcite-button>
         <calcite-button slot="secondary" appearance="outline" onClick={() => setCropModalOpen(false)}>
           Cancel

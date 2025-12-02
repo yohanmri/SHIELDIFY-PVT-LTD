@@ -34,98 +34,7 @@ export default function AdminBundleList() {
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
   
-  // TEMPORARY: Mock data with web images - Remove when implementing CRUD
-  const [bundles, setBundles] = useState([
-    {
-      _id: '1',
-      name: 'Safety Helmet Bundle - 100 Units',
-      category: 'Safety Helmets',
-      quantity: 100,
-      originalPrice: 250000,
-      discountPrice: 200000,
-      description: 'Bulk purchase of 100 safety helmets with 20% discount',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80'
-    },
-    {
-      _id: '2',
-      name: 'Safety Jacket Bundle - 500 Units',
-      category: 'Safety Jacket',
-      quantity: 500,
-      originalPrice: 750000,
-      discountPrice: 600000,
-      description: 'High visibility safety vests - Bulk discount 20%',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80'
-    },
-    {
-      _id: '3',
-      name: 'Gum Boots Bulk - 200 Pairs',
-      category: 'Gum Boots',
-      quantity: 200,
-      originalPrice: 700000,
-      discountPrice: 560000,
-      description: 'Industrial waterproof boots - 20% off bulk order',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?w=400&q=80'
-    },
-    {
-      _id: '4',
-      name: 'Safety Gloves Bundle - 1000 Pairs',
-      category: 'Safety Hand Gloves',
-      quantity: 1000,
-      originalPrice: 800000,
-      discountPrice: 640000,
-      description: 'Leather work gloves - Mega bulk discount',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=400&q=80'
-    },
-    {
-      _id: '5',
-      name: 'Starter Safety Kit - 50 Sets',
-      category: 'Starter Kit',
-      quantity: 50,
-      originalPrice: 500000,
-      discountPrice: 375000,
-      description: 'Complete safety kit: helmet, vest, gloves, goggles - 25% OFF',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80'
-    },
-    {
-      _id: '6',
-      name: 'Premium Worker Package - 30 Sets',
-      category: 'Premium Package',
-      quantity: 30,
-      originalPrice: 600000,
-      discountPrice: 450000,
-      description: 'Full worker protection kit with premium items',
-      isActive: false,
-      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80'
-    },
-    {
-      _id: '7',
-      name: 'Safety Goggles Bundle - 300 Units',
-      category: 'Safety Goggles',
-      quantity: 300,
-      originalPrice: 180000,
-      discountPrice: 135000,
-      description: 'Anti-fog safety goggles - Bulk discount 25%',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1574594143321-fd5ec44c0b18?w=400&q=80'
-    },
-    {
-      _id: '8',
-      name: 'Mixed Safety Bundle - 100 Sets',
-      category: 'Mixed Bundle',
-      quantity: 100,
-      originalPrice: 800000,
-      discountPrice: 640000,
-      description: 'Assorted safety equipment for construction sites',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1590845947670-c009801ffa74?w=400&q=80'
-    }
-  ]);
-  
+  const [bundles, setBundles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -141,15 +50,14 @@ export default function AdminBundleList() {
   ];
 
   useEffect(() => {
-    // TEMPORARY: Comment out API call until CRUD is ready
-    // fetchBundles();
+    fetchBundles();
   }, []);
 
   const fetchBundles = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/bundles');
-      setBundles(response.data.data);
+      const response = await API.get('/admin/bundles');
+      setBundles(response.data.data || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching bundles:', err);
@@ -170,8 +78,12 @@ export default function AdminBundleList() {
     });
   }, [selectedCategory, searchQuery, bundles]);
 
+  const handleViewBundle = (bundleId) => {
+    navigate(`/admin/bundles/${bundleId}`);
+  };
+
   const handleEdit = (bundle) => {
-    setSelectedBundle(bundle);
+    setSelectedBundle({ ...bundle });
     setEditModalOpen(true);
   };
 
@@ -182,8 +94,7 @@ export default function AdminBundleList() {
 
   const confirmDelete = async () => {
     try {
-      // TEMPORARY: Local delete until API is ready
-      // await API.delete(`/bundles/${selectedBundle._id}`);
+      await API.delete(`/admin/bundles/${selectedBundle._id}`);
       setBundles(bundles.filter(b => b._id !== selectedBundle._id));
       setDeleteModalOpen(false);
       setSelectedBundle(null);
@@ -206,8 +117,7 @@ export default function AdminBundleList() {
         image: selectedBundle.image
       };
 
-      // TEMPORARY: Local update until API is ready
-      // const response = await API.put(`/bundles/${selectedBundle._id}`, updateData);
+      await API.put(`/admin/bundles/${selectedBundle._id}`, updateData);
       setBundles(bundles.map(b => b._id === selectedBundle._id ? { ...selectedBundle, ...updateData } : b));
       setEditModalOpen(false);
       setSelectedBundle(null);
@@ -241,11 +151,9 @@ export default function AdminBundleList() {
     return Math.round(((original - discount) / original) * 100);
   };
 
-  const handleBundleChange = (field, value) => {
-    setSelectedBundle(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleCategoryChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedBundle(prev => ({ ...prev, category: newValue }));
   };
 
   return (
@@ -305,7 +213,7 @@ export default function AdminBundleList() {
             
             <calcite-select
               value={selectedCategory}
-              onCalciteSelectChange={(e) => setSelectedCategory(e.target.value)}
+              onCalciteSelectChange={(e) => setSelectedCategory(e.target.selectedOption.value)}
               style={{ width: '200px' }}
             >
               {filterCategories.map(category => (
@@ -352,7 +260,11 @@ export default function AdminBundleList() {
               gap: '20px'
             }}>
               {filteredBundles.map(bundle => (
-                <calcite-card key={bundle._id}>
+                <calcite-card 
+                  key={bundle._id}
+                  onClick={() => handleViewBundle(bundle._id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <img 
                     slot="thumbnail" 
                     src={bundle.image} 
@@ -402,7 +314,10 @@ export default function AdminBundleList() {
                       appearance="outline" 
                       icon-start="pencil"
                       scale="s"
-                      onClick={() => handleEdit(bundle)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(bundle);
+                      }}
                     >
                       Edit
                     </calcite-button>
@@ -411,7 +326,10 @@ export default function AdminBundleList() {
                       kind="danger"
                       icon-start="trash"
                       scale="s"
-                      onClick={() => handleDelete(bundle)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(bundle);
+                      }}
                     >
                       Delete
                     </calcite-button>
@@ -430,6 +348,8 @@ export default function AdminBundleList() {
                   label={bundle.name}
                   description={`${bundle.category} • ${bundle.quantity} items • ${calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF`}
                   value={bundle._id}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleViewBundle(bundle._id)}
                 >
                   <img 
                     slot="content-start"
@@ -459,7 +379,10 @@ export default function AdminBundleList() {
                       appearance="outline" 
                       icon-start="pencil"
                       scale="s"
-                      onClick={() => handleEdit(bundle)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(bundle);
+                      }}
                     >
                       Edit
                     </calcite-button>
@@ -468,7 +391,10 @@ export default function AdminBundleList() {
                       kind="danger"
                       icon-start="trash"
                       scale="s"
-                      onClick={() => handleDelete(bundle)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(bundle);
+                      }}
                     >
                       Delete
                     </calcite-button>
@@ -538,27 +464,49 @@ export default function AdminBundleList() {
                 Bundle Name *
                 <calcite-input-text
                   value={selectedBundle.name}
-                  onCalciteInputInput={(e) => handleBundleChange('name', e.target.value)}
+                  onInput={(e) => 
+                    setSelectedBundle({ ...selectedBundle, name: e.target.value })
+                  }
                 />
               </calcite-label>
 
-              <calcite-label>
-                Category *
-                <calcite-select
+              <div>
+                <label style={{ 
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'var(--calcite-ui-text-1)'
+                }}>
+                  Category *
+                </label>
+                <select
                   value={selectedBundle.category}
-                  onCalciteSelectChange={(e) => handleBundleChange('category', e.target.value)}
+                  onChange={handleCategoryChange}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '14px',
+                    border: '1px solid var(--calcite-ui-border-2)',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--calcite-ui-background)',
+                    color: 'var(--calcite-ui-text-1)',
+                    cursor: 'pointer'
+                  }}
                 >
                   {categories.map(cat => (
-                    <calcite-option key={cat} value={cat}>{cat}</calcite-option>
+                    <option key={cat} value={cat}>{cat}</option>
                   ))}
-                </calcite-select>
-              </calcite-label>
+                </select>
+              </div>
 
               <calcite-label>
                 Quantity *
                 <calcite-input-number
                   value={selectedBundle.quantity.toString()}
-                  onCalciteInputNumberInput={(e) => handleBundleChange('quantity', e.target.value)}
+                  onInput={(e) => 
+                    setSelectedBundle({ ...selectedBundle, quantity: parseInt(e.target.value) || 0 })
+                  }
                   min="1"
                 />
               </calcite-label>
@@ -568,7 +516,9 @@ export default function AdminBundleList() {
                   Original Price (LKR) *
                   <calcite-input-number
                     value={selectedBundle.originalPrice.toString()}
-                    onCalciteInputNumberInput={(e) => handleBundleChange('originalPrice', e.target.value)}
+                    onInput={(e) => 
+                      setSelectedBundle({ ...selectedBundle, originalPrice: parseFloat(e.target.value) || 0 })
+                    }
                     min="0"
                   />
                 </calcite-label>
@@ -577,7 +527,9 @@ export default function AdminBundleList() {
                   Discount Price (LKR) *
                   <calcite-input-number
                     value={selectedBundle.discountPrice.toString()}
-                    onCalciteInputNumberInput={(e) => handleBundleChange('discountPrice', e.target.value)}
+                    onInput={(e) => 
+                      setSelectedBundle({ ...selectedBundle, discountPrice: parseFloat(e.target.value) || 0 })
+                    }
                     min="0"
                   />
                 </calcite-label>
@@ -604,7 +556,9 @@ export default function AdminBundleList() {
                 <calcite-text-area
                   value={selectedBundle.description || ''}
                   rows="3"
-                  onCalciteTextAreaInput={(e) => handleBundleChange('description', e.target.value)}
+                  onInput={(e) => 
+                    setSelectedBundle({ ...selectedBundle, description: e.target.value })
+                  }
                   placeholder="Brief description of the bundle..."
                 />
               </calcite-label>
@@ -613,7 +567,9 @@ export default function AdminBundleList() {
                 <span>Active Status</span>
                 <calcite-switch
                   checked={selectedBundle.isActive}
-                  onCalciteSwitchChange={(e) => handleBundleChange('isActive', e.target.checked)}
+                  onCalciteSwitchChange={(e) => 
+                    setSelectedBundle({ ...selectedBundle, isActive: e.target.checked })
+                  }
                 ></calcite-switch>
               </calcite-label>
             </div>

@@ -34,7 +34,7 @@ export default function Footer({ setPage }) {
             <div className="footer-logo">
               <img 
        src="assets/images/picture-logo.png" 
-                alt="GIS Solutions Logo" 
+                alt="Shieldify Logo" 
                 className="logo-image"
                 style={{maxWidth: '60px'}}
               />
@@ -42,8 +42,8 @@ export default function Footer({ setPage }) {
             </div>
 
             <p className="footer-description">
-              Professional Geographic Information Systems solutions powered by Esri technology. 
-              Transforming spatial data into strategic intelligence.
+              Reliable Personal Protective Equipment for every job site.
+Ensuring safety, compliance, and performance where it matters most.
             </p>
             <div className="social-links" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
               <a 
