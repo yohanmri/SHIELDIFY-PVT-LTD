@@ -1,6 +1,4 @@
-//src->pages->adminPages->ShieldifyLogin.js
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '@esri/calcite-components/dist/components/calcite-shell';
 import '@esri/calcite-components/dist/components/calcite-panel';
 import '@esri/calcite-components/dist/components/calcite-button';
@@ -11,7 +9,8 @@ import '@esri/calcite-components/dist/components/calcite-notice';
 import '@esri/calcite-components/dist/components/calcite-card';
 import { setAssetPath } from '@esri/calcite-components/dist/components';
 import { useNavigate } from 'react-router-dom';
-import API from '../../api/axios';
+
+import { publicAPI } from '../../api/axios';
 
 setAssetPath('https://cdn.jsdelivr.net/npm/@esri/calcite-components/dist/calcite/assets');
 
@@ -22,53 +21,60 @@ export default function ShieldifyLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Login with email and password
-  const handleLogin = async () => {
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-    
-    if (!trimmedEmail || !trimmedPassword) {
-      setError('Please provide email and password');
-      return;
+const handleLogin = async (event) => {
+  // Prevent any default form submission
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const trimmedEmail = email.trim();
+  const trimmedPassword = password.trim();
+  
+  console.log('=== LOGIN ATTEMPT START ===');
+  
+  if (!trimmedEmail || !trimmedPassword) {
+    setError('Please provide email and password');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    console.log('1. Making API call...');
+    const response = await publicAPI.post('/auth/login', {
+      email: trimmedEmail,
+      password: trimmedPassword
+    });
+
+    console.log('2. Response received:', response.data);
+
+    if (response.data.success) {
+      console.log('3. Login successful');
+      
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('admin', JSON.stringify(response.data.admin));
+      
+      console.log('4. Data stored');
+
+      const redirectPath = response.data.admin.isTemporaryPassword 
+        ? '/admin/change-password' 
+        : '/admin/dashboard';
+      
+      console.log('5. Redirecting to:', redirectPath);
+      
+      window.location.href = redirectPath;
     }
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const response = await API.post('/auth/login', {
-        email: trimmedEmail,
-        password: trimmedPassword
-      });
-
-      if (response.data.success) {
-        // Store token and admin data
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('admin', JSON.stringify(response.data.admin));
-
-        setSuccess('Login successful!');
-
-        // Redirect based on password type
-        setTimeout(() => {
-          if (response.data.admin.isTemporaryPassword) {
-            navigate('/admin/change-password');
-          } else {
-            navigate('/admin/dashboard');
-          }
-        }, 1000);
-      }
-    } catch (err) {
-      console.error('Login Error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (err) {
+    console.error('Login Error:', err);
+    setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    setLoading(false);
+  }
+};
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleLogin();
@@ -78,6 +84,8 @@ export default function ShieldifyLogin() {
   const handleForgotPassword = () => {
     navigate('/admin/forgot-password');
   };
+
+  // Add this after your useState declarations
 
   return (
     <div style={{
@@ -243,13 +251,6 @@ export default function ShieldifyLogin() {
               </calcite-notice>
             )}
 
-            {/* Success Notice */}
-            {success && (
-              <calcite-notice open icon="check-circle" kind="success" style={{ marginBottom: '20px' }}>
-                <div slot="message">{success}</div>
-              </calcite-notice>
-            )}
-
             {/* Login Form */}
             <div>
               <calcite-label style={{ marginBottom: '16px' }}>
@@ -289,19 +290,19 @@ export default function ShieldifyLogin() {
                 </calcite-button>
               </div>
 
-              <calcite-button
-                onClick={handleLogin}
-                width="full"
-                loading={loading}
-                disabled={loading}
-                icon-start="sign-in"
-                style={{ 
-                  marginBottom: '20px',
-                  '--calcite-button-background': 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
-                }}
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </calcite-button>
+       <calcite-button
+  onClick={(e) => handleLogin(e)}
+  width="full"
+  loading={loading}
+  disabled={loading}
+  icon-start="sign-in"
+  style={{ 
+    marginBottom: '20px',
+    '--calcite-button-background': 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)'
+  }}
+>
+  {loading ? 'Signing in...' : 'Sign In'}
+</calcite-button>
             </div>
 
             {/* Help Section */}

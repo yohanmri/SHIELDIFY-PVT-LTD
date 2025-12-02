@@ -10,7 +10,7 @@ import '@esri/calcite-components/components/calcite-dropdown-item';
 import '@esri/calcite-components/components/calcite-action';
 import '@esri/calcite-components/components/calcite-popover';
 import '@esri/calcite-components/components/calcite-icon';
-
+import { adminAPI } from '../../api/axios';
 export default function AdminNavbar() {
   const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -24,12 +24,21 @@ export default function AdminNavbar() {
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const handleSignOut = () => {
-    if (window.confirm('Are you sure you want to sign out?')) {
-      // Add your sign out logic here
-      navigate('/');
+const handleSignOut = async () => {
+  if (window.confirm('Are you sure you want to sign out?')) {
+    try {
+      // Optional: Call backend logout endpoint
+      await adminAPI.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local storage and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('admin');
+      window.location.href = '/admin/login';
     }
-  };
+  }
+};
 
   const handleViewSite = () => {
     window.open('/', '_blank');

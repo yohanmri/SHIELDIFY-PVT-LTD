@@ -33,7 +33,11 @@ adminAPI.interceptors.request.use(
 adminAPI.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect to login if we're NOT already on the login page
+    // and we're NOT in the middle of a login request
+    if (error.response?.status === 401 && 
+        !error.config.url.includes('/auth/login') &&
+        window.location.pathname !== '/admin/login') {
       localStorage.removeItem('token');
       localStorage.removeItem('admin');
       window.location.href = '/admin/login';

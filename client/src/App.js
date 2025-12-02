@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/clientPages/HomePage';
 import ProductsPage from './pages/clientPages/ProductsPage';
-import ProductDetailsPage from './pages/clientPages/ProductDetailsPage'; // CHANGED: Use wrapper component
+import ProductDetailsPage from './pages/clientPages/ProductDetailsPage';
 import SolutionsPage from './pages/clientPages/SolutionsPage';
 import ServicesPage from './pages/clientPages/ServicesPage';
 import ContactPage from './pages/clientPages/ContactPage';
@@ -27,12 +27,16 @@ import DeviceLocations from './pages/adminPages/DeviceLocations';
 import LiveVisitors from './pages/adminPages/LIveVisitors';
 import RecentActivity from './pages/adminPages/RecentActivity';
 import AdminProductDetail from './pages/adminPages/ProductDetails';
-
 import CreateRole from './pages/adminPages/CreateRole';
 import Settings from './pages/adminPages/Settings';
 import AdminBundleDetail from './pages/adminPages/BundleDetails';
 import BundlesPage from './pages/clientPages/BundlePage';
 import BundleDetailsPage from './pages/clientPages/BundleDetailsPage';
+
+// Import Protected Route Components
+import ProtectedRoute from './components/ProtectedRoute';
+// import PublicRoute from './components/PublicRoute';
+
 function App() {
   // Initialize Calcite Components
   useEffect(() => {
@@ -44,17 +48,14 @@ function App() {
       <div className="App">
         <Routes>
           {/* ============================================
-              CLIENT SIDE ROUTES
+              CLIENT SIDE ROUTES (Public - No Protection)
               ============================================ */}
           
-          {/* Main Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/product/:id" element={<ProductDetailsPage />} />
           <Route path="/bundles" element={<BundlesPage />} />
-           <Route path="/bundle/:id" element={<BundleDetailsPage />} />
-
-
+          <Route path="/bundle/:id" element={<BundleDetailsPage />} />
           <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -62,55 +63,183 @@ function App() {
           <Route path="/projects" element={<ProjectsPage />} />
 
           {/* ============================================
-              ADMIN ROUTES
+              ADMIN AUTHENTICATION (Public Route)
               ============================================ */}
           
-          {/* Authentication */}
-          <Route path="/admin/login" element={<ShieldifyLogin/>} />
+   <Route 
+  path="/admin/login" 
+  element={<ShieldifyLogin />} 
+/>
 
+          {/* ============================================
+              PROTECTED ADMIN ROUTES
+              ============================================ */}
+          
           {/* Dashboard & Activity */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/recent-activity" element={<RecentActivity/>}/>
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/recent-activity" 
+            element={
+              <ProtectedRoute>
+                <RecentActivity />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Product Management */}
-          <Route path="/admin/product-list" element={<AdminProductList />} />
-          <Route path="/admin/products/:id" element={<AdminProductDetail />} />
-          <Route path="/admin/product-add" element={<AdminProductAdd />} />
+          <Route 
+            path="/admin/product-list" 
+            element={
+              <ProtectedRoute>
+                <AdminProductList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/products/:id" 
+            element={
+              <ProtectedRoute>
+                <AdminProductDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/product-add" 
+            element={
+              <ProtectedRoute>
+                <AdminProductAdd />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Bundle Management */}
-          <Route path="/admin/bundle-list" element={<AdminBundleList />} />
-          <Route path="/admin/bundle-add" element={<AdminBundleAdd />} />
-          <Route path="/admin/bundles/:id" element={<AdminBundleDetail />} />
+          <Route 
+            path="/admin/bundle-list" 
+            element={
+              <ProtectedRoute>
+                <AdminBundleList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bundle-add" 
+            element={
+              <ProtectedRoute>
+                <AdminBundleAdd />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bundles/:id" 
+            element={
+              <ProtectedRoute>
+                <AdminBundleDetail />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Order Management */}
-          <Route path="/admin/order-list" element={<AdminOrdersList />} />
-          <Route path="/admin/order-completed" element={<AdminOrdersCompleted />} />
-          <Route path="/admin/order-pending" element={<AdminOrdersPending />} />
+          <Route 
+            path="/admin/order-list" 
+            element={
+              <ProtectedRoute>
+                <AdminOrdersList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/order-completed" 
+            element={
+              <ProtectedRoute>
+                <AdminOrdersCompleted />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/order-pending" 
+            element={
+              <ProtectedRoute>
+                <AdminOrdersPending />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Request Management */}
-          <Route path="/admin/requests-refunds" element={<AdminRequestsRefund />} />
-          <Route path="/admin/requests-cancel" element={<AdminRequestsCancel />} />
+          <Route 
+            path="/admin/requests-refunds" 
+            element={
+              <ProtectedRoute>
+                <AdminRequestsRefund />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/requests-cancel" 
+            element={
+              <ProtectedRoute>
+                <AdminRequestsCancel />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Analytics - Visitors */}
-          <Route path="/admin/total-visitors" element={<TotalVisitors />} />
-          <Route path="/admin/popular-pages" element={<PopularPages />} />
-          <Route path="/admin/devices-locations" element={<DeviceLocations />} />
-          <Route path="/admin/live-visitors" element={<LiveVisitors />} />
+          <Route 
+            path="/admin/total-visitors" 
+            element={
+              <ProtectedRoute>
+                <TotalVisitors />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/popular-pages" 
+            element={
+              <ProtectedRoute>
+                <PopularPages />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/devices-locations" 
+            element={
+              <ProtectedRoute>
+                <DeviceLocations />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/live-visitors" 
+            element={
+              <ProtectedRoute>
+                <LiveVisitors />
+              </ProtectedRoute>
+            } 
+          />
 
-
-
-<Route path="/admin/roles" element={<CreateRole />} />
-<Route path="/admin/settings" element={<Settings />} />
-
-          {/* Future Analytics Routes (placeholder) */}
-          {/* 
-          <Route path="/admin/categories" element={<AdminProductList />} />
-          <Route path="/admin/analytics/traffic" element={<AdminProductList />} />
-          <Route path="/admin/analytics/pages" element={<AdminProductList />} />
-          <Route path="/admin/activity" element={<AdminProductList />} />
-          <Route path="/admin/stats" element={<AdminProductList />} />
-          <Route path="/admin/settings" element={<AdminProductList />} />
-          */}
+          {/* Roles & Settings */}
+          <Route 
+            path="/admin/roles" 
+            element={
+              <ProtectedRoute>
+                <CreateRole />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/settings" 
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </div>
     </Router>

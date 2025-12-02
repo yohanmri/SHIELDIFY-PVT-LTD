@@ -52,7 +52,8 @@ const sendTokenResponse = (admin, statusCode, res) => {
         email: admin.email,
         role: admin.role,
         isSuperAdmin: admin.isSuperAdmin,
-        isTemporaryPassword: admin.isTemporaryPassword
+        isTemporaryPassword: admin.isTemporaryPassword,
+        isActive: admin.isActive  // ADD THIS LINE!
       }
     });
 };
