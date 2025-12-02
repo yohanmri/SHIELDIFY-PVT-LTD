@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const adminBundleRoutes = require('./routes/adminBundleRoutes')
 const bundleRoutes = require('./routes/bundleRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 
@@ -43,7 +44,7 @@ app.use('/api/admin/products', adminProductRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/admin/bundles', adminBundleRoutes);
-
+app.use('/api/analytics', analyticsRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to SHIELDIFY Safety Equipment API' });

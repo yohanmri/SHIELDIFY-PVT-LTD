@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
-import API from '../../api/axios';
+import { adminAPI } from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -128,32 +128,32 @@ export default function DevicesLocations() {
   const [timeRange, setTimeRange] = useState('7days');
 
   const [deviceStats, setDeviceStats] = useState({
-    totalDevices: 32450,
-    desktopUsers: 15640,
-    mobileUsers: 13280,
-    tabletUsers: 3530
+    totalDevices: 0,
+    desktopUsers: 0,
+    mobileUsers: 0,
+    tabletUsers: 0
   });
 
   const [deviceData, setDeviceData] = useState([
-    { label: 'Desktop', value: 15640, color: '#0079c1', percentage: 48.2 },
-    { label: 'Mobile', value: 13280, color: '#00a884', percentage: 40.9 },
-    { label: 'Tablet', value: 3530, color: '#9333ea', percentage: 10.9 }
+    { label: 'Desktop', value: 0, color: '#0079c1', percentage: 0 },
+    { label: 'Mobile', value: 0, color: '#00a884', percentage: 0 },
+    { label: 'Tablet', value: 0, color: '#9333ea', percentage: 0 }
   ]);
 
   const [browserData, setBrowserData] = useState([
-    { label: 'Chrome', value: 18920, color: '#0079c1' },
-    { label: 'Safari', value: 7840, color: '#00a884' },
-    { label: 'Firefox', value: 3450, color: '#ffa500' },
-    { label: 'Edge', value: 1680, color: '#9333ea' },
-    { label: 'Other', value: 560, color: '#6b6b6b' }
+    { label: 'Chrome', value: 0, color: '#0079c1' },
+    { label: 'Safari', value: 0, color: '#00a884' },
+    { label: 'Firefox', value: 0, color: '#ffa500' },
+    { label: 'Edge', value: 0, color: '#9333ea' },
+    { label: 'Other', value: 0, color: '#6b6b6b' }
   ]);
 
   const [osData, setOsData] = useState([
-    { label: 'Windows', value: 14560, color: '#0079c1' },
-    { label: 'Android', value: 9840, color: '#00a884' },
-    { label: 'iOS', value: 5230, color: '#6b6b6b' },
-    { label: 'macOS', value: 2340, color: '#ffa500' },
-    { label: 'Linux', value: 480, color: '#9333ea' }
+    { label: 'Windows', value: 0, color: '#0079c1' },
+    { label: 'Android', value: 0, color: '#00a884' },
+    { label: 'iOS', value: 0, color: '#6b6b6b' },
+    { label: 'macOS', value: 0, color: '#ffa500' },
+    { label: 'Linux', value: 0, color: '#9333ea' }
   ]);
 
   const [locationData, setLocationData] = useState([
@@ -170,30 +170,44 @@ export default function DevicesLocations() {
   ]);
 
   const [screenResolutions, setScreenResolutions] = useState([
-    { resolution: '1920x1080', count: 12340, percentage: 38.0 },
-    { resolution: '1366x768', count: 8920, percentage: 27.5 },
-    { resolution: '375x667 (Mobile)', count: 4560, percentage: 14.1 },
-    { resolution: '414x896 (Mobile)', count: 3450, percentage: 10.6 },
-    { resolution: '768x1024 (Tablet)', count: 2180, percentage: 6.7 },
-    { resolution: 'Other', count: 1000, percentage: 3.1 }
+    { resolution: '1920x1080', count: 0, percentage: 0 },
+    { resolution: '1366x768', count: 0, percentage: 0 },
+    { resolution: '375x667 (Mobile)', count: 0, percentage: 0 },
+    { resolution: '414x896 (Mobile)', count: 0, percentage: 0 },
+    { resolution: '768x1024 (Tablet)', count: 0, percentage:0 },
+    { resolution: 'Other', count: 0, percentage: 0 }
   ]);
-
-  useEffect(() => {
-    // fetchDeviceLocationData();
-  }, [timeRange]);
+useEffect(() => {
+  fetchDeviceLocationData();
+}, [timeRange]);
 
   const fetchDeviceLocationData = async () => {
-    try {
-      setLoading(true);
-      const response = await API.get(`/analytics/devices-locations?range=${timeRange}`);
-      // setDeviceData(response.data.devices);
-      // setLocationData(response.data.locations);
-    } catch (err) {
-      console.error('Error fetching device/location data:', err);
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    const response = await adminAPI.get(`/analytics/devices-locations?range=${timeRange}`);
+    
+    if (response.data.success) {
+      const { data } = response.data;
+      
+      setDeviceStats({
+        totalDevices: data.totalDevices,
+        desktopUsers: data.desktopUsers,
+        mobileUsers: data.mobileUsers,
+        tabletUsers: data.tabletUsers
+      });
+      
+      setDeviceData(data.devices);
+      setBrowserData(data.browsers);
+      setOsData(data.os);
+      setLocationData(data.locations);
+      setScreenResolutions(data.screens);
     }
-  };
+  } catch (err) {
+    console.error('Error fetching device/location data:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatNumber = (num) => {
     return num.toLocaleString();
