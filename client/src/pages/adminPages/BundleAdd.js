@@ -132,35 +132,36 @@ export default function AdminBundleAdd() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
+   try {
+  setLoading(true);
+  setError(null);
 
-      const bundleData = {
-        name: formData.name.trim(),
-        category: formData.category,
-        quantity: parseInt(formData.quantity),
-        originalPrice: parseFloat(formData.originalPrice),
-        discountPrice: parseFloat(formData.discountPrice),
-        description: formData.description.trim(),
-        isActive: formData.isActive,
-        image: formData.image
-      };
+  const bundleData = {
+    name: formData.name.trim(),
+    category: formData.category,
+    quantity: parseInt(formData.quantity),
+    originalPrice: parseFloat(formData.originalPrice),
+    discountPrice: parseFloat(formData.discountPrice),
+    description: formData.description.trim(),
+    isActive: formData.isActive,
+    image: formData.image
+  };
 
-      // TEMPORARY: Comment out until API is ready
-      // const response = await API.post('/bundles', bundleData);
-      
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/admin/bundle-list');
-      }, 1500);
+  // SEND TO BACKEND
+  const response = await API.post('/admin/bundles', bundleData);
 
-    } catch (err) {
-      console.error('Error creating bundle:', err);
-      setError(err.response?.data?.message || 'Failed to create bundle. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  setSuccess(true);
+  setTimeout(() => {
+    navigate('/admin/bundle-list');
+  }, 1500);
+
+} catch (err) {
+  console.error('Error creating bundle:', err);
+  setError(err.response?.data?.message || 'Failed to create bundle. Please try again.');
+} finally {
+  setLoading(false);
+}
+
   };
 
   const handleReset = () => {
@@ -191,7 +192,7 @@ export default function AdminBundleAdd() {
             <calcite-button
               appearance="outline"
               icon-start="arrow-left"
-              onClick={() => navigate('/admin/bundle-list')}
+              onClick={() => navigate('/admin/bundles')}
               style={{ marginBottom: '16px' }}
             >
               Back to Bundles
@@ -227,7 +228,7 @@ export default function AdminBundleAdd() {
                   Bundle Name *
                   <calcite-input-text
                     value={formData.name}
-                    onCalciteInputInput={(e) => handleChange('name', e.target.value)}
+onInput={(e) => handleChange('name', e.target.value)}
                     placeholder="e.g., Safety Helmet Bundle - 100 Units"
                     required
                   />
@@ -235,15 +236,18 @@ export default function AdminBundleAdd() {
 
                 <calcite-label>
                   Category *
-                  <calcite-select
-                    value={formData.category}
-                    onCalciteSelectChange={(e) => handleChange('category', e.target.value)}
-                    required
-                  >
-                    <calcite-option value="" label="Select category"></calcite-option>
-                    {categories.map(cat => (
-                      <calcite-option key={cat} value={cat}>{cat}</calcite-option>
-                    ))}
+<calcite-select
+  value={formData.category}
+  onCalciteSelectChange={(e) =>
+    handleChange('category', e.target.selectedOption.value)
+  }
+  required
+>
+                              
+  <calcite-option value="">Select category</calcite-option>
+  {categories.map(cat => (
+    <calcite-option key={cat} value={cat}>{cat}</calcite-option>
+  ))}
                   </calcite-select>
                 </calcite-label>
 
@@ -251,8 +255,8 @@ export default function AdminBundleAdd() {
                   Quantity *
                   <calcite-input-number
                     value={formData.quantity}
-                    onCalciteInputNumberInput={(e) => handleChange('quantity', e.target.value)}
-                    placeholder="Number of items in bundle"
+onInput={(e) => handleChange('quantity', e.target.value)}                    
+placeholder="Number of items in bundle"
                     min="1"
                     required
                   />
@@ -263,8 +267,8 @@ export default function AdminBundleAdd() {
                     Original Price (LKR) *
                     <calcite-input-number
                       value={formData.originalPrice}
-                      onCalciteInputNumberInput={(e) => handleChange('originalPrice', e.target.value)}
-                      placeholder="0.00"
+onInput={(e) => handleChange('originalPrice', e.target.value)}                      
+placeholder="0.00"
                       min="0"
                       step="0.01"
                       required
@@ -275,8 +279,8 @@ export default function AdminBundleAdd() {
                     Discount Price (LKR) *
                     <calcite-input-number
                       value={formData.discountPrice}
-                      onCalciteInputNumberInput={(e) => handleChange('discountPrice', e.target.value)}
-                      placeholder="0.00"
+onInput={(e) => handleChange('discountPrice', e.target.value)}                      
+placeholder="0.00"
                       min="0"
                       step="0.01"
                       required
@@ -306,8 +310,8 @@ export default function AdminBundleAdd() {
                   Description
                   <calcite-text-area
                     value={formData.description}
-                    onCalciteTextAreaInput={(e) => handleChange('description', e.target.value)}
-                    placeholder="Brief description of the bundle..."
+onInput={(e) => handleChange('description', e.target.value)}                    
+placeholder="Brief description of the bundle..."
                     rows="4"
                   />
                 </calcite-label>
@@ -316,7 +320,7 @@ export default function AdminBundleAdd() {
                   <span>Active Status</span>
                   <calcite-switch
                     checked={formData.isActive}
-                    onCalciteSwitchChange={(e) => handleChange('isActive', e.target.checked)}
+                    onSwitchChange={(e) => handleChange('isActive', e.target.checked)}
                   ></calcite-switch>
                 </calcite-label>
               </div>
@@ -425,7 +429,7 @@ export default function AdminBundleAdd() {
               <calcite-button 
                 appearance="outline"
                 kind="neutral"
-                onClick={() => navigate('/admin/bundle-list')}
+                onClick={() => navigate('/admin/bundles')}
                 disabled={loading}
               >
                 Cancel

@@ -9,6 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const adminProductRoutes = require('./routes/adminProductRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const adminBundleRoutes = require('./routes/adminBundleRoutes')
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/products', productRoutes); // Public routes (landing page)
 app.use('/api/admin/products', adminProductRoutes); // Admin routes (protected)
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
+app.use('/api/admin/bundles', adminBundleRoutes);
 
 // Root route
 app.get('/', (req, res) => {
