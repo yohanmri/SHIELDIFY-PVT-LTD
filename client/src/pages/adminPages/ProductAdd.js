@@ -161,7 +161,7 @@ export default function AdminProductAdd() {
           image: formData.image
         };
 
-        const response = await API.post('/products', productData);
+        const response = await API.post('/admin/products', productData);
         
         console.log('Product created:', response.data);
         

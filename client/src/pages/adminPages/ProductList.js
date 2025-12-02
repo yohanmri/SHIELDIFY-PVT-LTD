@@ -95,7 +95,7 @@ export default function AdminProductList() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/products');
+      const response = await API.get('/admin/products');
       setProducts(response.data.data);
       setError(null);
     } catch (err) {
@@ -135,7 +135,7 @@ export default function AdminProductList() {
 
   const confirmDelete = async () => {
     try {
-      await API.delete(`/products/${selectedProduct._id}`);
+      await API.delete(`/admin/products/${selectedProduct._id}`);
       setProducts(products.filter(p => p._id !== selectedProduct._id));
       setDeleteModalOpen(false);
       setSelectedProduct(null);
@@ -159,7 +159,7 @@ export default function AdminProductList() {
         image: selectedProduct.image
       };
 
-      const response = await API.put(`/products/${selectedProduct._id}`, updateData);
+      const response = await API.put(`/admin/products/${selectedProduct._id}`, updateData);
       
       setProducts(products.map(p => p._id === selectedProduct._id ? response.data.data : p));
       setEditModalOpen(false);

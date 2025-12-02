@@ -122,7 +122,7 @@ export default function AboutDetails() {
     const isMediaLeft = section.layout === 'media-left';
 
     return (
-      <div className="media-container">
+      <div id='from-about' className="media-container">
         {/* Background Image */}
         <div className="background-image">
           <img 

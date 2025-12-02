@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 
 // Routes
 const productRoutes = require('./routes/productRoutes');
+const adminProductRoutes = require('./routes/adminProductRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
@@ -22,9 +23,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parser with increased limits
+app.use(express.json({ limit: '50mb' })); // Increased from default 100kb
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Increased from default 100kb
 app.use(cookieParser());
 
 // Request logging middleware
@@ -34,7 +35,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/products', productRoutes);
+app.use('/api/products', productRoutes); // Public routes (landing page)
+app.use('/api/admin/products', adminProductRoutes); // Admin routes (protected)
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 
@@ -46,6 +48,15 @@ app.get('/', (req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  
+  // Handle PayloadTooLargeError specifically
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'File or request is too large. Maximum size is 50MB.'
+    });
+  }
+  
   res.status(500).json({
     success: false,
     message: 'Something went wrong!',

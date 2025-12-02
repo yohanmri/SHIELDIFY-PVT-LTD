@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
-import API from '../../api/axios';
+import { adminAPI as API } from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -34,97 +34,6 @@ export default function AdminBundleList() {
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
   
-  // TEMPORARY: Mock data with web images - Remove when implementing CRUD
-  const [bundles, setBundles] = useState([
-    {
-      _id: '1',
-      name: 'Safety Helmet Bundle - 100 Units',
-      category: 'Safety Helmets',
-      quantity: 100,
-      originalPrice: 250000,
-      discountPrice: 200000,
-      description: 'Bulk purchase of 100 safety helmets with 20% discount',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?w=400&q=80'
-    },
-    {
-      _id: '2',
-      name: 'Safety Jacket Bundle - 500 Units',
-      category: 'Safety Jacket',
-      quantity: 500,
-      originalPrice: 750000,
-      discountPrice: 600000,
-      description: 'High visibility safety vests - Bulk discount 20%',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80'
-    },
-    {
-      _id: '3',
-      name: 'Gum Boots Bulk - 200 Pairs',
-      category: 'Gum Boots',
-      quantity: 200,
-      originalPrice: 700000,
-      discountPrice: 560000,
-      description: 'Industrial waterproof boots - 20% off bulk order',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1608613304810-2d4dd52511a2?w=400&q=80'
-    },
-    {
-      _id: '4',
-      name: 'Safety Gloves Bundle - 1000 Pairs',
-      category: 'Safety Hand Gloves',
-      quantity: 1000,
-      originalPrice: 800000,
-      discountPrice: 640000,
-      description: 'Leather work gloves - Mega bulk discount',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1617575521317-d2974f3b56d2?w=400&q=80'
-    },
-    {
-      _id: '5',
-      name: 'Starter Safety Kit - 50 Sets',
-      category: 'Starter Kit',
-      quantity: 50,
-      originalPrice: 500000,
-      discountPrice: 375000,
-      description: 'Complete safety kit: helmet, vest, gloves, goggles - 25% OFF',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80'
-    },
-    {
-      _id: '6',
-      name: 'Premium Worker Package - 30 Sets',
-      category: 'Premium Package',
-      quantity: 30,
-      originalPrice: 600000,
-      discountPrice: 450000,
-      description: 'Full worker protection kit with premium items',
-      isActive: false,
-      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80'
-    },
-    {
-      _id: '7',
-      name: 'Safety Goggles Bundle - 300 Units',
-      category: 'Safety Goggles',
-      quantity: 300,
-      originalPrice: 180000,
-      discountPrice: 135000,
-      description: 'Anti-fog safety goggles - Bulk discount 25%',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1574594143321-fd5ec44c0b18?w=400&q=80'
-    },
-    {
-      _id: '8',
-      name: 'Mixed Safety Bundle - 100 Sets',
-      category: 'Mixed Bundle',
-      quantity: 100,
-      originalPrice: 800000,
-      discountPrice: 640000,
-      description: 'Assorted safety equipment for construction sites',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1590845947670-c009801ffa74?w=400&q=80'
-    }
-  ]);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -140,6 +49,8 @@ export default function AdminBundleList() {
     'Premium Package'
   ];
 
+
+  
   useEffect(() => {
     // TEMPORARY: Comment out API call until CRUD is ready
     // fetchBundles();

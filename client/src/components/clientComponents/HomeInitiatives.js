@@ -1,6 +1,22 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 export default function ShieldifyServices() {
+  const navigate = useNavigate();
+
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    navigate('/products');
+    
+    // Wait a tick for the new page to render
+    setTimeout(() => {
+      const element = document.getElementById('products-top');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50); // 50ms delay
+  };
+
   const services = [
     {
       title: 'Individual Equipment',
@@ -51,6 +67,10 @@ export default function ShieldifyServices() {
                 <div className="service-content">
                   <h3 className="service-title-back">{service.title}</h3>
                   <p className="service-description">{service.description}</p>
+                  <br></br>
+                      <a href="#" className="sector-back-link" onClick={handleClick}>
+      Explore Products →
+    </a>   
                 </div>
               </div>
             </div>

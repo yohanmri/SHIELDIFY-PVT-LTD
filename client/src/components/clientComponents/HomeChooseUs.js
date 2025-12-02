@@ -1,29 +1,40 @@
 import React from 'react';
 import { CheckCircle, Zap, Award, TrendingUp } from 'lucide-react';
-
+ import { useNavigate } from 'react-router-dom';
 export default function WhyChooseUs() {
-  const rightFeatures = [
-    {
-      icon: TrendingUp,
-      title: 'Competitive Pricing',
-      description: 'Experience quality without breaking the bank—see our fair and competitive pricing.'
-    },
-    {
-      icon: Award,
-      title: 'Certified Experts',
-      description: 'Choose Shieldify for genuine expertise backed by certified professionals.'
-    },
-    {
-      icon: Zap,
-      title: 'Easy Financing',
-      description: "Don't let budget constraints stop you—explore our hassle-free financing options."
-    },
-    {
-      icon: CheckCircle,
-      title: '100% Satisfaction',
-      description: "Don't just take our word for it—enjoy what Shieldify customers say about Razor."
-    }
-  ];
+
+   
+
+  const navigate = useNavigate();
+
+
+    const handleClick = (e) => {
+    e.preventDefault();
+    navigate('/services');          // navigate to products page
+    window.scrollTo({ top: 0, behavior: 'smooth' });  // scroll to top
+  };
+const rightFeatures = [
+  {
+    icon: TrendingUp,
+    title: 'Competitive Pricing',
+    description: 'Get high-quality solutions at prices that work for growing businesses.'
+  },
+  {
+    icon: Zap,
+    title: 'Fast & Innovative',
+    description: 'We move quickly and think creatively to deliver solutions that make a difference.'
+  },
+  {
+    icon: CheckCircle,
+    title: 'Reliable Support',
+    description: 'Our team is always ready to help—guidance, troubleshooting, and ongoing assistance included.'
+  },
+  {
+    icon: Award,
+    title: 'Trusted by Clients',
+    description: 'We build relationships, not just products. Our clients rely on us to deliver consistently.'
+  }
+];
 
   return (
     <section className="why-choose-section">
@@ -35,11 +46,10 @@ export default function WhyChooseUs() {
           <h1 className="main-title">The Shieldify<br />Difference</h1>
           
           <p className="description">
-            For over a decade, we've been a trusted provider of premium safety equipment serving construction and manufacturing across Sri Lanka. Here's the transparency in safety solutions, from Colombo to the remote areas.
-          </p>
+“Premium safety equipment, trusted nationwide—from Colombo to the remotest sites, we keep your teams safe.”          </p>
 
           <div className="cta-links">
-            <a href="#" className="cta-link primary">Call Now →</a>
+            <a href="#" className="cta-link primary" onClick={handleClick}>Our Services →</a>
           </div>
         </div>
 

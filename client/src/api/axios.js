@@ -1,8 +1,15 @@
-//src->api->axios.js
-
 import axios from 'axios';
 
-const API = axios.create({
+// Public API (for landing page - no authentication)
+export const publicAPI = axios.create({
+  baseURL: 'http://localhost:3001/api',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Admin API (for admin panel - with authentication)
+export const adminAPI = axios.create({
   baseURL: 'http://localhost:3001/api',
   withCredentials: true,
   headers: {
@@ -10,8 +17,8 @@ const API = axios.create({
   }
 });
 
-// Add token to requests
-API.interceptors.request.use(
+// Add token to admin requests
+adminAPI.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -23,11 +30,10 @@ API.interceptors.request.use(
 );
 
 // Add response interceptor for better error handling
-API.interceptors.response.use(
+adminAPI.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem('token');
       localStorage.removeItem('admin');
       window.location.href = '/admin/login';
@@ -36,4 +42,5 @@ API.interceptors.response.use(
   }
 );
 
-export default API;
+// For backward compatibility, export default as adminAPI
+export default adminAPI;
