@@ -17,15 +17,15 @@ const LineChart = ({ data, height = 350 }) => {
   const maxValue = Math.max(...data.map(d => Math.max(d.visitors, d.unique, d.pageViews)));
   const width = 100;
   const padding = 10;
-  
+
   const getY = (value) => {
     return height - (value / maxValue) * (height - 40) - 20;
   };
-  
+
   const getX = (index) => {
     return (index / (data.length - 1)) * (width - padding * 2) + padding;
   };
-  
+
   const createPath = (dataKey) => {
     return data.map((d, i) => {
       const x = getX(i);
@@ -33,7 +33,7 @@ const LineChart = ({ data, height = 350 }) => {
       return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
     }).join(' ');
   };
-  
+
   return (
     <div style={{ position: 'relative', height: `${height}px`, width: '100%' }}>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
@@ -50,12 +50,12 @@ const LineChart = ({ data, height = 350 }) => {
             strokeDasharray="2,2"
           />
         ))}
-        
+
         {/* Lines */}
         <path d={createPath('visitors')} fill="none" stroke="#0079c1" strokeWidth="0.5" />
         <path d={createPath('unique')} fill="none" stroke="#00a884" strokeWidth="0.5" />
         <path d={createPath('pageViews')} fill="none" stroke="#ffa500" strokeWidth="0.5" />
-        
+
         {/* Points */}
         {data.map((d, i) => (
           <g key={i}>
@@ -65,14 +65,14 @@ const LineChart = ({ data, height = 350 }) => {
           </g>
         ))}
       </svg>
-      
+
       {/* Labels */}
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', fontSize: '12px', color: '#666' }}>
         {data.map((d, i) => (
           <span key={i}>{d.date}</span>
         ))}
       </div>
-      
+
       {/* Legend */}
       <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px', fontSize: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -96,30 +96,30 @@ const AreaChart = ({ data, height = 350 }) => {
   const maxValue = Math.max(...data.map(d => d.visitors + d.unique));
   const width = 100;
   const padding = 10;
-  
+
   const getY = (value) => {
     return height - (value / maxValue) * (height - 40) - 20;
   };
-  
+
   const getX = (index) => {
     return (index / (data.length - 1)) * (width - padding * 2) + padding;
   };
-  
+
   const createAreaPath = (dataKey) => {
     const topPath = data.map((d, i) => {
       const x = getX(i);
       const y = getY(d[dataKey]);
       return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
     }).join(' ');
-    
+
     const bottomPath = data.map((d, i) => {
       const x = getX(data.length - 1 - i);
       return `L ${x} ${height - 20}`;
     }).join(' ');
-    
+
     return `${topPath} ${bottomPath} Z`;
   };
-  
+
   return (
     <div style={{ position: 'relative', height: `${height}px`, width: '100%' }}>
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
@@ -136,19 +136,19 @@ const AreaChart = ({ data, height = 350 }) => {
             strokeDasharray="2,2"
           />
         ))}
-        
+
         {/* Areas */}
         <path d={createAreaPath('visitors')} fill="#0079c1" fillOpacity="0.3" stroke="#0079c1" strokeWidth="0.5" />
         <path d={createAreaPath('unique')} fill="#00a884" fillOpacity="0.3" stroke="#00a884" strokeWidth="0.5" />
       </svg>
-      
+
       {/* Labels */}
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', fontSize: '12px', color: '#666' }}>
         {data.map((d, i) => (
           <span key={i}>{d.date}</span>
         ))}
       </div>
-      
+
       {/* Legend */}
       <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px', fontSize: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -166,7 +166,7 @@ const AreaChart = ({ data, height = 350 }) => {
 
 const BarChart = ({ data, height = 350, dataKey = 'visitors' }) => {
   const maxValue = Math.max(...data.map(d => d[dataKey]));
-  
+
   return (
     <div style={{ position: 'relative', height: `${height}px`, width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: 'calc(100% - 40px)', padding: '20px 10px' }}>
@@ -193,7 +193,7 @@ const BarChart = ({ data, height = 350, dataKey = 'visitors' }) => {
           );
         })}
       </div>
-      
+
       {/* Labels */}
       <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '12px', color: '#666', padding: '0 10px' }}>
         {data.map((d, i) => (
@@ -213,51 +213,35 @@ export default function TotalVisitors() {
   const [viewType, setViewType] = useState('line');
 
   const [visitorStats, setVisitorStats] = useState({
-    totalVisitors: 45678,
-    uniqueVisitors: 32450,
-    pageViews: 128934,
-    avgSessionDuration: '3m 42s',
-    bounceRate: '42.3%',
-    returningVisitors: 13228,
-    newVisitors: 19222
+    totalVisitors: 0,
+    uniqueVisitors: 0,
+    pageViews: 0,
+    avgSessionDuration: '0m 0s',
+    bounceRate: '0%',
+    returningVisitors: 0,
+    newVisitors: 0
   });
 
-  const [visitorTrend, setVisitorTrend] = useState([
-    { date: 'Nov 24', visitors: 820, unique: 654, pageViews: 2340 },
-    { date: 'Nov 25', visitors: 1200, unique: 980, pageViews: 3450 },
-    { date: 'Nov 26', visitors: 950, unique: 756, pageViews: 2890 },
-    { date: 'Nov 27', visitors: 1450, unique: 1120, pageViews: 4120 },
-    { date: 'Nov 28', visitors: 1680, unique: 1340, pageViews: 5230 },
-    { date: 'Nov 29', visitors: 1890, unique: 1450, pageViews: 5890 },
-    { date: 'Nov 30', visitors: 2100, unique: 1680, pageViews: 6340 }
-  ]);
-
-  const [hourlyData, setHourlyData] = useState([
-    { hour: '00:00', visitors: 45 },
-    { hour: '03:00', visitors: 23 },
-    { hour: '06:00', visitors: 67 },
-    { hour: '09:00', visitors: 234 },
-    { hour: '12:00', visitors: 456 },
-    { hour: '15:00', visitors: 389 },
-    { hour: '18:00', visitors: 512 },
-    { hour: '21:00', visitors: 278 }
-  ]);
-
-  const [visitorTypes, setVisitorTypes] = useState([
-    { type: 'New Visitors', count: 19222, percentage: 59.2 },
-    { type: 'Returning Visitors', count: 13228, percentage: 40.8 }
-  ]);
+  const [visitorTrend, setVisitorTrend] = useState([]);
+  const [hourlyData, setHourlyData] = useState([]);
+  const [visitorTypes, setVisitorTypes] = useState([]);
 
   useEffect(() => {
-    // fetchVisitorData();
+    fetchVisitorData();
   }, [timeRange]);
 
   const fetchVisitorData = async () => {
     try {
       setLoading(true);
-      const response = await API.get(`/analytics/visitors?range=${timeRange}`);
-      // setVisitorStats(response.data.stats);
-      // setVisitorTrend(response.data.trend);
+      const response = await API.get(`/analytics/visitor-stats?range=${timeRange}`);
+
+      if (response.data.success) {
+        const data = response.data.data;
+        setVisitorStats(data);
+        setVisitorTrend(data.trend);
+        setHourlyData(data.hourlyData);
+        setVisitorTypes(data.visitorTypes);
+      }
     } catch (err) {
       console.error('Error fetching visitor data:', err);
     } finally {
@@ -280,13 +264,13 @@ export default function TotalVisitors() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto', background: 'var(--calcite-ui-background)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           {/* Header */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -323,8 +307,8 @@ export default function TotalVisitors() {
           </div>
 
           {/* Key Metrics Cards */}
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '24px'
@@ -404,7 +388,7 @@ export default function TotalVisitors() {
                   </calcite-button>
                 </div>
               </div>
-              
+
               {loading ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                   <calcite-loader scale="l"></calcite-loader>
@@ -432,43 +416,53 @@ export default function TotalVisitors() {
             <calcite-card>
               <div style={{ padding: '24px' }}>
                 <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>Visitor Types</h2>
-                {visitorTypes.map((type, index) => (
-                  <div key={index} style={{ marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: '600' }}>{type.type}</span>
-                      <span style={{ color: 'var(--calcite-ui-text-3)' }}>
-                        {formatNumber(type.count)} ({type.percentage}%)
-                      </span>
-                    </div>
-                    <div style={{ 
-                      width: '100%', 
-                      height: '12px', 
-                      background: 'var(--calcite-ui-foreground-2)', 
-                      borderRadius: '6px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{ 
-                        width: `${type.percentage}%`, 
-                        height: '100%', 
-                        background: index === 0 ? '#0079c1' : '#00a884',
-                        transition: 'width 0.3s ease'
-                      }}></div>
-                    </div>
+                {visitorTypes && visitorTypes.length > 0 ? (
+                  <>
+                    {visitorTypes.map((type, index) => (
+                      <div key={index} style={{ marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontWeight: '600' }}>{type.type}</span>
+                          <span style={{ color: 'var(--calcite-ui-text-3)' }}>
+                            {formatNumber(type.count)} ({type.percentage}%)
+                          </span>
+                        </div>
+                        <div style={{
+                          width: '100%',
+                          height: '12px',
+                          background: 'var(--calcite-ui-foreground-2)',
+                          borderRadius: '6px',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            width: `${type.percentage}%`,
+                            height: '100%',
+                            background: index === 0 ? '#0079c1' : '#00a884',
+                            transition: 'width 0.3s ease'
+                          }}></div>
+                        </div>
+                      </div>
+                    ))}
+                    {visitorTypes.length > 1 && (
+                      <div style={{
+                        marginTop: '24px',
+                        padding: '16px',
+                        background: 'var(--calcite-ui-foreground-2)',
+                        borderRadius: '4px'
+                      }}>
+                        <div style={{ fontSize: '14px', color: 'var(--calcite-ui-text-3)', marginBottom: '4px' }}>
+                          Returning Rate
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: '700', color: '#00a884' }}>
+                          {visitorTypes[1].percentage}%
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--calcite-ui-text-3)' }}>
+                    No visitor type data available
                   </div>
-                ))}
-                <div style={{ 
-                  marginTop: '24px', 
-                  padding: '16px', 
-                  background: 'var(--calcite-ui-foreground-2)', 
-                  borderRadius: '4px' 
-                }}>
-                  <div style={{ fontSize: '14px', color: 'var(--calcite-ui-text-3)', marginBottom: '4px' }}>
-                    Returning Rate
-                  </div>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#00a884' }}>
-                    {visitorTypes[1].percentage}%
-                  </div>
-                </div>
+                )}
               </div>
             </calcite-card>
           </div>
