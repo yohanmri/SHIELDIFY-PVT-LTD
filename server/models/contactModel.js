@@ -1,0 +1,39 @@
+
+const mongoose = require('mongoose');
+
+const contactSchema = new mongoose.Schema({
+  name: { 
+    type: String, 
+    required: true 
+  },
+  email: { 
+    type: String, 
+    required: true 
+  },
+  company: { 
+    type: String 
+  },
+  service: { 
+    type: String 
+  },
+  message: { 
+    type: String, 
+    required: true 
+  },
+  status: { 
+    type: String, 
+    enum: ['new', 'read', 'replied'],
+    default: 'new'
+  },
+  repliedAt: {
+    type: Date
+  },
+  repliedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  }
+}, { 
+  timestamps: true 
+});
+
+module.exports = mongoose.model('Contact', contactSchema);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { publicAPI } from '../../api/axios'; // Import the public API
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/contactComponent.css';
 
@@ -11,10 +12,84 @@ export default function ContactComponent() {
     message: ''
   });
 
-  const handleSubmit = (e) => {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handle input changes
+  const handleInputChange = (fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    // Clear error when user starts typing
+    if (error) setError('');
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add your form submission logic here
+    
+    // Debug: Log form data
+    console.log('Form Data:', formData);
+    console.log('Name:', formData.name, 'Length:', formData.name?.length);
+    console.log('Email:', formData.email, 'Length:', formData.email?.length);
+    console.log('Message:', formData.message, 'Length:', formData.message?.length);
+    
+    // Validation
+    if (!formData.name || !formData.email || !formData.message) {
+      console.log('Validation failed - empty fields');
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.name.trim() === '' || formData.email.trim() === '' || formData.message.trim() === '') {
+      console.log('Validation failed - whitespace only');
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      console.log('Validation failed - invalid email');
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    console.log('Validation passed, submitting...');
+
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Send data to backend using publicAPI
+      const response = await publicAPI.post('/contacts', formData);
+      
+      console.log('Response:', response.data);
+      
+      if (response.data.success) {
+        setSuccess(true);
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          service: '',
+          message: ''
+        });
+        
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          setSuccess(false);
+        }, 5000);
+      }
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError(err.response?.data?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const departmentalContacts = [
@@ -49,13 +124,13 @@ export default function ContactComponent() {
       icon: 'organization', 
       name: 'Email', 
       color: '#2d5f8d', 
-      url: 'mailto:info@gislk.com'
+      url: 'mailto:yohanm.ranasingha@gmail.com'
     }
   ];
 
   return (
     <div className="contact-container">
-         {/* Hero Section */}
+      {/* Hero Section */}
       <div style={{
         position: 'relative',
         height: 'clamp(250px, 40vh, 400px)',
@@ -98,7 +173,7 @@ export default function ContactComponent() {
             opacity: 0.95,
             fontWeight: '300'
           }}>
-            Ready to transform your spatial data? Let's discuss your GIS needs
+            Ready to protect your workforce? Let's discuss your safety equipment needs
           </p>
         </div>
       </div>
@@ -184,7 +259,7 @@ export default function ContactComponent() {
                 Website
               </h3>
               <a 
-                href="https://www.shieldify.com" 
+                href="https://www.shieldifylk.com" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="website-link"
@@ -203,11 +278,41 @@ export default function ContactComponent() {
               Fill out the form below and our team will get back to you within 24 hours
             </p>
 
-            <div>
+            {/* Success Message */}
+            {success && (
+              <div style={{
+                padding: '16px',
+                background: '#d4edda',
+                border: '1px solid #c3e6cb',
+                borderRadius: '4px',
+                marginBottom: '20px',
+                color: '#155724'
+              }}>
+                <strong>✓ Success!</strong> Your message has been sent successfully. We'll get back to you soon!
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div style={{
+                padding: '16px',
+                background: '#f8d7da',
+                border: '1px solid #f5c6cb',
+                borderRadius: '4px',
+                marginBottom: '20px',
+                color: '#721c24'
+              }}>
+                <strong>✗ Error:</strong> {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <calcite-label>
                   Full Name *
                   <calcite-input-text 
+                    value={formData.name}
+                    onInput={(e) => handleInputChange('name', e.target.value)}
                     placeholder="John Doe" 
                     required
                     scale="l"
@@ -220,6 +325,8 @@ export default function ContactComponent() {
                   Email Address *
                   <calcite-input-text 
                     type="email"
+                    value={formData.email}
+                    onInput={(e) => handleInputChange('email', e.target.value)}
                     placeholder="john@example.com" 
                     required
                     scale="l"
@@ -231,6 +338,8 @@ export default function ContactComponent() {
                 <calcite-label>
                   Company Name
                   <calcite-input-text 
+                    value={formData.company}
+                    onInput={(e) => handleInputChange('company', e.target.value)}
                     placeholder="Your Company" 
                     scale="l"
                   />
@@ -238,27 +347,52 @@ export default function ContactComponent() {
               </div>
 
               <div className="form-group">
-                <calcite-label>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#323232'
+                }}>
                   Service Interested In
-                  <calcite-select scale="l">
-                    <calcite-option label="Select a service">Select a service</calcite-option>
-                    <calcite-option value="mapping">GIS Mapping & Cartography</calcite-option>
-                    <calcite-option value="analysis">Spatial Analysis</calcite-option>
-                    <calcite-option value="remote">Remote Sensing</calcite-option>
-                    <calcite-option value="consulting">GIS Consulting</calcite-option>
-                    <calcite-option value="development">Custom Development</calcite-option>
-                    <calcite-option value="data">Data Management</calcite-option>
-                    <calcite-option value="training">Training</calcite-option>
-                    <calcite-option value="other">Other</calcite-option>
-                  </calcite-select>
-                </calcite-label>
+                </label>
+                <select 
+                  value={formData.service}
+                  onChange={(e) => handleInputChange('service', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '16px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    backgroundColor: '#fff',
+                    color: '#323232',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#2d5f8d'}
+                  onBlur={(e) => e.target.style.borderColor = '#ccc'}
+                >
+                  <option value="">Select a service</option>
+                  <option value="Safety Helmets">Safety Helmets</option>
+                  <option value="Gum Boots">Gum Boots</option>
+                  <option value="Safety Hand Gloves">Safety Hand Gloves</option>
+                  <option value="Safety Jacket">Safety Jacket</option>
+                  <option value="Safety Goggles">Safety Goggles</option>
+                  <option value="Bulk Order">Bulk Order</option>
+                  <option value="Bundle Package">Bundle Package</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               <div className="form-group-large">
                 <calcite-label>
                   Message *
                   <calcite-text-area 
-                    placeholder="Tell us about your project requirements..."
+                    value={formData.message}
+                    onInput={(e) => handleInputChange('message', e.target.value)}
+                    placeholder="Tell us about your safety equipment requirements..."
                     rows="6"
                     required
                     scale="l"
@@ -267,18 +401,20 @@ export default function ContactComponent() {
               </div>
 
               <calcite-button 
-                onClick={handleSubmit}
+                type="submit"
                 appearance="solid"
                 width="full"
                 scale="l"
                 icon-end="send"
+                loading={loading}
+                disabled={loading}
                 style={{
                   '--calcite-button-background': '#2d5f8d'
                 }}
               >
-                Send Message
+                {loading ? 'Sending...' : 'Send Message'}
               </calcite-button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -320,7 +456,7 @@ export default function ContactComponent() {
             Connect With Us
           </h2>
           <p className="social-description">
-            Follow us on social media for updates, insights, and shieldify resources
+            Follow us on social media for updates, insights, and safety equipment resources
           </p>
 
           <div className="social-links">
@@ -363,7 +499,7 @@ export default function ContactComponent() {
           height="100%"
           allowFullScreen=""
           loading="lazy"
-          title="GIS Solutions Location"
+          title="SHIELDIFY Location"
         />
       </div>
     </div>

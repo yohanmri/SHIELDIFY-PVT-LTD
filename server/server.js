@@ -12,6 +12,9 @@ const adminRoutes = require('./routes/adminRoutes');
 const adminBundleRoutes = require('./routes/adminBundleRoutes')
 const bundleRoutes = require('./routes/bundleRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const adminContactRoutes = require('./routes/adminContactRoutes');
+const publicContactRoutes = require('./routes/publicContactRoutes');
+
 
 const app = express();
 
@@ -45,6 +48,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/admin/bundles', adminBundleRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/admin/contacts', adminContactRoutes);
+app.use('/api/contacts', publicContactRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to SHIELDIFY Safety Equipment API' });

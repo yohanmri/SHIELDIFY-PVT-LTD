@@ -54,7 +54,8 @@ useEffect(() => {
 
   } else if (
     location.pathname.includes('/admin/dashboard') ||
-    location.pathname.includes('/admin/recent-activity')
+    location.pathname.includes('/admin/recent-activity') ||
+    location.pathname.includes('/admin/contact-view')
   ) {
     setActivePanel('dashboard');
   }
@@ -111,33 +112,45 @@ useEffect(() => {
           ></calcite-action>
         </calcite-action-group>
       </calcite-action-bar>
+{/* Dashboard Panel */}
+{activePanel === 'dashboard' && (
+  <calcite-panel heading="Dashboard" description="Overview and statistics">
+    <calcite-list>
+      <calcite-list-item
+        value="overview"
+        label="Overview"
+        description="Quick stats and cards"
+        onClick={() => handleNavigation('/admin/dashboard')}
+        style={{ cursor: 'pointer' }}
+      >
+        <calcite-icon slot="content-start" icon="dashboard" scale="s"></calcite-icon>
+      </calcite-list-item>
 
-      {/* Dashboard Panel */}
-      {activePanel === 'dashboard' && (
-        <calcite-panel heading="Dashboard" description="Overview and statistics">
-          <calcite-list>
-            <calcite-list-item
-              value="overview"
-              label="Overview"
-              description="Quick stats and cards"
-              onClick={() => handleNavigation('/admin/dashboard')}
-              style={{ cursor: 'pointer' }}
-            >
-              <calcite-icon slot="content-start" icon="dashboard" scale="s"></calcite-icon>
-            </calcite-list-item>
+      <calcite-list-item
+        value="recent-activity"
+        label="Recent Activity"
+        description="Latest updates"
+        onClick={() => handleNavigation('/admin/recent-activity')}
+        style={{ cursor: 'pointer' }}
+      >
+        <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
+      </calcite-list-item>
+    </calcite-list>
 
-            <calcite-list-item
-              value="recent-activity"
-              label="Recent Activity"
-              description="Latest updates"
-              onClick={() => handleNavigation('/admin/recent-activity')}
-              style={{ cursor: 'pointer' }}
-            >
-              <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
-            </calcite-list-item>
-          </calcite-list>
-        </calcite-panel>
-      )}
+    {/* Contact Section */}
+   <calcite-list>
+      <calcite-list-item
+        value="Contact"
+        label="Contact View Page"
+        description="Requests from page visitors"
+        onClick={() => handleNavigation('/admin/contact-view')}
+        style={{ cursor: 'pointer' }}
+      >
+        <calcite-icon slot="content-start" icon="email-address" scale="s"></calcite-icon>
+      </calcite-list-item>
+    </calcite-list>
+  </calcite-panel>
+)}
 
       {/* Products Panel */}
       {activePanel === 'products' && (
@@ -333,6 +346,8 @@ useEffect(() => {
                 <calcite-icon slot="content-start" icon="gear" scale="s"></calcite-icon>
               </calcite-list-item>
             </calcite-list-item-group>
+
+                      
           </calcite-list>
         </calcite-panel>
       )}

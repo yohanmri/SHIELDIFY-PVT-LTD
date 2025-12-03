@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
-import API from '../../api/axios';
+import { adminAPI } from '../../api/axios';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -11,9 +11,18 @@ import '@esri/calcite-components/components/calcite-select';
 import '@esri/calcite-components/components/calcite-option';
 import '@esri/calcite-components/components/calcite-loader';
 import '@esri/calcite-components/components/calcite-notice';
+import '@esri/calcite-components/components/calcite-icon';
 
 // Custom Bar Chart Component
 const HorizontalBarChart = ({ data, height = 400 }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px', color: '#6b6b6b' }}>
+        No page data available for this time period
+      </div>
+    );
+  }
+
   const maxValue = Math.max(...data.map(d => d.views));
   
   return (
@@ -23,7 +32,7 @@ const HorizontalBarChart = ({ data, height = 400 }) => {
         const barColor = index === 0 ? '#0079c1' : index === 1 ? '#00a884' : index === 2 ? '#ffa500' : '#6b6b6b';
         
         return (
-          <div key={item.page} style={{ marginBottom: '20px' }}>
+          <div key={item.path} style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                 <span style={{ 
@@ -93,91 +102,37 @@ const HorizontalBarChart = ({ data, height = 400 }) => {
 
 export default function PopularPages() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7days');
   
-  // TEMPORARY: Mock data based on your actual pages
   const [pageStats, setPageStats] = useState({
-    totalPageViews: 89234,
-    uniquePageViews: 62450,
-    avgTimeOnPage: '2m 18s',
-    totalPages: 5
+    totalPageViews: 0,
+    uniquePageViews: 0,
+    avgTimeOnPage: '0s',
+    totalPages: 0
   });
 
-  const [popularPages, setPopularPages] = useState([
-    { 
-      page: 'Home Page', 
-      path: '/', 
-      views: 32450, 
-      uniqueViews: 28340,
-      avgTime: '2m 45s',
-      bounceRate: 38.2,
-      exitRate: 25.4
-    },
-    { 
-      page: 'Products Page', 
-      path: '/products', 
-      views: 28920, 
-      uniqueViews: 24567,
-      avgTime: '3m 12s',
-      bounceRate: 32.1,
-      exitRate: 28.9
-    },
-    { 
-      page: 'About Page', 
-      path: '/about', 
-      views: 15670, 
-      uniqueViews: 13245,
-      avgTime: '2m 56s',
-      bounceRate: 42.5,
-      exitRate: 35.2
-    },
-    { 
-      page: 'Services Page', 
-      path: '/services', 
-      views: 8934, 
-      uniqueViews: 7823,
-      avgTime: '2m 21s',
-      bounceRate: 45.8,
-      exitRate: 38.6
-    },
-    { 
-      page: 'Contact Page', 
-      path: '/contact', 
-      views: 3260, 
-      uniqueViews: 2876,
-      avgTime: '1m 34s',
-      bounceRate: 28.4,
-      exitRate: 65.3
-    }
-  ]);
-
-  const [pageFlow, setPageFlow] = useState([
-    { from: 'Home Page', to: 'Products Page', count: 12340 },
-    { from: 'Products Page', to: 'Contact Page', count: 5670 },
-    { from: 'Home Page', to: 'About Page', count: 4890 },
-    { from: 'About Page', to: 'Services Page', count: 3450 },
-    { from: 'Services Page', to: 'Contact Page', count: 2120 }
-  ]);
-
-  const [entryPages, setEntryPages] = useState([
-    { page: 'Home Page', entries: 48234, percentage: 77.2 },
-    { page: 'Products Page', entries: 8920, percentage: 14.3 },
-    { page: 'About Page', entries: 3450, percentage: 5.5 },
-    { page: 'Services Page', entries: 1230, percentage: 2.0 },
-    { page: 'Contact Page', entries: 620, percentage: 1.0 }
-  ]);
+  const [popularPages, setPopularPages] = useState([]);
+  const [pageFlow, setPageFlow] = useState([]);
+  const [entryPages, setEntryPages] = useState([]);
 
   useEffect(() => {
-    // fetchPageData();
+    fetchPageData();
   }, [timeRange]);
 
   const fetchPageData = async () => {
     try {
       setLoading(true);
-      const response = await API.get(`/analytics/pages?range=${timeRange}`);
-      // setPageStats(response.data.stats);
-      // setPopularPages(response.data.pages);
+      const response = await adminAPI.get(`/analytics/popular-pages?range=${timeRange}`);
+      
+      if (response.data.success) {
+        const { stats, popularPages, entryPages, pageFlow } = response.data.data;
+        
+        setPageStats(stats);
+        setPopularPages(popularPages);
+        setEntryPages(entryPages);
+        setPageFlow(pageFlow);
+      }
     } catch (err) {
       console.error('Error fetching page data:', err);
     } finally {
@@ -247,7 +202,7 @@ export default function PopularPages() {
                   Total Page Views
                 </div>
                 <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--calcite-ui-brand)' }}>
-                  {formatNumber(pageStats.totalPageViews)}
+                  {loading ? '...' : formatNumber(pageStats.totalPageViews)}
                 </div>
               </div>
             </calcite-card>
@@ -258,7 +213,7 @@ export default function PopularPages() {
                   Unique Page Views
                 </div>
                 <div style={{ fontSize: '32px', fontWeight: '700', color: '#00a884' }}>
-                  {formatNumber(pageStats.uniquePageViews)}
+                  {loading ? '...' : formatNumber(pageStats.uniquePageViews)}
                 </div>
               </div>
             </calcite-card>
@@ -269,7 +224,7 @@ export default function PopularPages() {
                   Avg. Time on Page
                 </div>
                 <div style={{ fontSize: '32px', fontWeight: '700', color: '#9333ea' }}>
-                  {pageStats.avgTimeOnPage}
+                  {loading ? '...' : pageStats.avgTimeOnPage}
                 </div>
               </div>
             </calcite-card>
@@ -280,7 +235,7 @@ export default function PopularPages() {
                   Total Pages
                 </div>
                 <div style={{ fontSize: '32px', fontWeight: '700', color: '#ffa500' }}>
-                  {pageStats.totalPages}
+                  {loading ? '...' : pageStats.totalPages}
                 </div>
               </div>
             </calcite-card>
@@ -313,30 +268,40 @@ export default function PopularPages() {
                 <p style={{ fontSize: '13px', color: 'var(--calcite-ui-text-3)', marginBottom: '20px' }}>
                   Pages where visitors first land on your site
                 </p>
-                {entryPages.map((page, index) => (
-                  <div key={index} style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: '600', fontSize: '14px' }}>{page.page}</span>
-                      <span style={{ color: 'var(--calcite-ui-text-3)', fontSize: '14px' }}>
-                        {formatNumber(page.entries)} ({page.percentage}%)
-                      </span>
-                    </div>
-                    <div style={{ 
-                      width: '100%', 
-                      height: '8px', 
-                      background: 'var(--calcite-ui-foreground-2)', 
-                      borderRadius: '4px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{ 
-                        width: `${page.percentage}%`, 
-                        height: '100%', 
-                        background: index === 0 ? '#0079c1' : '#6b6b6b',
-                        transition: 'width 0.3s ease'
-                      }}></div>
-                    </div>
+                {loading ? (
+                  <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <calcite-loader scale="m"></calcite-loader>
                   </div>
-                ))}
+                ) : entryPages.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#6b6b6b' }}>
+                    No entry page data available
+                  </div>
+                ) : (
+                  entryPages.map((page, index) => (
+                    <div key={index} style={{ marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontWeight: '600', fontSize: '14px' }}>{page.page}</span>
+                        <span style={{ color: 'var(--calcite-ui-text-3)', fontSize: '14px' }}>
+                          {formatNumber(page.entries)} ({page.percentage}%)
+                        </span>
+                      </div>
+                      <div style={{ 
+                        width: '100%', 
+                        height: '8px', 
+                        background: 'var(--calcite-ui-foreground-2)', 
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{ 
+                          width: `${page.percentage}%`, 
+                          height: '100%', 
+                          background: index === 0 ? '#0079c1' : '#6b6b6b',
+                          transition: 'width 0.3s ease'
+                        }}></div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </calcite-card>
 
@@ -349,86 +314,104 @@ export default function PopularPages() {
                 <p style={{ fontSize: '13px', color: 'var(--calcite-ui-text-3)', marginBottom: '20px' }}>
                   Most common navigation paths
                 </p>
-                {pageFlow.map((flow, index) => (
-                  <div key={index} style={{ 
-                    padding: '16px',
-                    background: 'var(--calcite-ui-foreground-2)',
-                    borderRadius: '4px',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', color: 'var(--calcite-ui-text-3)' }}>
-                          {flow.from}
+                {loading ? (
+                  <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <calcite-loader scale="m"></calcite-loader>
+                  </div>
+                ) : pageFlow.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#6b6b6b' }}>
+                    No page transition data available
+                  </div>
+                ) : (
+                  pageFlow.map((flow, index) => (
+                    <div key={index} style={{ 
+                      padding: '16px',
+                      background: 'var(--calcite-ui-foreground-2)',
+                      borderRadius: '4px',
+                      marginBottom: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '13px', color: 'var(--calcite-ui-text-3)' }}>
+                            {flow.from}
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            margin: '4px 0'
+                          }}>
+                            <div style={{ 
+                              width: '20px', 
+                              height: '2px', 
+                              background: '#0079c1' 
+                            }}></div>
+                            <calcite-icon icon="arrow-right" scale="s"></calcite-icon>
+                            <div style={{ 
+                              width: '20px', 
+                              height: '2px', 
+                              background: '#0079c1' 
+                            }}></div>
+                          </div>
+                          <div style={{ fontSize: '13px', fontWeight: '600' }}>
+                            {flow.to}
+                          </div>
                         </div>
                         <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '8px',
-                          margin: '4px 0'
+                          fontSize: '20px', 
+                          fontWeight: '700', 
+                          color: '#0079c1',
+                          minWidth: '80px',
+                          textAlign: 'right'
                         }}>
-                          <div style={{ 
-                            width: '20px', 
-                            height: '2px', 
-                            background: '#0079c1' 
-                          }}></div>
-                          <calcite-icon icon="arrow-right" scale="s"></calcite-icon>
-                          <div style={{ 
-                            width: '20px', 
-                            height: '2px', 
-                            background: '#0079c1' 
-                          }}></div>
+                          {formatNumber(flow.count)}
                         </div>
-                        <div style={{ fontSize: '13px', fontWeight: '600' }}>
-                          {flow.to}
-                        </div>
-                      </div>
-                      <div style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '700', 
-                        color: '#0079c1',
-                        minWidth: '80px',
-                        textAlign: 'right'
-                      }}>
-                        {formatNumber(flow.count)}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </calcite-card>
           </div>
 
           {/* Performance Insights */}
-          <calcite-card>
-            <div style={{ padding: '24px' }}>
-              <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
-                Performance Insights
-              </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                <calcite-notice open icon="lightbulb" kind="success">
-                  <div slot="title">Strong Performance</div>
-                  <div slot="message">
-                    Products Page has the lowest bounce rate (32.1%) and highest engagement time
-                  </div>
-                </calcite-notice>
-                
-                <calcite-notice open icon="exclamation-mark-triangle" kind="warning">
-                  <div slot="title">Attention Needed</div>
-                  <div slot="message">
-                    Services Page has a 45.8% bounce rate. Consider improving content or CTAs
-                  </div>
-                </calcite-notice>
-                
-                <calcite-notice open icon="information" kind="brand">
-                  <div slot="title">Optimization Opportunity</div>
-                  <div slot="message">
-                    Contact Page is a high-exit page (65.3%). This is expected for conversion pages
-                  </div>
-                </calcite-notice>
+          {!loading && popularPages.length > 0 && (
+            <calcite-card>
+              <div style={{ padding: '24px' }}>
+                <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
+                  Performance Insights
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                  {popularPages[0] && (
+                    <calcite-notice open icon="lightbulb" kind="success">
+                      <div slot="title">Most Popular</div>
+                      <div slot="message">
+                        {popularPages[0].page} is your most visited page with {formatNumber(popularPages[0].views)} views
+                      </div>
+                    </calcite-notice>
+                  )}
+                  
+                  {entryPages[0] && (
+                    <calcite-notice open icon="pin" kind="brand">
+                      <div slot="title">Top Entry Point</div>
+                      <div slot="message">
+                        {entryPages[0].page} is where {entryPages[0].percentage}% of visitors first land
+                      </div>
+                    </calcite-notice>
+                  )}
+                  
+                  {pageFlow[0] && (
+                    <calcite-notice open icon="まflow-chart" kind="info">
+                      <div slot="title">Common Journey</div>
+                      <div slot="message">
+                        Most visitors go from {pageFlow[0].from} to {pageFlow[0].to}
+                      </div>
+                    </calcite-notice>
+                  )}
+                </div>
               </div>
-            </div>
-          </calcite-card>
+            </calcite-card>
+          )}
         </div>
       </div>
     </calcite-shell>

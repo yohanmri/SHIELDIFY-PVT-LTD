@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import HomePage from './pages/clientPages/HomePage';
 import ProductsPage from './pages/clientPages/ProductsPage';
 import ProductDetailsPage from './pages/clientPages/ProductDetailsPage';
@@ -32,10 +32,25 @@ import Settings from './pages/adminPages/Settings';
 import AdminBundleDetail from './pages/adminPages/BundleDetails';
 import BundlesPage from './pages/clientPages/BundlePage';
 import BundleDetailsPage from './pages/clientPages/BundleDetailsPage';
-
-// Import Protected Route Components
+import { trackPageView } from './utils/analytics';
 import ProtectedRoute from './components/ProtectedRoute';
-// import PublicRoute from './components/PublicRoute';
+import ContactViewPage from './pages/adminPages/ContactViewPage';
+
+// Analytics Tracker Component
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Track page view on route change, but only for public pages
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    
+    if (!isAdminRoute) {
+      trackPageView();
+    }
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   // Initialize Calcite Components
@@ -45,6 +60,7 @@ function App() {
 
   return (
     <Router>
+      <AnalyticsTracker />
       <div className="App">
         <Routes>
           {/* ============================================
@@ -66,10 +82,10 @@ function App() {
               ADMIN AUTHENTICATION (Public Route)
               ============================================ */}
           
-   <Route 
-  path="/admin/login" 
-  element={<ShieldifyLogin />} 
-/>
+          <Route 
+            path="/admin/login" 
+            element={<ShieldifyLogin />} 
+          />
 
           {/* ============================================
               PROTECTED ADMIN ROUTES
@@ -232,6 +248,15 @@ function App() {
               </ProtectedRoute>
             } 
           />
+                <Route 
+            path="/admin/contact-view" 
+            element={
+              <ProtectedRoute>
+                <ContactViewPage />
+              </ProtectedRoute>
+            } 
+          />
+
           <Route 
             path="/admin/settings" 
             element={
