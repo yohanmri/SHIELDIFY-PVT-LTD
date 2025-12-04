@@ -4,6 +4,7 @@
 // ============================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import API from '../../api/axios';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productDetails.css';
@@ -11,6 +12,7 @@ import '../../styles/clientStyles/productDetails.css';
 export default function ProductDetails({ setPage }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,6 +20,7 @@ export default function ProductDetails({ setPage }) {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [allProducts, setAllProducts] = useState([]);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const getColorClass = (color) => {
     return 'color-' + color.toLowerCase().replace(/[\/\s]/g, '-');
@@ -53,8 +56,26 @@ export default function ProductDetails({ setPage }) {
     }
   };
 
-  const handleInquire = () => {
-    alert(`Inquiry for ${quantity} unit${quantity !== 1 ? 's' : ''} of ${product?.name} has been sent! Our team will contact you within 24 hours.`);
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    const cartItem = {
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      itemType: 'product'
+    };
+
+    addToCart(cartItem, quantity);
+    setShowSuccessMessage(true);
+
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000);
+
+    // Reset quantity
     setQuantity(1);
   };
 
@@ -78,7 +99,7 @@ export default function ProductDetails({ setPage }) {
           <div slot="title">Error</div>
           <div slot="message">{error || 'Product not found'}</div>
         </calcite-notice>
-        <calcite-button 
+        <calcite-button
           appearance="solid"
           icon-start="arrow-left"
           onClick={() => navigate(-1)}
@@ -93,28 +114,28 @@ export default function ProductDetails({ setPage }) {
   return (
     <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        
+
 
 
         {/* Main Content Grid - Sidebar + Content */}
-        <div style={{ 
-          display: 'grid', 
+        <div style={{
+          display: 'grid',
           gridTemplateColumns: '280px 1fr',
           gap: '24px'
         }}>
-          
+
           {/* Left Sidebar - Filters (Like ProductsCard) */}
           <aside>
             <calcite-panel heading="Product Details">
-                      {/* Back Button */}
-        <calcite-button 
-          icon-start="arrow-left"
-          appearance="outline"
-          onClick={() => navigate(-1)}
-          style={{ marginBottom: '24px' }}
-        >
-          Back to Products
-        </calcite-button>
+              {/* Back Button */}
+              <calcite-button
+                icon-start="arrow-left"
+                appearance="outline"
+                onClick={() => navigate(-1)}
+                style={{ marginBottom: '24px' }}
+              >
+                Back to Products
+              </calcite-button>
               {/* Search */}
               {/* <calcite-block heading="Search" open>
                 <calcite-input
@@ -191,7 +212,7 @@ export default function ProductDetails({ setPage }) {
 
           {/* Right Column - Main Content */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
+
             {/* Header Section */}
             <div>
               <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: '700', color: 'var(--calcite-ui-text-1)' }}>
@@ -200,8 +221,8 @@ export default function ProductDetails({ setPage }) {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <calcite-chip appearance="solid" scale="s">{product.category}</calcite-chip>
                 <calcite-chip appearance="outline" scale="s">{product.workerType}</calcite-chip>
-                <calcite-chip 
-                  appearance="outline" 
+                <calcite-chip
+                  appearance="outline"
                   kind={product.stock > 0 ? 'brand' : 'danger'}
                   scale="s"
                 >
@@ -211,19 +232,19 @@ export default function ProductDetails({ setPage }) {
             </div>
 
             {/* Main Grid - Image + Details */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr', 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
               gap: '24px'
             }}>
-              
+
               {/* Left - Image */}
               <calcite-card>
                 <div slot="heading">Product Image</div>
-                <img 
+                <img
                   src={product.image}
                   alt={product.name}
-                  style={{ 
+                  style={{
                     width: '100%',
                     height: '400px',
                     objectFit: 'cover',
@@ -234,57 +255,57 @@ export default function ProductDetails({ setPage }) {
 
               {/* Right - Details */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                
+
                 {/* Price */}
                 <calcite-card>
                   <div slot="heading">Pricing & Stock</div>
                   <div style={{ padding: '20px' }}>
-                    <div style={{ 
-                      fontSize: '36px', 
-                      fontWeight: '700', 
+                    <div style={{
+                      fontSize: '36px',
+                      fontWeight: '700',
                       color: '#ff6b00',
                       marginBottom: '16px'
                     }}>
                       LKR {product.price.toLocaleString()}
                     </div>
-                    <div style={{ 
-                      display: 'grid', 
+                    <div style={{
+                      display: 'grid',
                       gridTemplateColumns: '1fr 1fr',
                       gap: '16px',
                       marginTop: '16px'
                     }}>
                       <div>
-                        <p style={{ 
-                          margin: '0 0 4px 0', 
-                          fontSize: '12px', 
+                        <p style={{
+                          margin: '0 0 4px 0',
+                          fontSize: '12px',
                           color: 'var(--calcite-ui-text-3)',
                           textTransform: 'uppercase',
                           fontWeight: '500'
                         }}>
                           Stock Quantity
                         </p>
-                        <p style={{ 
-                          margin: 0, 
-                          fontSize: '20px', 
+                        <p style={{
+                          margin: 0,
+                          fontSize: '20px',
                           fontWeight: '600'
                         }}>
                           {product.stock}
                         </p>
                       </div>
-                      
+
                       <div>
-                        <p style={{ 
-                          margin: '0 0 4px 0', 
-                          fontSize: '12px', 
+                        <p style={{
+                          margin: '0 0 4px 0',
+                          fontSize: '12px',
                           color: 'var(--calcite-ui-text-3)',
                           textTransform: 'uppercase',
                           fontWeight: '500'
                         }}>
                           Color
                         </p>
-                        <p style={{ 
-                          margin: 0, 
-                          fontSize: '20px', 
+                        <p style={{
+                          margin: 0,
+                          fontSize: '20px',
                           fontWeight: '600'
                         }}>
                           {product.color}
@@ -298,9 +319,9 @@ export default function ProductDetails({ setPage }) {
                 <calcite-card>
                   <div slot="heading">Request Quote</div>
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    
+
                     <div>
-                      <label style={{ 
+                      <label style={{
                         display: 'block',
                         marginBottom: '8px',
                         fontSize: '14px',
@@ -318,8 +339,8 @@ export default function ProductDetails({ setPage }) {
                         >
                           <calcite-icon icon="minus"></calcite-icon>
                         </calcite-button>
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           value={quantity}
                           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                           style={{
@@ -347,19 +368,33 @@ export default function ProductDetails({ setPage }) {
                     <calcite-button
                       appearance="solid"
                       width="full"
-                      icon-end="envelope"
-                      onClick={handleInquire}
+                      icon-end="shopping-cart"
+                      onClick={handleAddToCart}
                     >
-                      Send Inquiry ({quantity} Unit{quantity !== 1 ? 's' : ''})
+                      Add to Cart ({quantity} Unit{quantity !== 1 ? 's' : ''})
                     </calcite-button>
 
-                    <p style={{ 
+                    {showSuccessMessage && (
+                      <div style={{
+                        padding: '12px',
+                        background: '#00a884',
+                        color: 'white',
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        fontWeight: '600'
+                      }}>
+                        ✓ Added to cart successfully!
+                      </div>
+                    )}
+
+                    <p style={{
                       margin: 0,
-                      fontSize: '0.875rem', 
+                      fontSize: '0.875rem',
                       color: 'var(--calcite-ui-text-3)',
                       textAlign: 'center'
                     }}>
-                      Our team will respond within 24 hours
+                      View cart to submit your inquiry
                     </p>
                   </div>
                 </calcite-card>
@@ -411,7 +446,7 @@ export default function ProductDetails({ setPage }) {
                     gap: '16px'
                   }}>
                     {relatedProducts.map(relatedProduct => (
-                      <div 
+                      <div
                         key={relatedProduct._id}
                         onClick={() => handleRelatedProductClick(relatedProduct._id)}
                         style={{
@@ -430,7 +465,7 @@ export default function ProductDetails({ setPage }) {
                           e.currentTarget.style.boxShadow = 'none';
                         }}
                       >
-                        <img 
+                        <img
                           src={relatedProduct.image}
                           alt={relatedProduct.name}
                           style={{ width: '100%', height: '150px', objectFit: 'cover' }}

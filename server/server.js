@@ -14,6 +14,7 @@ const bundleRoutes = require('./routes/bundleRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const adminContactRoutes = require('./routes/adminContactRoutes');
 const publicContactRoutes = require('./routes/publicContactRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 
 const app = express();
@@ -41,15 +42,16 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/products', productRoutes); 
+app.use('/api/products', productRoutes);
 app.use('/api/bundles', bundleRoutes);
-app.use('/api/admin/products', adminProductRoutes); 
+app.use('/api/admin/products', adminProductRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/admin/bundles', adminBundleRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin/contacts', adminContactRoutes);
 app.use('/api/contacts', publicContactRoutes);
+app.use('/api/orders', orderRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to SHIELDIFY Safety Equipment API' });
@@ -58,7 +60,7 @@ app.get('/', (req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   // Handle PayloadTooLargeError specifically
   if (err.type === 'entity.too.large') {
     return res.status(413).json({
@@ -66,7 +68,7 @@ app.use((err, req, res, next) => {
       message: 'File or request is too large. Maximum size is 50MB.'
     });
   }
-  
+
   res.status(500).json({
     success: false,
     message: 'Something went wrong!',

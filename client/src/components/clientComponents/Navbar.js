@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import CartIcon from '../CartIcon';
+import CartModal from '../CartModal';
 import '@esri/calcite-components/components/calcite-navigation';
 import '@esri/calcite-components/components/calcite-navigation-logo';
 import '@esri/calcite-components/components/calcite-menu';
@@ -14,6 +16,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
 
 
@@ -73,8 +76,8 @@ export default function Navbar() {
 
   return (
     <>
-      <calcite-navigation 
-        slot="header" 
+      <calcite-navigation
+        slot="header"
         className={`main-nav ${scrolled ? 'scrolled' : ''}`}
       >
         <calcite-navigation-logo
@@ -91,7 +94,7 @@ export default function Navbar() {
         <div slot="content-end" className="nav-menu">
           <calcite-menu className="desktop-menu">
             {menuItems.map((item, index) => (
-              <calcite-menu-item 
+              <calcite-menu-item
                 key={index}
                 text={item.text}
                 active={activePage === item.page}
@@ -99,9 +102,9 @@ export default function Navbar() {
               ></calcite-menu-item>
             ))}
           </calcite-menu>
-          
+
           <div className="nav-action-group">
-            <img 
+            <img
               src="/assets/images/flag-SriLanka.png"
               alt="Sri Lanka Flag"
               className="flag-icon"
@@ -112,8 +115,10 @@ export default function Navbar() {
                 cursor: 'pointer'
               }}
             />
-            
-            <calcite-action 
+
+            <CartIcon onOpenCart={() => setCartOpen(true)} />
+
+            <calcite-action
               className="nav-action-button"
               icon="search"
               text="Search"
@@ -121,7 +126,7 @@ export default function Navbar() {
               onClick={handleSearch}
             ></calcite-action>
 
-            <calcite-action 
+            <calcite-action
               className="nav-action-button"
               icon="globe"
               text="Esri Website"
@@ -129,7 +134,7 @@ export default function Navbar() {
               onClick={handleEsriWebsite}
             ></calcite-action>
 
-            <calcite-action 
+            <calcite-action
               className="nav-action-button"
               icon="user"
               text="Sign In"
@@ -139,7 +144,7 @@ export default function Navbar() {
           </div>
 
           <div className="mobile-actions">
-            <calcite-action 
+            <calcite-action
               className="mobile-action-button"
               icon="search"
               text="Search"
@@ -147,7 +152,7 @@ export default function Navbar() {
               onClick={handleSearch}
             ></calcite-action>
 
-            <calcite-action 
+            <calcite-action
               className={`mobile-menu-toggle ${mobileMenuOpen ? 'active' : ''}`}
               icon={mobileMenuOpen ? 'x' : 'hamburger'}
               text="Menu"
@@ -162,7 +167,7 @@ export default function Navbar() {
         <div className="mobile-menu-content">
           <nav className="mobile-nav-links">
             {menuItems.map((item, index) => (
-              <div 
+              <div
                 key={index}
                 className={`mobile-nav-item ${activePage === item.page ? 'active' : ''}`}
                 onClick={() => handleNavClick(item.path)}
@@ -174,7 +179,7 @@ export default function Navbar() {
           </nav>
 
           <div className="mobile-bottom-actions">
-            <calcite-action 
+            <calcite-action
               className="mobile-bottom-action"
               icon="globe"
               text="Esri Website"
@@ -182,7 +187,7 @@ export default function Navbar() {
               onClick={handleEsriWebsite}
             ></calcite-action>
 
-            <calcite-action 
+            <calcite-action
               className="mobile-bottom-action"
               icon="user"
               text="Sign In"
@@ -192,6 +197,8 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 }

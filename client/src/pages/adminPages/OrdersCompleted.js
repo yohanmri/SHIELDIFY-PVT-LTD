@@ -20,93 +20,28 @@ export default function AdminOrdersCompleted() {
   const [searchQuery, setSearchQuery] = useState('');
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  
+
   // TEMPORARY: Mock data - only completed/delivered orders
-  const [orders, setOrders] = useState([
-    {
-      _id: 'ORD004',
-      orderNumber: 'ORD-2024-004',
-      customerName: 'Emily Davis',
-      customerEmail: 'emily@example.com',
-      customerPhone: '+94779876543',
-      items: [
-        { productName: 'Safety Helmet Bundle', quantity: 2, price: 200000 }
-      ],
-      totalAmount: 400000,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      shippingAddress: '321 Beach Rd, Negombo',
-      orderDate: '2024-11-20T11:45:00',
-      deliveryDate: '2024-11-24T00:00:00'
-    },
-    {
-      _id: 'ORD006',
-      orderNumber: 'ORD-2024-006',
-      customerName: 'Robert Taylor',
-      customerEmail: 'robert@example.com',
-      customerPhone: '+94775544332',
-      items: [
-        { productName: 'Safety Goggles', quantity: 100, price: 600 },
-        { productName: 'Ear Muffs', quantity: 50, price: 1200 }
-      ],
-      totalAmount: 120000,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      shippingAddress: '789 Industrial Zone, Ratmalana',
-      orderDate: '2024-11-18T08:20:00',
-      deliveryDate: '2024-11-22T00:00:00'
-    },
-    {
-      _id: 'ORD007',
-      orderNumber: 'ORD-2024-007',
-      customerName: 'Lisa Anderson',
-      customerEmail: 'lisa@example.com',
-      customerPhone: '+94778899001',
-      items: [
-        { productName: 'Gum Boots', quantity: 50, price: 3500 }
-      ],
-      totalAmount: 175000,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      shippingAddress: '456 Construction Site, Kurunegala',
-      orderDate: '2024-11-15T13:30:00',
-      deliveryDate: '2024-11-19T00:00:00'
-    },
-    {
-      _id: 'ORD008',
-      orderNumber: 'ORD-2024-008',
-      customerName: 'James Wilson',
-      customerEmail: 'james@example.com',
-      customerPhone: '+94772233445',
-      items: [
-        { productName: 'Safety Jacket', quantity: 200, price: 1500 },
-        { productName: 'Safety Helmets', quantity: 200, price: 2500 }
-      ],
-      totalAmount: 800000,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      shippingAddress: '123 Highway Project, Matara',
-      orderDate: '2024-11-10T10:00:00',
-      deliveryDate: '2024-11-15T00:00:00'
-    }
-  ]);
-  
+  const [orders, setOrders] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // fetchCompletedOrders();
+    fetchCompletedOrders();
   }, []);
 
   const fetchCompletedOrders = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/orders?status=delivered');
-      setOrders(response.data.data);
+      const response = await API.get('/orders/completed');
+      const ordersData = response.data?.data || [];
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
       setError(null);
     } catch (err) {
       console.error('Error fetching completed orders:', err);
       setError('Failed to load completed orders. Please try again.');
+      setOrders([]); // Ensure orders is always an array
     } finally {
       setLoading(false);
     }
@@ -114,10 +49,10 @@ export default function AdminOrdersCompleted() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      const matchesSearch = 
-        order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        (order.orderReference?.toLowerCase() || order.orderNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerEmail?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
   }, [searchQuery, orders]);
@@ -146,12 +81,12 @@ export default function AdminOrdersCompleted() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -165,7 +100,7 @@ export default function AdminOrdersCompleted() {
                 View all successfully delivered orders
               </p>
             </div>
-            <calcite-button 
+            <calcite-button
               appearance="outline"
               icon-start="arrow-left"
               onClick={() => navigate('/admin/orders-list')}
@@ -175,8 +110,8 @@ export default function AdminOrdersCompleted() {
           </div>
 
           {/* Stats Cards */}
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '24px'
@@ -210,9 +145,9 @@ export default function AdminOrdersCompleted() {
             </calcite-notice>
           )}
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -251,7 +186,7 @@ export default function AdminOrdersCompleted() {
                   label={`${order.orderNumber} - ${order.customerName}`}
                   description={`${order.items.length} items • Delivered: ${formatDate(order.deliveryDate)}`}
                 >
-                  <div slot="content-start" style={{ 
+                  <div slot="content-start" style={{
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
@@ -262,8 +197,8 @@ export default function AdminOrdersCompleted() {
                     </calcite-chip>
                   </div>
 
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
+                  <div slot="content-end" style={{
+                    display: 'flex',
                     gap: '12px',
                     alignItems: 'center'
                   }}>
@@ -275,8 +210,8 @@ export default function AdminOrdersCompleted() {
                         LKR {order.totalAmount.toLocaleString()}
                       </div>
                     </div>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="information"
                       scale="s"
                       onClick={() => handleViewDetails(order)}
@@ -299,7 +234,7 @@ export default function AdminOrdersCompleted() {
       </div>
 
       {/* Order Details Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={detailModalOpen}
         onCalciteModalClose={() => setDetailModalOpen(false)}
         width-scale="l"

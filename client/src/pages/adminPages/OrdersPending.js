@@ -23,93 +23,28 @@ export default function AdminOrdersPending() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processModalOpen, setProcessModalOpen] = useState(false);
-  
+
   // TEMPORARY: Mock data - only pending orders
-  const [orders, setOrders] = useState([
-    {
-      _id: 'ORD001',
-      orderNumber: 'ORD-2024-001',
-      customerName: 'John Smith',
-      customerEmail: 'john@example.com',
-      customerPhone: '+94771234567',
-      items: [
-        { productName: 'Safety Helmet', quantity: 10, price: 2500 },
-        { productName: 'Safety Jacket', quantity: 5, price: 3500 }
-      ],
-      totalAmount: 42500,
-      status: 'pending',
-      paymentStatus: 'paid',
-      shippingAddress: '123 Main St, Colombo 03',
-      orderDate: '2024-11-28T10:30:00',
-      deliveryDate: null
-    },
-    {
-      _id: 'ORD009',
-      orderNumber: 'ORD-2024-009',
-      customerName: 'Patricia Martinez',
-      customerEmail: 'patricia@example.com',
-      customerPhone: '+94776655443',
-      items: [
-        { productName: 'First Aid Box', quantity: 20, price: 4500 }
-      ],
-      totalAmount: 90000,
-      status: 'pending',
-      paymentStatus: 'paid',
-      shippingAddress: '234 Factory Road, Horana',
-      orderDate: '2024-11-29T09:15:00',
-      deliveryDate: null
-    },
-    {
-      _id: 'ORD010',
-      orderNumber: 'ORD-2024-010',
-      customerName: 'Mark Thompson',
-      customerEmail: 'mark@example.com',
-      customerPhone: '+94771122334',
-      items: [
-        { productName: 'Safety Goggles', quantity: 150, price: 600 },
-        { productName: 'Dust Mask', quantity: 200, price: 350 }
-      ],
-      totalAmount: 160000,
-      status: 'pending',
-      paymentStatus: 'pending',
-      shippingAddress: '567 Industrial Estate, Ekala',
-      orderDate: '2024-11-29T14:20:00',
-      deliveryDate: null
-    },
-    {
-      _id: 'ORD011',
-      orderNumber: 'ORD-2024-011',
-      customerName: 'Angela White',
-      customerEmail: 'angela@example.com',
-      customerPhone: '+94778877665',
-      items: [
-        { productName: 'Welders Hand Gloves', quantity: 30, price: 2200 }
-      ],
-      totalAmount: 66000,
-      status: 'pending',
-      paymentStatus: 'paid',
-      shippingAddress: '890 Workshop Lane, Piliyandala',
-      orderDate: '2024-11-30T08:00:00',
-      deliveryDate: null
-    }
-  ]);
-  
+  const [orders, setOrders] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // fetchPendingOrders();
+    fetchPendingOrders();
   }, []);
 
   const fetchPendingOrders = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/orders?status=pending');
-      setOrders(response.data.data);
+      const response = await API.get('/orders/pending');
+      const ordersData = response.data?.data || [];
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
       setError(null);
     } catch (err) {
       console.error('Error fetching pending orders:', err);
       setError('Failed to load pending orders. Please try again.');
+      setOrders([]); // Ensure orders is always an array
     } finally {
       setLoading(false);
     }
@@ -117,10 +52,10 @@ export default function AdminOrdersPending() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      const matchesSearch = 
-        order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        (order.orderReference?.toLowerCase() || order.orderNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerEmail?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
   }, [searchQuery, orders]);
@@ -135,12 +70,16 @@ export default function AdminOrdersPending() {
     setProcessModalOpen(true);
   };
 
-  const confirmProcess = async () => {
+  const confirmProcess = async (action) => {
     try {
-      // await API.put(`/orders/${selectedOrder._id}/status`, { status: 'processing' });
+      // action can be 'approved' or 'declined'
+      await API.put(`/orders/${selectedOrder._id}/status`, { status: action });
+      // Remove from pending list after processing
       setOrders(orders.filter(o => o._id !== selectedOrder._id));
       setProcessModalOpen(false);
       setSelectedOrder(null);
+      // Optionally refresh the list
+      fetchPendingOrders();
     } catch (err) {
       console.error('Error processing order:', err);
       alert('Failed to process order. Please try again.');
@@ -180,12 +119,12 @@ export default function AdminOrdersPending() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -199,7 +138,7 @@ export default function AdminOrdersPending() {
                 Orders awaiting processing and fulfillment
               </p>
             </div>
-            <calcite-button 
+            <calcite-button
               appearance="outline"
               icon-start="arrow-left"
               onClick={() => navigate('/admin/orders-list')}
@@ -209,8 +148,8 @@ export default function AdminOrdersPending() {
           </div>
 
           {/* Stats Cards */}
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
             gap: '16px',
             marginBottom: '24px'
@@ -263,9 +202,9 @@ export default function AdminOrdersPending() {
             </calcite-notice>
           )}
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -302,9 +241,9 @@ export default function AdminOrdersPending() {
                 <calcite-list-item
                   key={order._id}
                   label={`${order.orderNumber} - ${order.customerName}`}
-                  description={`${order.items.length} items • Ordered ${getWaitingTime(order.orderDate)}`}
+                  description={`${order.items.length} items • Ordered ${getWaitingTime(order.createdAt)}`}
                 >
-                  <div slot="content-start" style={{ 
+                  <div slot="content-start" style={{
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
@@ -318,8 +257,8 @@ export default function AdminOrdersPending() {
                     </calcite-chip>
                   </div>
 
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
+                  <div slot="content-end" style={{
+                    display: 'flex',
                     gap: '12px',
                     alignItems: 'center'
                   }}>
@@ -331,22 +270,37 @@ export default function AdminOrdersPending() {
                         LKR {order.totalAmount.toLocaleString()}
                       </div>
                     </div>
-                    <calcite-button 
-                      appearance="outline" 
-                      icon-start="information"
-                      scale="s"
+                    <button
                       onClick={() => handleViewDetails(order)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        border: '1px solid #0079c1',
+                        background: 'white',
+                        color: '#0079c1',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        marginRight: '8px'
+                      }}
                     >
                       Details
-                    </calcite-button>
-                    <calcite-button 
-                      icon-start="check"
-                      scale="s"
+                    </button>
+                    <button
                       onClick={() => handleProcessOrder(order)}
-                      disabled={order.paymentStatus !== 'paid'}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        background: '#0079c1',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600'
+                      }}
                     >
                       Process
-                    </calcite-button>
+                    </button>
                   </div>
                 </calcite-list-item>
               ))}
@@ -363,7 +317,7 @@ export default function AdminOrdersPending() {
       </div>
 
       {/* Order Details Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={detailModalOpen}
         onCalciteModalClose={() => setDetailModalOpen(false)}
         width-scale="l"
@@ -379,8 +333,8 @@ export default function AdminOrdersPending() {
                   </h3>
                   <div style={{ fontSize: '14px' }}>
                     <p><strong>Order Number:</strong> {selectedOrder.orderNumber}</p>
-                    <p><strong>Order Date:</strong> {formatDate(selectedOrder.orderDate)}</p>
-                    <p><strong>Waiting Time:</strong> {getWaitingTime(selectedOrder.orderDate)}</p>
+                    <p><strong>Order Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
+                    <p><strong>Waiting Time:</strong> {getWaitingTime(selectedOrder.createdAt)}</p>
                     <p><strong>Status:</strong> <calcite-chip scale="s" kind="warning">PENDING</calcite-chip></p>
                     <p><strong>Payment Status:</strong> <calcite-chip scale="s" kind={selectedOrder.paymentStatus === 'paid' ? 'success' : 'neutral'}>{selectedOrder.paymentStatus}</calcite-chip></p>
                   </div>
@@ -390,11 +344,13 @@ export default function AdminOrdersPending() {
                   <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>
                     Customer Information
                   </h3>
-                  <div style={{ fontSize: '14px' }}>
-                    <p><strong>Name:</strong> {selectedOrder.customerName}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <p><strong>Customer Name:</strong> {selectedOrder.customerName}</p>
                     <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
                     <p><strong>Phone:</strong> {selectedOrder.customerPhone}</p>
-                    <p><strong>Address:</strong> {selectedOrder.shippingAddress}</p>
+                    <p><strong>Order Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
+                    <p><strong>Order Reference:</strong> {selectedOrder.orderReference || selectedOrder.orderNumber}</p>
+                    <p><strong>Total Amount:</strong> LKR {(selectedOrder.totalAmount || 0).toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -441,8 +397,8 @@ export default function AdminOrdersPending() {
             </div>
           )}
         </div>
-        <calcite-button 
-          slot="primary" 
+        <calcite-button
+          slot="primary"
           onClick={() => {
             setDetailModalOpen(false);
             if (selectedOrder?.paymentStatus === 'paid') {
@@ -459,7 +415,7 @@ export default function AdminOrdersPending() {
       </calcite-modal>
 
       {/* Process Order Confirmation Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={processModalOpen}
         onCalciteModalClose={() => setProcessModalOpen(false)}
         width-scale="s"
@@ -469,21 +425,61 @@ export default function AdminOrdersPending() {
           {selectedOrder && (
             <div>
               <calcite-notice open icon="information" kind="brand">
-                <div slot="title">Confirm Processing</div>
+                <div slot="title">Confirm Action</div>
                 <div slot="message">
-                  Are you ready to process order <strong>{selectedOrder.orderNumber}</strong>?
-                  This will move the order to the processing queue.
+                  Please approve or decline order <strong>{selectedOrder.orderReference || selectedOrder.orderNumber}</strong>.
+                  This action cannot be undone.
                 </div>
               </calcite-notice>
             </div>
-          )}
+          )}\n        </div>
+        <div slot="footer" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', padding: '16px' }}>
+          <button
+            onClick={() => setProcessModalOpen(false)}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              background: 'white',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#333'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => confirmProcess('rejected')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '4px',
+              border: 'none',
+              background: '#dc2626',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: 'white'
+            }}
+          >
+            Reject
+          </button>
+          <button
+            onClick={() => confirmProcess('approved')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '4px',
+              border: 'none',
+              background: '#16a34a',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: 'white'
+            }}
+          >
+            Approve
+          </button>
         </div>
-        <calcite-button slot="primary" onClick={confirmProcess}>
-          Start Processing
-        </calcite-button>
-        <calcite-button slot="secondary" appearance="outline" onClick={() => setProcessModalOpen(false)}>
-          Cancel
-        </calcite-button>
       </calcite-modal>
     </calcite-shell>
   );

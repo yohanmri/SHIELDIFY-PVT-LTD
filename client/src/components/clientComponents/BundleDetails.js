@@ -4,6 +4,7 @@
 // ============================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import { getPublicBundleById, getPublicBundles } from '../../api/axios';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productDetails.css';
@@ -12,6 +13,7 @@ import '../../styles/clientStyles/bundleDetails.css';
 export default function BundleDetails({ setPage }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [bundle, setBundle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ export default function BundleDetails({ setPage }) {
   const [relatedBundles, setRelatedBundles] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [allBundles, setAllBundles] = useState([]);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     fetchBundle();
@@ -67,16 +70,26 @@ export default function BundleDetails({ setPage }) {
     return bundle.discountPrice * quantity;
   };
 
-  const handleInquire = () => {
-    const totalSavings = calculateTotalSavings();
-    alert(
-      `🎉 Inquiry sent successfully!\n\n` +
-      `Bundle: ${bundle?.name}\n` +
-      `Quantity: ${quantity} bundle${quantity !== 1 ? 's' : ''}\n` +
-      `Total Price: LKR ${calculateTotalPrice().toLocaleString()}\n` +
-      `Total Savings: LKR ${totalSavings.toLocaleString()}\n\n` +
-      `Our team will contact you within 24 hours with your quote!`
-    );
+  const handleAddToCart = () => {
+    if (!bundle) return;
+
+    const cartItem = {
+      _id: bundle._id,
+      name: bundle.name,
+      price: bundle.discountPrice,
+      image: bundle.image,
+      itemType: 'bundle'
+    };
+
+    addToCart(cartItem, quantity);
+    setShowSuccessMessage(true);
+
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000);
+
+    // Reset quantity
     setQuantity(1);
   };
 
@@ -100,7 +113,7 @@ export default function BundleDetails({ setPage }) {
           <div slot="title">Error</div>
           <div slot="message">{error || 'Bundle not found'}</div>
         </calcite-notice>
-        <calcite-button 
+        <calcite-button
           appearance="solid"
           icon-start="arrow-left"
           onClick={() => navigate(-1)}
@@ -115,19 +128,19 @@ export default function BundleDetails({ setPage }) {
   return (
     <div className="bundle-details-container">
       <div className="bundle-details-wrapper">
-        
+
         {/* Main Content Grid - Sidebar + Content */}
         <div className="bundle-main-grid">
-          
+
           {/* Left Sidebar */}
           <aside>
             <calcite-panel heading="Bundle Details">
               {/* Back Button */}
-              <calcite-button 
+              <calcite-button
                 icon-start="arrow-left"
                 appearance="outline"
                 onClick={() => navigate(-1)}
-               
+
                 style={{ margin: '12px' }}
               >
                 Back to Bundles
@@ -221,24 +234,24 @@ export default function BundleDetails({ setPage }) {
 
           {/* Right Column - Main Content */}
           <div className="bundle-content-column">
-            
+
             {/* Header Section */}
             <div className="bundle-header">
               <div className="bundle-header-content">
-             <div className="bundle-chips">
-  <div className="bundle-tag">
-    <calcite-icon icon="apps" scale="s"></calcite-icon>
-    <span>{bundle.category}</span>
-  </div>
-  <div className="bundle-tag">
-    <calcite-icon icon="collection" scale="s"></calcite-icon>
-    <span>{bundle.quantity} Items</span>
-  </div>
-  <div className="bundle-tag bundle-tag-discount">
-    <calcite-icon icon="tag" scale="s"></calcite-icon>
-    <span>{calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF</span>
-  </div>
-</div>
+                <div className="bundle-chips">
+                  <div className="bundle-tag">
+                    <calcite-icon icon="apps" scale="s"></calcite-icon>
+                    <span>{bundle.category}</span>
+                  </div>
+                  <div className="bundle-tag">
+                    <calcite-icon icon="collection" scale="s"></calcite-icon>
+                    <span>{bundle.quantity} Items</span>
+                  </div>
+                  <div className="bundle-tag bundle-tag-discount">
+                    <calcite-icon icon="tag" scale="s"></calcite-icon>
+                    <span>{calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF</span>
+                  </div>
+                </div>
                 <h1 className="bundle-title">{bundle.name}</h1>
                 {bundle.description && (
                   <p className="bundle-description">{bundle.description}</p>
@@ -248,15 +261,15 @@ export default function BundleDetails({ setPage }) {
 
             {/* Main Grid - Image + Pricing */}
             <div className="image-pricing-grid">
-              
+
               {/* Left Column - Image and Why Choose */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                
+
                 {/* Image Card */}
                 <calcite-card>
                   <div slot="heading">Bundle Contents</div>
                   <div className="bundle-image-wrapper">
-                    <img 
+                    <img
                       src={bundle.image}
                       alt={bundle.name}
                       className="bundle-image"
@@ -316,7 +329,7 @@ export default function BundleDetails({ setPage }) {
 
               {/* Right - Pricing & Order */}
               <div className="pricing-column">
-                
+
                 {/* Pricing Card */}
                 <calcite-card>
                   <div slot="heading">Bundle Pricing</div>
@@ -353,7 +366,7 @@ export default function BundleDetails({ setPage }) {
                 <calcite-card>
                   <div slot="heading">Request Your Quote</div>
                   <div className="order-content">
-                    
+
                     {/* Quantity Selector */}
                     <div>
                       <label className="quantity-label">Number of Bundles</label>
@@ -366,8 +379,8 @@ export default function BundleDetails({ setPage }) {
                         >
                           <calcite-icon icon="minus"></calcite-icon>
                         </calcite-button>
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           value={quantity}
                           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                           className="quantity-input"
@@ -410,16 +423,31 @@ export default function BundleDetails({ setPage }) {
                       appearance="solid"
                       width="full"
                       scale="l"
-                      icon-end="envelope"
-                      onClick={handleInquire}
+                      icon-end="shopping-cart"
+                      onClick={handleAddToCart}
                     >
-                      Send Inquiry for {quantity} Bundle{quantity !== 1 ? 's' : ''}
+                      Add to Cart ({quantity} Bundle{quantity !== 1 ? 's' : ''})
                     </calcite-button>
+
+                    {showSuccessMessage && (
+                      <div style={{
+                        padding: '12px',
+                        background: '#00a884',
+                        color: 'white',
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        marginTop: '12px'
+                      }}>
+                        ✓ Added to cart successfully!
+                      </div>
+                    )}
 
                     <div className="info-box">
                       <calcite-icon icon="information" scale="s"></calcite-icon>
                       <p className="info-text">
-                        Response within 24 hours guaranteed
+                        View cart to submit your inquiry
                       </p>
                     </div>
                   </div>
@@ -434,7 +462,7 @@ export default function BundleDetails({ setPage }) {
                 <div style={{ padding: '20px' }}>
                   <div className="related-grid">
                     {relatedBundles.map(relatedBundle => (
-                      <div 
+                      <div
                         key={relatedBundle._id}
                         onClick={() => handleRelatedBundleClick(relatedBundle._id)}
                         className="related-bundle-card"
@@ -442,7 +470,7 @@ export default function BundleDetails({ setPage }) {
                         <div className="related-discount-badge">
                           {calculateDiscount(relatedBundle.originalPrice, relatedBundle.discountPrice)}% OFF
                         </div>
-                        <img 
+                        <img
                           src={relatedBundle.image}
                           alt={relatedBundle.name}
                           className="related-image"

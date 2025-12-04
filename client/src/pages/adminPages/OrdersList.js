@@ -25,118 +25,37 @@ export default function AdminOrdersList() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
-  
+
   // TEMPORARY: Mock data
-  const [orders, setOrders] = useState([
-    {
-      _id: 'ORD001',
-      orderNumber: 'ORD-2024-001',
-      customerName: 'John Smith',
-      customerEmail: 'john@example.com',
-      customerPhone: '+94771234567',
-      items: [
-        { productName: 'Safety Helmet', quantity: 10, price: 2500 },
-        { productName: 'Safety Jacket', quantity: 5, price: 3500 }
-      ],
-      totalAmount: 42500,
-      status: 'pending',
-      paymentStatus: 'paid',
-      shippingAddress: '123 Main St, Colombo 03',
-      orderDate: '2024-11-28T10:30:00',
-      deliveryDate: null
-    },
-    {
-      _id: 'ORD002',
-      orderNumber: 'ORD-2024-002',
-      customerName: 'Sarah Johnson',
-      customerEmail: 'sarah@example.com',
-      customerPhone: '+94777654321',
-      items: [
-        { productName: 'Safety Goggles', quantity: 50, price: 600 }
-      ],
-      totalAmount: 30000,
-      status: 'processing',
-      paymentStatus: 'paid',
-      shippingAddress: '456 Park Ave, Kandy',
-      orderDate: '2024-11-27T14:20:00',
-      deliveryDate: null
-    },
-    {
-      _id: 'ORD003',
-      orderNumber: 'ORD-2024-003',
-      customerName: 'Michael Brown',
-      customerEmail: 'michael@example.com',
-      customerPhone: '+94773456789',
-      items: [
-        { productName: 'Gum Boots', quantity: 20, price: 3500 },
-        { productName: 'Safety Gloves', quantity: 30, price: 800 }
-      ],
-      totalAmount: 94000,
-      status: 'shipped',
-      paymentStatus: 'paid',
-      shippingAddress: '789 Lake Road, Galle',
-      orderDate: '2024-11-25T09:15:00',
-      deliveryDate: '2024-11-30T00:00:00'
-    },
-    {
-      _id: 'ORD004',
-      orderNumber: 'ORD-2024-004',
-      customerName: 'Emily Davis',
-      customerEmail: 'emily@example.com',
-      customerPhone: '+94779876543',
-      items: [
-        { productName: 'Safety Helmet Bundle', quantity: 2, price: 200000 }
-      ],
-      totalAmount: 400000,
-      status: 'delivered',
-      paymentStatus: 'paid',
-      shippingAddress: '321 Beach Rd, Negombo',
-      orderDate: '2024-11-20T11:45:00',
-      deliveryDate: '2024-11-24T00:00:00'
-    },
-    {
-      _id: 'ORD005',
-      orderNumber: 'ORD-2024-005',
-      customerName: 'David Wilson',
-      customerEmail: 'david@example.com',
-      customerPhone: '+94771112233',
-      items: [
-        { productName: 'First Aid Box', quantity: 15, price: 4500 }
-      ],
-      totalAmount: 67500,
-      status: 'cancelled',
-      paymentStatus: 'refunded',
-      shippingAddress: '555 Hill St, Nuwara Eliya',
-      orderDate: '2024-11-22T16:30:00',
-      deliveryDate: null
-    }
-  ]);
-  
+  const [orders, setOrders] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const statusOptions = [
     { value: 'all', label: 'All Orders' },
     { value: 'pending', label: 'Pending' },
-    { value: 'processing', label: 'Processing' },
-    { value: 'shipped', label: 'Shipped' },
-    { value: 'delivered', label: 'Delivered' },
-    { value: 'cancelled', label: 'Cancelled' }
+    { value: 'approved', label: 'Approved' },
+    { value: 'rejected', label: 'Rejected' },
+    { value: 'delivered', label: 'Delivered' }
   ];
 
   useEffect(() => {
-    // fetchOrders();
+    fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const response = await API.get('/orders');
-      setOrders(response.data.data);
+      // getAllOrders returns { success, data: { orders, totalPages, currentPage, totalOrders } }
+      const ordersData = response.data?.data?.orders || response.data?.data || [];
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
       setError(null);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError('Failed to load orders. Please try again.');
+      setOrders([]); // Ensure orders is always an array
     } finally {
       setLoading(false);
     }
@@ -145,10 +64,10 @@ export default function AdminOrdersList() {
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
-      const matchesSearch = 
-        order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        (order.orderReference?.toLowerCase() || order.orderNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (order.customerEmail?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       return matchesStatus && matchesSearch;
     });
   }, [selectedStatus, searchQuery, orders]);
@@ -177,12 +96,16 @@ export default function AdminOrdersList() {
 
   const confirmStatusChange = async () => {
     try {
-      // await API.put(`/orders/${selectedOrder._id}/status`, { status: newStatus });
-      setOrders(orders.map(o => 
+      await API.put(`/orders/${selectedOrder._id}/status`, { status: newStatus });
+      setOrders(orders.map(o =>
         o._id === selectedOrder._id ? { ...o, status: newStatus } : o
       ));
       setStatusModalOpen(false);
       setSelectedOrder(null);
+      // Show success notification
+      alert(`Order status updated to ${newStatus} successfully!`);
+      // Refresh orders from backend
+      fetchOrders();
     } catch (err) {
       console.error('Error updating status:', err);
       alert('Failed to update order status. Please try again.');
@@ -204,10 +127,9 @@ export default function AdminOrdersList() {
     return {
       total: orders.length,
       pending: orders.filter(o => o.status === 'pending').length,
-      processing: orders.filter(o => o.status === 'processing').length,
-      shipped: orders.filter(o => o.status === 'shipped').length,
-      delivered: orders.filter(o => o.status === 'delivered').length,
-      cancelled: orders.filter(o => o.status === 'cancelled').length
+      approved: orders.filter(o => o.status === 'approved').length,
+      rejected: orders.filter(o => o.status === 'rejected').length,
+      delivered: orders.filter(o => o.status === 'delivered').length
     };
   }, [orders]);
 
@@ -215,12 +137,12 @@ export default function AdminOrdersList() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -237,8 +159,8 @@ export default function AdminOrdersList() {
           </div>
 
           {/* Stats Cards */}
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
             gap: '16px',
             marginBottom: '24px'
@@ -266,20 +188,20 @@ export default function AdminOrdersList() {
             <calcite-card>
               <div style={{ padding: '16px', textAlign: 'center' }}>
                 <div style={{ fontSize: '28px', fontWeight: '700', color: '#0079c1' }}>
-                  {orderStats.processing}
+                  {orderStats.approved}
                 </div>
                 <div style={{ fontSize: '14px', color: 'var(--calcite-ui-text-3)', marginTop: '4px' }}>
-                  Processing
+                  Approved
                 </div>
               </div>
             </calcite-card>
             <calcite-card>
               <div style={{ padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '28px', fontWeight: '700', color: '#00a884' }}>
-                  {orderStats.shipped}
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#dc2626' }}>
+                  {orderStats.rejected}
                 </div>
                 <div style={{ fontSize: '14px', color: 'var(--calcite-ui-text-3)', marginTop: '4px' }}>
-                  Shipped
+                  Rejected
                 </div>
               </div>
             </calcite-card>
@@ -302,9 +224,9 @@ export default function AdminOrdersList() {
             </calcite-notice>
           )}
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -318,7 +240,7 @@ export default function AdminOrdersList() {
               clearable
               style={{ flex: '1', minWidth: '300px' }}
             />
-            
+
             <calcite-select
               value={selectedStatus}
               onCalciteSelectChange={(e) => setSelectedStatus(e.target.value)}
@@ -350,10 +272,10 @@ export default function AdminOrdersList() {
               {filteredOrders.map(order => (
                 <calcite-list-item
                   key={order._id}
-                  label={`${order.orderNumber} - ${order.customerName}`}
-                  description={`${order.items.length} items • ${formatDate(order.orderDate)}`}
+                  label={`${order.orderReference || 'Order'} - ${order.customerName}`}
+                  description={`${order.items.length} items • ${formatDate(order.createdAt)}`}
                 >
-                  <div slot="content-start" style={{ 
+                  <div slot="content-start" style={{
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
@@ -364,8 +286,8 @@ export default function AdminOrdersList() {
                     </calcite-chip>
                   </div>
 
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
+                  <div slot="content-end" style={{
+                    display: 'flex',
                     gap: '12px',
                     alignItems: 'center'
                   }}>
@@ -377,16 +299,16 @@ export default function AdminOrdersList() {
                         LKR {order.totalAmount.toLocaleString()}
                       </div>
                     </div>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="information"
                       scale="s"
                       onClick={() => handleViewDetails(order)}
                     >
                       Details
                     </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="refresh"
                       scale="s"
                       onClick={() => handleStatusChange(order)}
@@ -409,7 +331,7 @@ export default function AdminOrdersList() {
       </div>
 
       {/* Order Details Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={detailModalOpen}
         onCalciteModalClose={() => setDetailModalOpen(false)}
         width-scale="l"
@@ -424,15 +346,23 @@ export default function AdminOrdersList() {
                     Order Information
                   </h3>
                   <div style={{ fontSize: '14px' }}>
-                    <p><strong>Order Number:</strong> {selectedOrder.orderNumber}</p>
-                    <p><strong>Order Date:</strong> {formatDate(selectedOrder.orderDate)}</p>
-                    <p><strong>Status:</strong> <calcite-chip scale="s" kind={getStatusChipKind(selectedOrder.status)}>
+                    <p><strong>Order Reference:</strong> {selectedOrder.orderReference || 'N/A'}</p>
+                    <p><strong>Order Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
+                    <p><strong>Status:</strong> <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: selectedOrder.status === 'pending' ? '#fef3c7' :
+                        selectedOrder.status === 'approved' ? '#d1fae5' :
+                          selectedOrder.status === 'rejected' ? '#fee2e2' : '#dcfce7',
+                      color: selectedOrder.status === 'pending' ? '#92400e' :
+                        selectedOrder.status === 'approved' ? '#065f46' :
+                          selectedOrder.status === 'rejected' ? '#991b1b' : '#166534',
+                      fontSize: '12px',
+                      fontWeight: '600'
+                    }}>
                       {selectedOrder.status.toUpperCase()}
-                    </calcite-chip></p>
-                    <p><strong>Payment Status:</strong> {selectedOrder.paymentStatus}</p>
-                    {selectedOrder.deliveryDate && (
-                      <p><strong>Delivery Date:</strong> {formatDate(selectedOrder.deliveryDate)}</p>
-                    )}
+                    </span></p>
+                    <p><strong>Total Amount:</strong> LKR {(selectedOrder.totalAmount || 0).toLocaleString()}</p>
                   </div>
                 </div>
 
@@ -444,49 +374,41 @@ export default function AdminOrdersList() {
                     <p><strong>Name:</strong> {selectedOrder.customerName}</p>
                     <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
                     <p><strong>Phone:</strong> {selectedOrder.customerPhone}</p>
-                    <p><strong>Address:</strong> {selectedOrder.shippingAddress}</p>
+                    {selectedOrder.notes && (
+                      <p><strong>Notes:</strong> {selectedOrder.notes}</p>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>
                   Order Items
                 </h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--calcite-ui-border-2)' }}>
-                      <th style={{ textAlign: 'left', padding: '8px' }}>Product</th>
-                      <th style={{ textAlign: 'center', padding: '8px' }}>Quantity</th>
-                      <th style={{ textAlign: 'right', padding: '8px' }}>Price</th>
-                      <th style={{ textAlign: 'right', padding: '8px' }}>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedOrder.items.map((item, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid var(--calcite-ui-border-2)' }}>
-                        <td style={{ padding: '8px' }}>{item.productName}</td>
-                        <td style={{ textAlign: 'center', padding: '8px' }}>{item.quantity}</td>
-                        <td style={{ textAlign: 'right', padding: '8px' }}>
-                          LKR {item.price.toLocaleString()}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '8px' }}>
-                          LKR {(item.quantity * item.price).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan="3" style={{ textAlign: 'right', padding: '12px', fontWeight: '700' }}>
-                        Total Amount:
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '12px', fontWeight: '700', fontSize: '18px' }}>
-                        LKR {selectedOrder.totalAmount.toLocaleString()}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+                <div style={{ border: '1px solid var(--calcite-ui-border-3)', borderRadius: '4px', overflow: 'hidden' }}>
+                  {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        padding: '12px',
+                        borderBottom: index < selectedOrder.items.length - 1 ? '1px solid var(--calcite-ui-border-3)' : 'none',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px' }}>{item.itemName || 'Item'}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--calcite-ui-text-3)' }}>
+                          {item.itemType} • Quantity: {item.quantity}
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: '700', color: 'var(--calcite-ui-brand)' }}>
+                        LKR {((item.price || 0) * item.quantity).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -497,7 +419,7 @@ export default function AdminOrdersList() {
       </calcite-modal>
 
       {/* Status Change Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={statusModalOpen}
         onCalciteModalClose={() => setStatusModalOpen(false)}
         width-scale="s"
@@ -506,22 +428,31 @@ export default function AdminOrdersList() {
         <div slot="content" style={{ padding: '20px' }}>
           {selectedOrder && (
             <div>
-              <p style={{ marginBottom: '16px' }}>
-                Update status for order: <strong>{selectedOrder.orderNumber}</strong>
+              <p style={{ marginBottom: '16px', fontSize: '14px' }}>
+                Update status for order: <strong>{selectedOrder.orderReference || selectedOrder.orderNumber}</strong>
               </p>
-              <calcite-label>
-                New Status
-                <calcite-select
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                  New Status
+                </label>
+                <select
                   value={newStatus}
-                  onCalciteSelectChange={(e) => setNewStatus(e.target.value)}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '14px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    outline: 'none'
+                  }}
                 >
-                  <calcite-option value="pending">Pending</calcite-option>
-                  <calcite-option value="processing">Processing</calcite-option>
-                  <calcite-option value="shipped">Shipped</calcite-option>
-                  <calcite-option value="delivered">Delivered</calcite-option>
-                  <calcite-option value="cancelled">Cancelled</calcite-option>
-                </calcite-select>
-              </calcite-label>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+              </div>
             </div>
           )}
         </div>
