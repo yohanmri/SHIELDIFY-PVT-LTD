@@ -4,7 +4,7 @@
 // ============================================
 
 const Contact = require('../models/contactModel');
-const sendEmail = require('../utils/emailService'); // Your existing Brevo email service
+const { sendEmail } = require('../utils/emailService'); // Destructure sendEmail
 
 // GET all contacts
 const getAllContacts = async (req, res) => {
@@ -12,17 +12,17 @@ const getAllContacts = async (req, res) => {
     const contacts = await Contact.find()
       .sort({ createdAt: -1 })
       .populate('repliedBy', 'name email');
-    
-    res.json({ 
-      success: true, 
-      data: contacts 
+
+    res.json({
+      success: true,
+      data: contacts
     });
   } catch (err) {
     console.error('Error fetching contacts:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -32,24 +32,24 @@ const getContactById = async (req, res) => {
   try {
     const contact = await Contact.findById(req.params.id)
       .populate('repliedBy', 'name email');
-    
+
     if (!contact) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Contact not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Contact not found'
       });
     }
-    
-    res.json({ 
-      success: true, 
-      data: contact 
+
+    res.json({
+      success: true,
+      data: contact
     });
   } catch (err) {
     console.error('Error fetching contact:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -58,33 +58,33 @@ const getContactById = async (req, res) => {
 const updateContact = async (req, res) => {
   try {
     const { status } = req.body;
-    
+
     const updateData = {};
     if (status) updateData.status = status;
-    
+
     const updatedContact = await Contact.findByIdAndUpdate(
-      req.params.id, 
+      req.params.id,
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!updatedContact) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Contact not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Contact not found'
       });
     }
-    
-    res.json({ 
-      success: true, 
-      data: updatedContact 
+
+    res.json({
+      success: true,
+      data: updatedContact
     });
   } catch (err) {
     console.error('Error updating contact:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -93,24 +93,24 @@ const updateContact = async (req, res) => {
 const deleteContact = async (req, res) => {
   try {
     const deletedContact = await Contact.findByIdAndDelete(req.params.id);
-    
+
     if (!deletedContact) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Contact not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Contact not found'
       });
     }
-    
-    res.json({ 
-      success: true, 
-      message: 'Contact deleted successfully' 
+
+    res.json({
+      success: true,
+      message: 'Contact deleted successfully'
     });
   } catch (err) {
     console.error('Error deleting contact:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -120,11 +120,11 @@ const replyToContact = async (req, res) => {
   try {
     const { message } = req.body;
     const contact = await Contact.findById(req.params.id);
-    
+
     if (!contact) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Contact not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Contact not found'
       });
     }
 
@@ -183,17 +183,17 @@ const replyToContact = async (req, res) => {
     contact.repliedBy = req.user._id; // Assuming you have user info from auth middleware
     await contact.save();
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Reply sent successfully',
       data: contact
     });
   } catch (err) {
     console.error('Error sending reply:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to send reply',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -205,17 +205,17 @@ const getContactsByStatus = async (req, res) => {
     const contacts = await Contact.find({ status })
       .sort({ createdAt: -1 })
       .populate('repliedBy', 'name email');
-    
-    res.json({ 
-      success: true, 
-      data: contacts 
+
+    res.json({
+      success: true,
+      data: contacts
     });
   } catch (err) {
     console.error('Error fetching contacts by status:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Server error',
-      error: err.message 
+      error: err.message
     });
   }
 };

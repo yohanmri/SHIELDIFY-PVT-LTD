@@ -3,6 +3,7 @@ import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productsCard.css';
 import { getPublicBundles } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import '@esri/calcite-components/components/calcite-list';
 import '@esri/calcite-components/components/calcite-list-item';
 
@@ -12,8 +13,10 @@ export default function BundleCard({ setPage }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('card');
+  const [quantities, setQuantities] = useState({}); // Track quantity for each bundle
   const itemsPerPage = 12;
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [bundles, setBundles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,15 +56,21 @@ export default function BundleCard({ setPage }) {
   const filteredBundles = useMemo(() => {
     let filtered = bundles.filter(bundle => {
       const matchesCategory = selectedCategory === 'all' || bundle.category === selectedCategory;
-      const matchesSearch = bundle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           bundle.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Enhanced search - matches name, category, description
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery ||
+        bundle.name.toLowerCase().includes(searchLower) ||
+        bundle.category.toLowerCase().includes(searchLower) ||
+        (bundle.description && bundle.description.toLowerCase().includes(searchLower));
+
       return matchesCategory && matchesSearch;
     });
 
     // Sort bundles
     if (sortBy === 'discount') {
-      filtered.sort((a, b) => 
-        calculateDiscount(b.originalPrice, b.discountPrice) - 
+      filtered.sort((a, b) =>
+        calculateDiscount(b.originalPrice, b.discountPrice) -
         calculateDiscount(a.originalPrice, a.discountPrice)
       );
     } else if (sortBy === 'price-low') {
@@ -82,16 +91,34 @@ export default function BundleCard({ setPage }) {
     setCurrentPage(1);
   }, [selectedCategory, sortBy, searchQuery]);
 
+  const getQuantity = (bundleId) => quantities[bundleId] || 1;
+
+  const updateQuantity = (bundleId, change) => {
+    setQuantities(prev => ({
+      ...prev,
+      [bundleId]: Math.max(1, (prev[bundleId] || 1) + change)
+    }));
+  };
+
+  const handleAddToCart = (bundle, e) => {
+    e.stopPropagation();
+    const quantity = getQuantity(bundle._id);
+    addToCart({ ...bundle, itemType: 'bundle' }, quantity);
+    // Reset quantity after adding
+    setQuantities(prev => ({ ...prev, [bundle._id]: 1 }));
+  };
+
+
   return (
     <div id="bundles-top" className="shieldify-products-page">
-      <div className="shieldify-hero" style={{ 
+      <div className="shieldify-hero" style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         minHeight: '200px'
       }}>
         <div className="shieldify-hero-content">
-          <h1 style={{ 
-            fontSize: '3rem', 
-            color: 'white', 
+          <h1 style={{
+            fontSize: '3rem',
+            color: 'white',
             textAlign: 'center',
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
             paddingTop: '3%',
@@ -99,9 +126,9 @@ export default function BundleCard({ setPage }) {
           }}>
             🎁 Bundle Deals & Promotions
           </h1>
-          <p style={{ 
-            fontSize: '1.25rem', 
-            color: 'white', 
+          <p style={{
+            fontSize: '1.25rem',
+            color: 'white',
             textAlign: 'center',
             opacity: 0.95
           }}>
@@ -160,7 +187,7 @@ export default function BundleCard({ setPage }) {
                   <strong>{filteredBundles.length}</strong> bundles available
                 </p>
                 {filteredBundles.length > 0 && (
-                  <div style={{ 
+                  <div style={{
                     padding: '12px',
                     background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 100%)',
                     borderRadius: '8px',
@@ -171,7 +198,7 @@ export default function BundleCard({ setPage }) {
                     </p>
                     <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#667eea', margin: 0 }}>
                       {Math.round(
-                        filteredBundles.reduce((sum, b) => 
+                        filteredBundles.reduce((sum, b) =>
                           sum + calculateDiscount(b.originalPrice, b.discountPrice), 0
                         ) / filteredBundles.length
                       )}% OFF
@@ -210,7 +237,7 @@ export default function BundleCard({ setPage }) {
                 <calcite-button
                   width="full"
                   appearance="solid"
-                  onClick={() => setPage && setPage('contact')}
+                  onClick={() => window.open('https://wa.me/94774716901', '_blank')}
                   icon-start="phone"
                 >
                   Contact Us
@@ -265,10 +292,10 @@ export default function BundleCard({ setPage }) {
               {viewMode === 'card' && (
                 <div className="shieldify-card-group">
                   {currentBundles.map(bundle => (
-                    <calcite-card 
+                    <calcite-card
                       key={bundle._id}
                       onClick={() => navigate(`/bundle/${bundle._id}`)}
-                      style={{ 
+                      style={{
                         cursor: 'pointer',
                         position: 'relative',
                         overflow: 'visible'
@@ -291,13 +318,13 @@ export default function BundleCard({ setPage }) {
                         {calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF
                       </div>
 
-                      <img 
-                        slot="thumbnail" 
-                        src={bundle.image} 
+                      <img
+                        slot="thumbnail"
+                        src={bundle.image}
                         alt={bundle.name}
                         style={{ height: '200px', objectFit: 'cover' }}
                       />
-                      
+
                       <calcite-chip slot="header-start" scale="s" appearance="solid" kind="inverse">
                         {bundle.category}
                       </calcite-chip>
@@ -310,8 +337,8 @@ export default function BundleCard({ setPage }) {
 
                       <div style={{ margin: '12px 0' }}>
                         {bundle.description && (
-                          <p style={{ 
-                            fontSize: '0.875rem', 
+                          <p style={{
+                            fontSize: '0.875rem',
                             color: 'var(--calcite-ui-text-2)',
                             margin: 0,
                             lineHeight: '1.4',
@@ -326,44 +353,119 @@ export default function BundleCard({ setPage }) {
                         )}
                       </div>
 
-                      <div slot="footer-start" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ 
-                          fontSize: '14px',
-                          color: '#999',
-                          textDecoration: 'line-through'
-                        }}>
-                          LKR {bundle.originalPrice.toLocaleString()}
+                      {/* Price and View Deal Section */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-end',
+                        marginBottom: '12px'
+                      }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div style={{
+                            fontSize: '13px',
+                            color: '#999',
+                            textDecoration: 'line-through'
+                          }}>
+                            LKR {bundle.originalPrice.toLocaleString()}
+                          </div>
+                          <div style={{
+                            fontWeight: '700',
+                            fontSize: '1.25rem',
+                            color: '#dc3545',
+                            lineHeight: 1
+                          }}>
+                            LKR {bundle.discountPrice.toLocaleString()}
+                          </div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: '#28a745',
+                            fontWeight: '600'
+                          }}>
+                            Save LKR {calculateSavings(bundle.originalPrice, bundle.discountPrice).toLocaleString()}
+                          </div>
                         </div>
-                        <div style={{ 
-                          fontWeight: '700', 
-                          fontSize: '1.5rem', 
-                          color: '#dc3545',
-                          lineHeight: 1
-                        }}>
-                          LKR {bundle.discountPrice.toLocaleString()}
-                        </div>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: '#28a745',
-                          fontWeight: '600'
-                        }}>
-                          Save LKR {calculateSavings(bundle.originalPrice, bundle.discountPrice).toLocaleString()}
-                        </div>
+
+                        <calcite-button
+                          appearance="transparent"
+                          kind="brand"
+                          icon-end="arrow-right"
+                          scale="s"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/bundle/${bundle._id}`);
+                          }}
+                        >
+                          View Deal
+                        </calcite-button>
                       </div>
 
-                      <calcite-button 
-                        slot="footer-end" 
-                        appearance="solid"
-                        kind="brand"
-                        icon-end="arrow-right" 
-                        scale="s"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/bundle/${bundle._id}`);
-                        }}
-                      >
-                        View Deal
-                      </calcite-button>
+                      {/* Cart Controls in Footer */}
+                      <div slot="footer-start" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          overflow: 'hidden'
+                        }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(bundle._id, -1);
+                            }}
+                            style={{
+                              background: '#f5f5f5',
+                              border: 'none',
+                              padding: '4px 10px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            −
+                          </button>
+                          <span style={{
+                            padding: '4px 12px',
+                            minWidth: '40px',
+                            textAlign: 'center',
+                            fontSize: '14px',
+                            fontWeight: '600'
+                          }}>
+                            {getQuantity(bundle._id)}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(bundle._id, 1);
+                            }}
+                            style={{
+                              background: '#f5f5f5',
+                              border: 'none',
+                              padding: '4px 10px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <calcite-button
+                          appearance="solid"
+                          scale="s"
+                          icon-start="shopping-cart"
+                          onClick={(e) => handleAddToCart(bundle, e)}
+                          style={{ flex: 1 }}
+                        >
+                          Add
+                        </calcite-button>
+                      </div>
                     </calcite-card>
                   ))}
                 </div>
@@ -385,7 +487,7 @@ export default function BundleCard({ setPage }) {
                         label={bundle.name}
                         description={`${bundle.category} • ${bundle.quantity} items • ${calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF`}
                         value={bundle._id}
-                        style={{ 
+                        style={{
                           cursor: 'pointer',
                           borderBottom: index !== currentBundles.length - 1 ? '1px solid #f1f5f9' : 'none',
                           transition: 'all 0.2s ease',
@@ -399,16 +501,16 @@ export default function BundleCard({ setPage }) {
                         }}
                         onClick={() => navigate(`/bundle/${bundle._id}`)}
                       >
-                        <div 
+                        <div
                           slot="content-start"
                           style={{ position: 'relative', marginRight: '12px' }}
                         >
-                          <img 
+                          <img
                             src={bundle.image}
                             alt={bundle.name}
-                            style={{ 
-                              width: '100px', 
-                              height: '100px', 
+                            style={{
+                              width: '100px',
+                              height: '100px',
                               objectFit: 'cover',
                               borderRadius: '8px',
                               border: '2px solid #e2e8f0'
@@ -429,7 +531,7 @@ export default function BundleCard({ setPage }) {
                             {calculateDiscount(bundle.originalPrice, bundle.discountPrice)}%
                           </div>
                         </div>
-                        
+
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
                             display: 'flex',
@@ -458,8 +560,8 @@ export default function BundleCard({ setPage }) {
                           )}
                         </div>
 
-                        <div slot="content-end" style={{ 
-                          display: 'flex', 
+                        <div slot="content-end" style={{
+                          display: 'flex',
                           gap: '16px',
                           alignItems: 'center',
                           marginLeft: '16px'
@@ -476,8 +578,8 @@ export default function BundleCard({ setPage }) {
                             }}>
                               LKR {bundle.originalPrice.toLocaleString()}
                             </div>
-                            <div style={{ 
-                              fontWeight: '700', 
+                            <div style={{
+                              fontWeight: '700',
                               fontSize: '20px',
                               color: '#dc3545',
                               marginBottom: '2px'
@@ -493,7 +595,7 @@ export default function BundleCard({ setPage }) {
                             </div>
                           </div>
 
-                          <calcite-button 
+                          <calcite-button
                             appearance="solid"
                             kind="brand"
                             icon-end="arrow-right"
@@ -536,15 +638,15 @@ export default function BundleCard({ setPage }) {
       <div className="shieldify-cta" style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
       }}>
-        <img 
-          src="assets/images/picture-logo.png"  
-          alt="SHIELDIFY" 
+        <img
+          src="assets/images/picture-logo.png"
+          alt="SHIELDIFY"
           className="shieldify-cta-logo"
           style={{ filter: 'brightness(0) invert(1)' }}
         />
         <h2 style={{ color: 'white' }}>Need a Custom Bundle?</h2>
         <p style={{ color: 'rgba(255,255,255,0.9)' }}>
-          We can create customized safety equipment packages tailored to your team's specific requirements. 
+          We can create customized safety equipment packages tailored to your team's specific requirements.
           Get in touch for volume discounts and enterprise solutions.
         </p>
         <div className="shieldify-cta-buttons">
@@ -552,7 +654,7 @@ export default function BundleCard({ setPage }) {
             appearance="solid"
             scale="l"
             icon-end="phone"
-            onClick={() => setPage && setPage('contact')}
+            onClick={() => window.open('https://wa.me/94774716901', '_blank')}
             style={{
               '--calcite-ui-brand': 'white',
               '--calcite-ui-text-1': '#667eea'

@@ -3,6 +3,7 @@ import '@esri/calcite-components/dist/calcite/calcite.css';
 import '../../styles/clientStyles/productsCard.css';
 import API from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import '@esri/calcite-components/components/calcite-list';
 import '@esri/calcite-components/components/calcite-list-item';
 
@@ -12,8 +13,10 @@ export default function ProductsCard({ setPage }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('card');
+  const [quantities, setQuantities] = useState({}); // Track quantity for each product
   const itemsPerPage = 12;
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,8 +51,16 @@ export default function ProductsCard({ setPage }) {
     return products.filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesWorkerType = selectedWorkerType === 'all' || product.workerType === selectedWorkerType;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Enhanced search - matches name, category, color, description, worker type
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery ||
+        product.name.toLowerCase().includes(searchLower) ||
+        product.category.toLowerCase().includes(searchLower) ||
+        product.color.toLowerCase().includes(searchLower) ||
+        product.workerType.toLowerCase().includes(searchLower) ||
+        (product.description && product.description.toLowerCase().includes(searchLower));
+
       return matchesCategory && matchesWorkerType && matchesSearch;
     });
   }, [selectedCategory, selectedWorkerType, searchQuery, products]);
@@ -62,6 +73,24 @@ export default function ProductsCard({ setPage }) {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, selectedWorkerType, searchQuery]);
+
+  const getQuantity = (productId) => quantities[productId] || 1;
+
+  const updateQuantity = (productId, change) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) + change)
+    }));
+  };
+
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation();
+    const quantity = getQuantity(product._id);
+    addToCart({ ...product, itemType: 'product' }, quantity);
+    // Reset quantity after adding
+    setQuantities(prev => ({ ...prev, [product._id]: 1 }));
+  };
+
 
   return (
     <div id="products-top" className="shieldify-products-page">
@@ -154,7 +183,7 @@ export default function ProductsCard({ setPage }) {
                 <calcite-button
                   width="full"
                   appearance="solid"
-                  onClick={() => setPage && setPage('contact')}
+                  onClick={() => window.open('https://wa.me/94774716901', '_blank')}
                   icon-start="phone"
                 >
                   Contact Us
@@ -204,48 +233,125 @@ export default function ProductsCard({ setPage }) {
               {viewMode === 'card' && (
                 <div className="shieldify-card-group">
                   {currentProducts.map(product => (
-                    <calcite-card 
+                    <calcite-card
                       key={product._id}
                       onClick={() => navigate(`/product/${product._id}`)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img 
-                        slot="thumbnail" 
-                        src={product.image} 
+                      <img
+                        slot="thumbnail"
+                        src={product.image}
                         alt={product.name}
                         style={{ height: '180px', objectFit: 'cover' }}
                       />
-                      
+
                       <calcite-chip slot="header-start" scale="s" appearance="solid">
                         {product.workerType}
                       </calcite-chip>
 
-                      <span slot="heading">{product.name}</span>
-                      <span slot="description">{product.category}</span>
+                      <span slot="heading" style={{ fontSize: '16px', marginBottom: '2px' }}>{product.name}</span>
+                      <span slot="description" style={{ fontSize: '13px' }}>{product.category}</span>
 
-                      <div className="product-features">
-                        <div className="color-indicator-chip">
-                          <span className={`color-circle ${getColorClass(product.color)}`}></span>
-                          <span>{product.color}</span>
+                      {/* Compact color and price section */}
+                      <div style={{ margin: '8px 0 4px 0' }}>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '6px'
+                        }}>
+                          <div className="product-features" style={{ margin: 0 }}>
+                            <div className="color-indicator-chip">
+                              <span className={`color-circle ${getColorClass(product.color)}`}></span>
+                              <span style={{ fontSize: '13px' }}>{product.color}</span>
+                            </div>
+                          </div>
+
+                          <calcite-button
+                            appearance="transparent"
+                            icon-end="arrow-right"
+                            scale="s"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/product/${product._id}`);
+                            }}
+                          >
+                            View
+                          </calcite-button>
+                        </div>
+
+                        <div style={{ fontWeight: '600', fontSize: '18px', color: '#ff6b00', marginBottom: '8px' }}>
+                          LKR {product.price.toLocaleString()}
                         </div>
                       </div>
 
-                      <div slot="footer-start" style={{ fontWeight: '600', fontSize: '1.125rem', color: '#ff6b00' }}>
-                        LKR {product.price.toLocaleString()}
-                      </div>
+                      {/* Quantity selector and Add to Cart */}
+                      <div slot="footer-start" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          overflow: 'hidden'
+                        }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(product._id, -1);
+                            }}
+                            style={{
+                              background: '#f5f5f5',
+                              border: 'none',
+                              padding: '4px 10px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            −
+                          </button>
+                          <span style={{
+                            padding: '4px 12px',
+                            minWidth: '40px',
+                            textAlign: 'center',
+                            fontSize: '14px',
+                            fontWeight: '600'
+                          }}>
+                            {getQuantity(product._id)}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateQuantity(product._id, 1);
+                            }}
+                            style={{
+                              background: '#f5f5f5',
+                              border: 'none',
+                              padding: '4px 10px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
 
-                      <calcite-button 
-                        slot="footer-end" 
-                        appearance="outline" 
-                        icon-end="arrow-right" 
-                        scale="s"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/product/${product._id}`);
-                        }}
-                      >
-                        View
-                      </calcite-button>
+                        <calcite-button
+                          appearance="solid"
+                          scale="s"
+                          icon-start="shopping-cart"
+                          onClick={(e) => handleAddToCart(product, e)}
+                          style={{ flex: 1 }}
+                        >
+                          Add
+                        </calcite-button>
+                      </div>
                     </calcite-card>
                   ))}
                 </div>
@@ -267,7 +373,7 @@ export default function ProductsCard({ setPage }) {
                         label={product.name}
                         description={`${product.category} • ${product.workerType}`}
                         value={product._id}
-                        style={{ 
+                        style={{
                           cursor: 'pointer',
                           borderBottom: index !== currentProducts.length - 1 ? '1px solid #f1f5f9' : 'none',
                           transition: 'all 0.2s ease'
@@ -280,20 +386,20 @@ export default function ProductsCard({ setPage }) {
                         }}
                         onClick={() => navigate(`/product/${product._id}`)}
                       >
-                        <img 
+                        <img
                           slot="content-start"
                           src={product.image}
                           alt={product.name}
-                          style={{ 
-                            width: '70px', 
-                            height: '70px', 
+                          style={{
+                            width: '70px',
+                            height: '70px',
                             objectFit: 'cover',
                             borderRadius: '6px',
                             border: '2px solid #e2e8f0',
                             marginRight: '12px'
                           }}
                         />
-                        
+
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
                             display: 'flex',
@@ -321,8 +427,8 @@ export default function ProductsCard({ setPage }) {
                           </div>
                         </div>
 
-                        <div slot="content-end" style={{ 
-                          display: 'flex', 
+                        <div slot="content-end" style={{
+                          display: 'flex',
                           gap: '16px',
                           alignItems: 'center',
                           marginLeft: '16px'
@@ -338,8 +444,8 @@ export default function ProductsCard({ setPage }) {
                             }}>
                               Price
                             </div>
-                            <div style={{ 
-                              fontWeight: '700', 
+                            <div style={{
+                              fontWeight: '700',
                               fontSize: '18px',
                               color: '#ff6b00'
                             }}>
@@ -347,7 +453,7 @@ export default function ProductsCard({ setPage }) {
                             </div>
                           </div>
 
-                          <calcite-button 
+                          <calcite-button
                             appearance="outline"
                             icon-end="arrow-right"
                             scale="s"
@@ -387,14 +493,14 @@ export default function ProductsCard({ setPage }) {
       </div>
 
       <div className="shieldify-cta">
-        <img 
-          src="assets/images/picture-logo.png"  
-          alt="SHIELDIFY" 
+        <img
+          src="assets/images/picture-logo.png"
+          alt="SHIELDIFY"
           className="shieldify-cta-logo"
         />
         <h2>Can't Find What You're Looking For?</h2>
         <p>
-          Our team can help you find the perfect safety equipment for your specific needs. 
+          Our team can help you find the perfect safety equipment for your specific needs.
           Contact us for custom solutions and bulk orders.
         </p>
         <div className="shieldify-cta-buttons">
@@ -402,7 +508,7 @@ export default function ProductsCard({ setPage }) {
             appearance="solid"
             scale="l"
             icon-end="phone"
-            onClick={() => setPage && setPage('contact')}
+            onClick={() => window.open('https://wa.me/94774716901', '_blank')}
           >
             Contact Sales
           </calcite-button>

@@ -67,14 +67,14 @@ export default function ContactViewPage() {
   };
 
   const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = 
+    const matchesSearch =
       contact.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.company?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = filterStatus === 'all' || contact.status === filterStatus;
     const matchesService = filterService === 'all' || contact.service === filterService;
-    
+
     return matchesSearch && matchesStatus && matchesService;
   });
 
@@ -179,13 +179,13 @@ export default function ContactViewPage() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           {/* Header */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -199,7 +199,7 @@ export default function ContactViewPage() {
                 Manage customer inquiries and messages
               </p>
             </div>
-            <calcite-button 
+            <calcite-button
               icon-start="refresh"
               appearance="outline"
               onClick={fetchContacts}
@@ -216,8 +216,8 @@ export default function ContactViewPage() {
           )}
 
           {/* Stats Cards */}
-          <div style={{ 
-            display: 'grid', 
+          <div style={{
+            display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '16px',
             marginBottom: '24px'
@@ -284,9 +284,9 @@ export default function ContactViewPage() {
           </div>
 
           {/* Filters */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -300,7 +300,7 @@ export default function ContactViewPage() {
               clearable
               style={{ flex: '1', minWidth: '250px' }}
             />
-            
+
             <calcite-select
               value={filterStatus}
               onCalciteSelectChange={(e) => setFilterStatus(e.target.selectedOption.value)}
@@ -364,15 +364,15 @@ export default function ContactViewPage() {
               {filteredContacts.map(contact => (
                 <calcite-card key={contact._id}>
                   <div slot="header-start" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <calcite-chip 
-                      scale="s" 
-                      appearance="solid" 
+                    <calcite-chip
+                      scale="l"
+                      appearance="solid"
                       kind={getStatusColor(contact.status)}
                     >
                       {contact.status || 'new'}
                     </calcite-chip>
                     {contact.service && (
-                      <calcite-chip scale="s" appearance="outline" icon="apps">
+                      <calcite-chip scale="l" appearance="outline" icon="apps">
                         {contact.service}
                       </calcite-chip>
                     )}
@@ -383,9 +383,9 @@ export default function ContactViewPage() {
 
                   <div style={{ marginTop: '12px', marginBottom: '12px' }}>
                     {contact.company && (
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: '8px',
                         marginBottom: '8px',
                         fontSize: '14px'
@@ -394,9 +394,9 @@ export default function ContactViewPage() {
                         <span>{contact.company}</span>
                       </div>
                     )}
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: '8px',
                       fontSize: '13px',
                       color: 'var(--calcite-ui-text-3)'
@@ -420,24 +420,24 @@ export default function ContactViewPage() {
                   </div>
 
                   <div slot="footer-end" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="まるい-information"
                       scale="s"
                       onClick={() => handleViewDetail(contact)}
                     >
                       View
                     </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="email"
                       scale="s"
                       onClick={() => handleReply(contact)}
                     >
                       Reply
                     </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       kind="danger"
                       icon-start="trash"
                       scale="s"
@@ -461,44 +461,44 @@ export default function ContactViewPage() {
                   description={`${contact.email} • ${contact.service || 'No service specified'}`}
                   value={contact._id}
                 >
-                  <calcite-chip 
+                  <calcite-chip
                     slot="content-start"
-                    scale="s" 
+                    scale="l"
                     kind={getStatusColor(contact.status)}
                   >
                     {contact.status || 'new'}
                   </calcite-chip>
-                  
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
+
+                  <div slot="content-end" style={{
+                    display: 'flex',
                     gap: '8px',
                     alignItems: 'center'
                   }}>
-                    <span style={{ 
-                      fontSize: '13px', 
+                    <span style={{
+                      fontSize: '13px',
                       color: 'var(--calcite-ui-text-3)',
                       marginRight: '12px'
                     }}>
                       {formatDate(contact.createdAt || Date.now())}
                     </span>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="まるい-information"
                       scale="s"
                       onClick={() => handleViewDetail(contact)}
                     >
                       View
                     </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       icon-start="email"
                       scale="s"
                       onClick={() => handleReply(contact)}
                     >
                       Reply
                     </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
+                    <calcite-button
+                      appearance="outline"
                       kind="danger"
                       icon-start="trash"
                       scale="s"
@@ -522,7 +522,7 @@ export default function ContactViewPage() {
       </div>
 
       {/* Detail Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={detailModalOpen}
         onCalciteModalClose={() => setDetailModalOpen(false)}
         width-scale="m"
@@ -541,7 +541,7 @@ export default function ContactViewPage() {
                 <div>
                   <h3 style={{ margin: '0 0 8px 0' }}>{selectedContact.name}</h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <calcite-chip scale="s" kind={getStatusColor(selectedContact.status)}>
+                    <calcite-chip scale="l" kind={getStatusColor(selectedContact.status)}>
                       {selectedContact.status || 'new'}
                     </calcite-chip>
                   </div>
@@ -549,9 +549,9 @@ export default function ContactViewPage() {
               </div>
 
               <div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  fontWeight: '600', 
+                <div style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
                   color: 'var(--calcite-ui-text-3)',
                   marginBottom: '8px'
                 }}>
@@ -579,9 +579,9 @@ export default function ContactViewPage() {
 
               {selectedContact.service && (
                 <div>
-                  <div style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '600', 
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--calcite-ui-text-3)',
                     marginBottom: '8px'
                   }}>
@@ -594,9 +594,9 @@ export default function ContactViewPage() {
               )}
 
               <div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  fontWeight: '600', 
+                <div style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
                   color: 'var(--calcite-ui-text-3)',
                   marginBottom: '8px'
                 }}>
@@ -614,8 +614,10 @@ export default function ContactViewPage() {
             </div>
           )}
         </div>
-        <calcite-button 
-          slot="primary" 
+        <calcite-button
+          slot="primary"
+          kind="brand"
+          icon-start="email"
           onClick={() => {
             setDetailModalOpen(false);
             handleReply(selectedContact);
@@ -623,9 +625,10 @@ export default function ContactViewPage() {
         >
           Reply to Inquiry
         </calcite-button>
-        <calcite-button 
-          slot="secondary" 
-          appearance="outline" 
+        <calcite-button
+          slot="secondary"
+          appearance="outline"
+          icon-start="check"
           onClick={() => {
             handleMarkAsRead(selectedContact._id);
             setDetailModalOpen(false);
@@ -636,7 +639,7 @@ export default function ContactViewPage() {
       </calcite-modal>
 
       {/* Reply Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={replyModalOpen}
         onCalciteModalClose={() => setReplyModalOpen(false)}
         width-scale="m"
@@ -662,16 +665,26 @@ export default function ContactViewPage() {
             />
           </calcite-label>
         </div>
-        <calcite-button slot="primary" onClick={handleSendReply}>
+        <calcite-button
+          slot="primary"
+          kind="brand"
+          icon-start="send"
+          onClick={handleSendReply}
+        >
           Send Reply
         </calcite-button>
-        <calcite-button slot="secondary" appearance="outline" onClick={() => setReplyModalOpen(false)}>
+        <calcite-button
+          slot="secondary"
+          appearance="outline"
+          icon-start="x"
+          onClick={() => setReplyModalOpen(false)}
+        >
           Cancel
         </calcite-button>
       </calcite-modal>
 
       {/* Delete Confirmation Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={deleteModalOpen}
         onCalciteModalClose={() => setDeleteModalOpen(false)}
         width-scale="s"
@@ -685,10 +698,20 @@ export default function ContactViewPage() {
             </div>
           </calcite-notice>
         </div>
-        <calcite-button slot="primary" kind="danger" onClick={confirmDelete}>
+        <calcite-button
+          slot="primary"
+          kind="danger"
+          icon-start="trash"
+          onClick={confirmDelete}
+        >
           Delete Contact
         </calcite-button>
-        <calcite-button slot="secondary" appearance="outline" onClick={() => setDeleteModalOpen(false)}>
+        <calcite-button
+          slot="secondary"
+          appearance="outline"
+          icon-start="x"
+          onClick={() => setDeleteModalOpen(false)}
+        >
           Cancel
         </calcite-button>
       </calcite-modal>

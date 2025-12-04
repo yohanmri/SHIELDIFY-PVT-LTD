@@ -418,9 +418,13 @@ export default function CartModal({ open, onClose }) {
                                         cursor: 'pointer',
                                         fontSize: '14px',
                                         fontWeight: '600',
-                                        color: '#333'
+                                        color: '#333',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
                                     }}
                                 >
+                                    <calcite-icon icon="shopping-bag" scale="s"></calcite-icon>
                                     Continue Shopping
                                 </button>
                                 {cart.length > 0 && (
@@ -434,9 +438,13 @@ export default function CartModal({ open, onClose }) {
                                             cursor: 'pointer',
                                             fontSize: '14px',
                                             fontWeight: '600',
-                                            color: 'white'
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
                                         }}
                                     >
+                                        <calcite-icon icon="send" scale="s"></calcite-icon>
                                         Send Inquiry
                                     </button>
                                 )}

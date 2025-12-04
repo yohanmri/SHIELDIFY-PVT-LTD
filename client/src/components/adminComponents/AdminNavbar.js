@@ -18,16 +18,29 @@ export default function AdminNavbar() {
   const [notifications, setNotifications] = useState([]);
   const [productCount, setProductCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
+  const [adminData, setAdminData] = useState(null);
+
+  // Load admin data from localStorage
+  useEffect(() => {
+    const admin = localStorage.getItem('admin');
+    if (admin) {
+      try {
+        setAdminData(JSON.parse(admin));
+      } catch (error) {
+        console.error('Error parsing admin data:', error);
+      }
+    }
+  }, []);
 
   // Fetch notifications on mount and set up polling
   useEffect(() => {
     fetchNotifications();
     fetchStats();
-    
+
     // Poll for new notifications every 30 seconds
     const notificationInterval = setInterval(fetchNotifications, 30000);
     const statsInterval = setInterval(fetchStats, 60000);
-    
+
     return () => {
       clearInterval(notificationInterval);
       clearInterval(statsInterval);
@@ -38,7 +51,7 @@ export default function AdminNavbar() {
     try {
       const contactResponse = await adminAPI.get('/admin/contacts');
       const contacts = contactResponse.data.data || [];
-      
+
       // Convert contacts to notifications
       const contactNotifications = contacts
         .filter(contact => contact.status === 'new')
@@ -84,7 +97,7 @@ export default function AdminNavbar() {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -150,24 +163,24 @@ export default function AdminNavbar() {
         style={{ cursor: 'pointer' }}
       />
 
-      <div slot="content-end" style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div slot="content-end" style={{
+        display: 'flex',
+        alignItems: 'center',
         gap: '8px',
         padding: '0 16px'
       }}>
         {/* Quick Stats */}
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           gap: '12px',
           marginRight: '12px',
           padding: '0 12px',
           borderRight: '1px solid var(--calcite-ui-border-2)'
         }}>
-          <calcite-chip scale="s" appearance="outline" icon="shopping-cart">
+          <calcite-chip scale="l" appearance="outline" icon="cube">
             {productCount} Products
           </calcite-chip>
-          <calcite-chip scale="s" appearance="outline" icon="list-check">
+          <calcite-chip scale="l" appearance="outline" icon="list-check">
             {orderCount} Orders
           </calcite-chip>
         </div>
@@ -182,7 +195,7 @@ export default function AdminNavbar() {
             scale="m"
             onClick={() => setNotificationsOpen(!notificationsOpen)}
           ></calcite-action>
-          
+
           {unreadCount > 0 && (
             <div style={{
               position: 'absolute',
@@ -212,7 +225,7 @@ export default function AdminNavbar() {
           >
             <div style={{ width: '360px', maxHeight: '500px' }}>
               {/* Header */}
-              <div style={{ 
+              <div style={{
                 padding: '16px',
                 borderBottom: '1px solid var(--calcite-ui-border-2)',
                 display: 'flex',
@@ -238,8 +251,8 @@ export default function AdminNavbar() {
               {/* Notifications List */}
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
-                  <div style={{ 
-                    padding: '40px 20px', 
+                  <div style={{
+                    padding: '40px 20px',
                     textAlign: 'center',
                     color: 'var(--calcite-ui-text-3)'
                   }}>
@@ -250,10 +263,10 @@ export default function AdminNavbar() {
                   </div>
                 ) : (
                   notifications.map((notification) => (
-                    <div 
+                    <div
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
-                      style={{ 
+                      style={{
                         padding: '12px 16px',
                         borderBottom: '1px solid var(--calcite-ui-border-3)',
                         cursor: 'pointer',
@@ -275,24 +288,24 @@ export default function AdminNavbar() {
                           justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <calcite-icon 
-                            icon={notification.icon} 
+                          <calcite-icon
+                            icon={notification.icon}
                             scale="s"
                             style={{ color: notification.unread ? 'white' : 'var(--calcite-ui-text-3)' }}
                           ></calcite-icon>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ 
-                            margin: '0 0 4px 0', 
-                            fontSize: '14px', 
+                          <p style={{
+                            margin: '0 0 4px 0',
+                            fontSize: '14px',
                             fontWeight: notification.unread ? '600' : '500',
                             color: 'var(--calcite-ui-text-1)'
                           }}>
                             {notification.title}
                           </p>
-                          <p style={{ 
-                            margin: '0 0 4px 0', 
-                            fontSize: '13px', 
+                          <p style={{
+                            margin: '0 0 4px 0',
+                            fontSize: '13px',
                             color: 'var(--calcite-ui-text-2)',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -300,9 +313,9 @@ export default function AdminNavbar() {
                           }}>
                             {notification.message}
                           </p>
-                          <p style={{ 
-                            margin: 0, 
-                            fontSize: '12px', 
+                          <p style={{
+                            margin: 0,
+                            fontSize: '12px',
                             color: 'var(--calcite-ui-text-3)'
                           }}>
                             {notification.time}
@@ -326,7 +339,7 @@ export default function AdminNavbar() {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div style={{ 
+                <div style={{
                   padding: '12px 16px',
                   borderTop: '1px solid var(--calcite-ui-border-2)',
                   display: 'flex',
@@ -378,25 +391,29 @@ export default function AdminNavbar() {
           <div slot="trigger" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <calcite-avatar
               scale="m"
-              username="Admin User"
-              full-name="Admin User"
+              username={adminData?.firstName || 'Admin'}
+              full-name={`${adminData?.firstName || 'Admin'} ${adminData?.lastName || 'User'}`}
               style={{ cursor: 'pointer' }}
             ></calcite-avatar>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>Admin User</span>
-              <span style={{ fontSize: '12px', color: 'var(--calcite-ui-text-3)' }}>Administrator</span>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                {adminData?.firstName || 'Admin'} {adminData?.lastName || 'User'}
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--calcite-ui-text-3)' }}>
+                {adminData?.isSuperAdmin ? 'Super Admin' : (adminData?.role?.name || 'Administrator')}
+              </span>
             </div>
             <calcite-icon icon="chevron-down" scale="s"></calcite-icon>
           </div>
 
           <calcite-dropdown-group>
-            <calcite-dropdown-item 
+            <calcite-dropdown-item
               icon-start="user"
               onClick={handleProfileClick}
             >
               My Profile
             </calcite-dropdown-item>
-            <calcite-dropdown-item 
+            <calcite-dropdown-item
               icon-start="gear"
               onClick={handleSettingsClick}
             >
@@ -420,7 +437,7 @@ export default function AdminNavbar() {
           </calcite-dropdown-group>
 
           <calcite-dropdown-group>
-            <calcite-dropdown-item 
+            <calcite-dropdown-item
               icon-start="sign-out"
               onClick={handleSignOut}
             >

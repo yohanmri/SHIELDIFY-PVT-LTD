@@ -18,22 +18,27 @@ export default function CartIcon({ onOpenCart }) {
                 style={{ position: 'relative' }}
             >
                 {count > 0 && (
-                    <calcite-chip
-                        scale="s"
-                        kind="brand"
+                    <span
                         style={{
                             position: 'absolute',
                             top: '4px',
                             right: '4px',
+                            background: '#dc3545',
+                            color: 'white',
+                            borderRadius: '50%',
                             minWidth: '20px',
                             height: '20px',
-                            padding: '0 6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             fontSize: '11px',
-                            fontWeight: '700'
+                            fontWeight: '700',
+                            padding: '0 4px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                         }}
                     >
                         {count}
-                    </calcite-chip>
+                    </span>
                 )}
             </calcite-button>
         </div>
