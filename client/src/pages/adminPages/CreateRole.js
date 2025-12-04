@@ -1,33 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
 import API from '../../api/axios';
-import '@esri/calcite-components/components/calcite-shell';
-import '@esri/calcite-components/components/calcite-button';
-import '@esri/calcite-components/components/calcite-card';
-import '@esri/calcite-components/components/calcite-input';
-import '@esri/calcite-components/components/calcite-modal';
-import '@esri/calcite-components/components/calcite-label';
-import '@esri/calcite-components/components/calcite-input-text';
-import '@esri/calcite-components/components/calcite-text-area';
-import '@esri/calcite-components/components/calcite-notice';
-import '@esri/calcite-components/components/calcite-list';
-import '@esri/calcite-components/components/calcite-list-item';
-import '@esri/calcite-components/components/calcite-loader';
-import '@esri/calcite-components/components/calcite-chip';
-import '@esri/calcite-components/components/calcite-switch';
 
-export default function CreateRole() {
+const CreateRole = () => {
   const navigate = useNavigate();
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const { id } = useParams();
+  const isEditMode = !!id;
 
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -35,75 +17,41 @@ export default function CreateRole() {
       dashboard: { view: false },
       products: { view: false, create: false, edit: false, delete: false },
       bundles: { view: false, create: false, edit: false, delete: false },
-      orders: { view: false, edit: false, delete: false, approve: false },
-      analytics: { view: false, export: false },
+      orders: { view: false, edit: false, approve: false },
+      analytics: { view: false },
       admins: { view: false, create: false, edit: false, delete: false },
       roles: { view: false, create: false, edit: false, delete: false }
     }
   });
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    if (isEditMode) {
+      fetchRole();
+    }
+  }, [id]);
 
-  const fetchRoles = async () => {
+  const fetchRole = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/roles');
-      setRoles(response.data.data || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching roles:', err);
-      setError('Failed to load roles. Please try again.');
+      const response = await API.get(`/roles/${id}`);
+      const role = response.data.data;
+      setFormData({
+        name: role.name,
+        description: role.description || '',
+        permissions: role.permissions
+      });
+    } catch (error) {
+      console.error('Error fetching role:', error);
+      alert('Failed to load role');
+      navigate('/admin/role-management');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateNew = () => {
-    setIsEditing(false);
-    setFormData({
-      name: '',
-      description: '',
-      permissions: {
-        dashboard: { view: false },
-        products: { view: false, create: false, edit: false, delete: false },
-        bundles: { view: false, create: false, edit: false, delete: false },
-        orders: { view: false, edit: false, delete: false, approve: false },
-        analytics: { view: false, export: false },
-        admins: { view: false, create: false, edit: false, delete: false },
-        roles: { view: false, create: false, edit: false, delete: false }
-      }
-    });
-    setModalOpen(true);
-  };
-
-  const handleEdit = (role) => {
-    setIsEditing(true);
-    setSelectedRole(role);
-    setFormData({
-      name: role.name,
-      description: role.description || '',
-      permissions: role.permissions
-    });
-    setModalOpen(true);
-  };
-
-  const handleDelete = (role) => {
-    setSelectedRole(role);
-    setDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await API.delete(`/roles/${selectedRole._id}`);
-      setRoles(roles.filter(r => r._id !== selectedRole._id));
-      setDeleteModalOpen(false);
-      setSelectedRole(null);
-    } catch (err) {
-      console.error('Error deleting role:', err);
-      alert('Failed to delete role. Please try again.');
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePermissionChange = (section, permission) => {
@@ -119,244 +67,273 @@ export default function CreateRole() {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSectionToggle = (section) => {
+    const allPermissions = Object.keys(formData.permissions[section]);
+    const allChecked = allPermissions.every(p => formData.permissions[section][p]);
+
+    const newSectionPermissions = {};
+    allPermissions.forEach(p => {
+      newSectionPermissions[p] = !allChecked;
+    });
+
+    setFormData(prev => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [section]: newSectionPermissions
+      }
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.name.trim()) {
+      alert('Role name is required');
+      return;
+    }
+
     try {
-      if (!formData.name.trim()) {
-        alert('Role name is required');
-        return;
-      }
-
-      if (isEditing) {
-        const response = await API.put(`/roles/${selectedRole._id}`, formData);
-        setRoles(roles.map(r => r._id === selectedRole._id ? response.data.data : r));
+      setLoading(true);
+      if (isEditMode) {
+        await API.put(`/roles/${id}`, formData);
+        alert('Role updated successfully');
       } else {
-        const response = await API.post('/roles', formData);
-        setRoles([...roles, response.data.data]);
+        await API.post('/roles', formData);
+        alert('Role created successfully');
       }
-
-      setModalOpen(false);
-      setSelectedRole(null);
-    } catch (err) {
-      console.error('Error saving role:', err);
-      alert(`Failed to save role: ${err.response?.data?.message || err.message}`);
+      navigate('/admin/role-management');
+    } catch (error) {
+      console.error('Error saving role:', error);
+      alert(error.response?.data?.message || 'Failed to save role');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderPermissionSection = (title, section, permissions) => (
-    <div style={{ marginBottom: '24px' }}>
-      <h3 style={{ 
-        fontSize: '16px', 
-        fontWeight: '600', 
-        marginBottom: '12px',
-        color: 'var(--calcite-ui-text-1)'
+  const renderPermissionSection = (title, section, icon) => {
+    const permissions = formData.permissions[section];
+    const permissionKeys = Object.keys(permissions);
+    const allChecked = permissionKeys.every(p => permissions[p]);
+    const someChecked = permissionKeys.some(p => permissions[p]) && !allChecked;
+
+    return (
+      <div style={{
+        background: 'white',
+        borderRadius: '8px',
+        padding: '20px',
+        border: '1px solid #e5e7eb',
+        marginBottom: '16px'
       }}>
-        {title}
-      </h3>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gap: '12px',
-        padding: '16px',
-        background: 'var(--calcite-ui-background)',
-        borderRadius: '4px',
-        border: '1px solid var(--calcite-ui-border-2)'
-      }}>
-        {Object.keys(permissions).map(permission => (
-          <calcite-label key={permission} layout="inline">
-            <calcite-switch
-              checked={formData.permissions[section][permission]}
-              onCalciteSwitchChange={() => handlePermissionChange(section, permission)}
-            />
-            {permission.charAt(0).toUpperCase() + permission.slice(1)}
-          </calcite-label>
-        ))}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+          <input
+            type="checkbox"
+            checked={allChecked}
+            ref={input => {
+              if (input) input.indeterminate = someChecked;
+            }}
+            onChange={() => handleSectionToggle(section)}
+            style={{ marginRight: '12px', width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', flex: 1 }}>
+            {icon} {title}
+          </h3>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+          gap: '12px',
+          paddingLeft: '30px'
+        }}>
+          {permissionKeys.map(permission => (
+            <label
+              key={permission}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '4px',
+                background: permissions[permission] ? '#eff6ff' : '#f9fafb',
+                border: `1px solid ${permissions[permission] ? '#3b82f6' : '#e5e7eb'}`,
+                transition: 'all 0.2s'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={permissions[permission]}
+                onChange={() => handlePermissionChange(section, permission)}
+                style={{ marginRight: '8px', cursor: 'pointer' }}
+              />
+              <span style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: permissions[permission] ? '#1e40af' : '#4b5563'
+              }}>
+                {permission.charAt(0).toUpperCase() + permission.slice(1)}
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
-      <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <div>
-              <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600' }}>
-                Role Management
-              </h1>
-              <p style={{ margin: 0, fontSize: '14px', color: 'var(--calcite-ui-text-3)' }}>
-                Create and manage user roles and permissions
-              </p>
-            </div>
-            <calcite-button 
-              icon-start="plus-circle"
-              onClick={handleCreateNew}
+
+      <div style={{ padding: '24px', height: '100%', overflow: 'auto', background: '#f9fafb' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <button
+              onClick={() => navigate('/admin/role-management')}
+              style={{
+                padding: '8px 16px',
+                background: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
             >
-              Create New Role
-            </calcite-button>
+              ← Back to Role Management
+            </button>
+
+            <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600' }}>
+              {isEditMode ? 'Edit Role' : 'Create New Role'}
+            </h1>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+              {isEditMode ? 'Update role details and permissions' : 'Define a new role with specific permissions'}
+            </p>
           </div>
 
-          {error && (
-            <calcite-notice open icon="exclamation-mark-triangle" kind="danger" style={{ marginBottom: '20px' }}>
-              <div slot="title">Error</div>
-              <div slot="message">{error}</div>
-            </calcite-notice>
-          )}
-
-          {loading && (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <calcite-loader scale="l"></calcite-loader>
-              <p style={{ marginTop: '16px', color: 'var(--calcite-ui-text-3)' }}>
-                Loading roles...
-              </p>
-            </div>
-          )}
-
-          {!loading && (
+          <form onSubmit={handleSubmit}>
+            {/* Basic Information */}
             <div style={{
               background: 'white',
               borderRadius: '8px',
-              overflow: 'hidden',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+              padding: '24px',
+              marginBottom: '24px',
+              border: '1px solid #e5e7eb'
             }}>
-              <calcite-list>
-                {roles.map((role, index) => (
-                  <calcite-list-item
-                    key={role._id}
-                    label={role.name}
-                    description={role.description || 'No description'}
-                    style={{ 
-                      cursor: 'pointer',
-                      borderBottom: index !== roles.length - 1 ? '1px solid #f1f5f9' : 'none'
-                    }}
-                  >
-                    <div slot="content-start" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      {role.isSuperAdmin && (
-                        <calcite-chip scale="s" kind="brand">Super Admin</calcite-chip>
-                      )}
-                      {role.isActive ? (
-                        <calcite-chip scale="s" kind="success">Active</calcite-chip>
-                      ) : (
-                        <calcite-chip scale="s" kind="neutral">Inactive</calcite-chip>
-                      )}
-                    </div>
-
-                    <div slot="content-end" style={{ display: 'flex', gap: '8px' }}>
-                      <calcite-button 
-                        appearance="outline" 
-                        icon-start="pencil"
-                        scale="s"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(role);
-                        }}
-                      >
-                        Edit
-                      </calcite-button>
-                      {!role.isSuperAdmin && (
-                        <calcite-button 
-                          appearance="outline" 
-                          kind="danger"
-                          icon-start="trash"
-                          scale="s"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(role);
-                          }}
-                        >
-                          Delete
-                        </calcite-button>
-                      )}
-                    </div>
-                  </calcite-list-item>
-                ))}
-              </calcite-list>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Create/Edit Modal */}
-      <calcite-modal 
-        open={modalOpen}
-        onCalciteModalClose={() => setModalOpen(false)}
-        width-scale="l"
-      >
-        <div slot="header">{isEditing ? 'Edit Role' : 'Create New Role'}</div>
-        <div slot="content" style={{ padding: '20px', maxHeight: '70vh', overflow: 'auto' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <calcite-label>
-              Role Name
-              <calcite-input-text
-                value={formData.name}
-                placeholder="e.g., Product Manager"
-                onInput={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </calcite-label>
-
-            <calcite-label>
-              Description
-              <calcite-text-area
-                value={formData.description}
-                placeholder="Describe the role's responsibilities"
-                rows="2"
-                onInput={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </calcite-label>
-
-            <div style={{ marginTop: '24px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-                Permissions
+              <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
+                Basic Information
               </h2>
 
-              {renderPermissionSection('Dashboard', 'dashboard', formData.permissions.dashboard)}
-              {renderPermissionSection('Products', 'products', formData.permissions.products)}
-              {renderPermissionSection('Bundles', 'bundles', formData.permissions.bundles)}
-              {renderPermissionSection('Orders', 'orders', formData.permissions.orders)}
-              {renderPermissionSection('Analytics', 'analytics', formData.permissions.analytics)}
-              {renderPermissionSection('Admin Management', 'admins', formData.permissions.admins)}
-              {renderPermissionSection('Role Management', 'roles', formData.permissions.roles)}
-            </div>
-          </div>
-        </div>
-        <calcite-button slot="primary" onClick={handleSave}>
-          {isEditing ? 'Update Role' : 'Create Role'}
-        </calcite-button>
-        <calcite-button slot="secondary" appearance="outline" onClick={() => setModalOpen(false)}>
-          Cancel
-        </calcite-button>
-      </calcite-modal>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+                  Role Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Product Manager, Sales Admin"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
 
-      {/* Delete Confirmation Modal */}
-      <calcite-modal 
-        open={deleteModalOpen}
-        onCalciteModalClose={() => setDeleteModalOpen(false)}
-        width-scale="s"
-      >
-        <div slot="header">Delete Role</div>
-        <div slot="content" style={{ padding: '20px' }}>
-          <calcite-notice open icon="exclamation-mark-triangle" kind="danger">
-            <div slot="title">Are you sure?</div>
-            <div slot="message">
-              This will permanently delete the role "{selectedRole?.name}". Users with this role will need to be reassigned.
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe the role's responsibilities and access level"
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
             </div>
-          </calcite-notice>
+
+            {/* Permissions */}
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '600' }}>
+                Permissions
+              </h2>
+              <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '14px' }}>
+                Select which sections and actions this role can access. Click the section checkbox to toggle all permissions.
+              </p>
+
+              {renderPermissionSection('Dashboard', 'dashboard', '📊')}
+              {renderPermissionSection('Products', 'products', '📦')}
+              {renderPermissionSection('Bundles', 'bundles', '🎁')}
+              {renderPermissionSection('Orders', 'orders', '📋')}
+              {renderPermissionSection('Analytics', 'analytics', '📈')}
+              {renderPermissionSection('Admin Management', 'admins', '👥')}
+              {renderPermissionSection('Role Management', 'roles', '🔐')}
+            </div>
+
+            {/* Actions */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+              paddingTop: '24px',
+              borderTop: '1px solid #e5e7eb'
+            }}>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/role-management')}
+                style={{
+                  padding: '10px 20px',
+                  background: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  padding: '10px 20px',
+                  background: loading ? '#9ca3af' : '#0079c1',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                {loading ? 'Saving...' : (isEditMode ? 'Update Role' : 'Create Role')}
+              </button>
+            </div>
+          </form>
         </div>
-        <calcite-button slot="primary" kind="danger" onClick={confirmDelete}>
-          Delete Role
-        </calcite-button>
-        <calcite-button slot="secondary" appearance="outline" onClick={() => setDeleteModalOpen(false)}>
-          Cancel
-        </calcite-button>
-      </calcite-modal>
+      </div>
     </calcite-shell>
   );
-}
+};
+
+export default CreateRole;

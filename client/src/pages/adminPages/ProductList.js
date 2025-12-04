@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
 import API from '../../api/axios';
+import usePermissions from '../../hooks/usePermissions';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -29,6 +30,7 @@ import '../../styles/clientStyles/productsCard.css';
 
 export default function AdminProductList() {
   const navigate = useNavigate();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -38,7 +40,7 @@ export default function AdminProductList() {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
-  
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,7 +114,7 @@ export default function AdminProductList() {
     return products.filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.category.toLowerCase().includes(searchQuery.toLowerCase());
+        product.category.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery, products]);
@@ -120,8 +122,8 @@ export default function AdminProductList() {
   const handleEdit = (product) => {
     const productToEdit = {
       ...product,
-      features: Array.isArray(product.features) 
-        ? product.features.join(', ') 
+      features: Array.isArray(product.features)
+        ? product.features.join(', ')
         : product.features
     };
     setSelectedProduct(productToEdit);
@@ -160,7 +162,7 @@ export default function AdminProductList() {
       };
 
       const response = await API.put(`/admin/products/${selectedProduct._id}`, updateData);
-      
+
       setProducts(products.map(p => p._id === selectedProduct._id ? response.data.data : p));
       setEditModalOpen(false);
       setSelectedProduct(null);
@@ -216,12 +218,12 @@ export default function AdminProductList() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -235,12 +237,14 @@ export default function AdminProductList() {
                 Manage your product catalog
               </p>
             </div>
-            <calcite-button 
-              icon-start="plus-circle"
-              onClick={() => navigate('/admin/product-add')}
-            >
-              Add New Product
-            </calcite-button>
+            {canCreate('products') && (
+              <calcite-button
+                icon-start="plus-circle"
+                onClick={() => navigate('/admin/product-add')}
+              >
+                Add New Product
+              </calcite-button>
+            )}
           </div>
 
           {error && (
@@ -250,9 +254,9 @@ export default function AdminProductList() {
             </calcite-notice>
           )}
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -266,7 +270,7 @@ export default function AdminProductList() {
               clearable
               style={{ flex: '1', minWidth: '250px' }}
             />
-            
+
             <calcite-select
               value={selectedCategory}
               onCalciteSelectChange={(e) => setSelectedCategory(e.target.value)}
@@ -312,18 +316,18 @@ export default function AdminProductList() {
           {!loading && viewMode === 'card' && (
             <div className="shieldify-card-group">
               {filteredProducts.map(product => (
-                <calcite-card 
+                <calcite-card
                   key={product._id}
                   onClick={() => handleViewProduct(product._id)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <img 
-                    slot="thumbnail" 
-                    src={product.image} 
+                  <img
+                    slot="thumbnail"
+                    src={product.image}
                     alt={product.name}
                     style={{ height: '180px', objectFit: 'cover' }}
                   />
-                  
+
                   <calcite-chip slot="header-start" scale="s" appearance="solid">
                     {product.workerType}
                   </calcite-chip>
@@ -343,53 +347,57 @@ export default function AdminProductList() {
                   </div>
 
                   <div slot="footer-end" style={{ display: 'flex', gap: '8px' }}>
-                    <calcite-button 
-                      appearance="outline"
-                      icon-start="pencil"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(product);
-                      }}
-                      style={{
-                        color: '#2563eb',
-                        borderColor: '#2563eb'
-                      }}
-                      onMouseEnter={(el) => {
-                        el.currentTarget.style.backgroundColor = '#2563eb';
-                        el.currentTarget.style.color = 'white';
-                      }}
-                      onMouseLeave={(el) => {
-                        el.currentTarget.style.backgroundColor = '';
-                        el.currentTarget.style.color = '#2563eb';
-                      }}
-                    >
-                      Edit
-                    </calcite-button>
-                    <calcite-button 
-                      appearance="outline"
-                      kind="danger"
-                      icon-start="trash"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(product);
-                      }}
-                      style={{
-                        color: '#dc2626',
-                        borderColor: '#dc2626'
-                      }}
-                      onMouseEnter={(el) => {
-                        el.currentTarget.style.backgroundColor = '#dc2626';
-                        el.currentTarget.style.color = 'white';
-                      }}
-                      onMouseLeave={(el) => {
-                        el.currentTarget.style.backgroundColor = '';
-                        el.currentTarget.style.color = '#dc2626';
-                      }}
-                    >
-                      Delete
-                    </calcite-button>
+                    {canEdit('products') && (
+                      <calcite-button
+                        appearance="outline"
+                        icon-start="pencil"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(product);
+                        }}
+                        style={{
+                          color: '#2563eb',
+                          borderColor: '#2563eb'
+                        }}
+                        onMouseEnter={(el) => {
+                          el.currentTarget.style.backgroundColor = '#2563eb';
+                          el.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(el) => {
+                          el.currentTarget.style.backgroundColor = '';
+                          el.currentTarget.style.color = '#2563eb';
+                        }}
+                      >
+                        Edit
+                      </calcite-button>
+                    )}
+                    {canDelete('products') && (
+                      <calcite-button
+                        appearance="outline"
+                        kind="danger"
+                        icon-start="trash"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(product);
+                        }}
+                        style={{
+                          color: '#dc2626',
+                          borderColor: '#dc2626'
+                        }}
+                        onMouseEnter={(el) => {
+                          el.currentTarget.style.backgroundColor = '#dc2626';
+                          el.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(el) => {
+                          el.currentTarget.style.backgroundColor = '';
+                          el.currentTarget.style.color = '#dc2626';
+                        }}
+                      >
+                        Delete
+                      </calcite-button>
+                    )}
                   </div>
                 </calcite-card>
               ))}
@@ -412,7 +420,7 @@ export default function AdminProductList() {
                     label={product.name}
                     description={`${product.category} • ${product.workerType}`}
                     value={product._id}
-                    style={{ 
+                    style={{
                       cursor: 'pointer',
                       borderBottom: index !== filteredProducts.length - 1 ? '1px solid #f1f5f9' : 'none',
                       transition: 'all 0.2s ease'
@@ -425,20 +433,20 @@ export default function AdminProductList() {
                     }}
                     onClick={() => handleViewProduct(product._id)}
                   >
-                    <img 
+                    <img
                       slot="content-start"
                       src={product.image}
                       alt={product.name}
-                      style={{ 
-                        width: '70px', 
-                        height: '70px', 
+                      style={{
+                        width: '70px',
+                        height: '70px',
                         objectFit: 'cover',
                         borderRadius: '6px',
                         border: '2px solid #e2e8f0',
                         marginRight: '12px'
                       }}
                     />
-                    
+
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
                         display: 'flex',
@@ -459,8 +467,8 @@ export default function AdminProductList() {
                       </div>
                     </div>
 
-                    <div slot="content-end" style={{ 
-                      display: 'flex', 
+                    <div slot="content-end" style={{
+                      display: 'flex',
                       gap: '16px',
                       alignItems: 'center',
                       marginLeft: '16px'
@@ -476,8 +484,8 @@ export default function AdminProductList() {
                         }}>
                           Price
                         </div>
-                        <div style={{ 
-                          fontWeight: '700', 
+                        <div style={{
+                          fontWeight: '700',
                           fontSize: '18px',
                           color: '#ff6b00'
                         }}>
@@ -485,53 +493,57 @@ export default function AdminProductList() {
                         </div>
                       </div>
 
-                      <calcite-button 
-                        appearance="outline" 
-                        icon-start="pencil"
-                        scale="s"
-                        style={{
-                          color: '#2563eb',
-                          borderColor: '#2563eb'
-                        }}
-                        onMouseEnter={(el) => {
-                          el.currentTarget.style.backgroundColor = '#2563eb';
-                          el.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(el) => {
-                          el.currentTarget.style.backgroundColor = '';
-                          el.currentTarget.style.color = '#2563eb';
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(product);
-                        }}
-                      >
-                        Edit
-                      </calcite-button>
-                      <calcite-button 
-                        appearance="outline" 
-                        kind="danger"
-                        icon-start="trash"
-                        scale="s"
-                        style={{
-                          color: '#dc2626',
-                          borderColor: '#dc2626'
-                        }}
-                        onMouseEnter={(el) => {
-                          el.currentTarget.style.backgroundColor = '#dc2626';
-                          el.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(el) => {
-                          el.currentTarget.style.backgroundColor = '';
-                          el.currentTarget.style.color = '#dc2626';
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(product);
-                        }}
-                      >
-                        Delete
-                      </calcite-button>
+                      {canEdit('products') && (
+                        <calcite-button
+                          appearance="outline"
+                          icon-start="pencil"
+                          scale="s"
+                          style={{
+                            color: '#2563eb',
+                            borderColor: '#2563eb'
+                          }}
+                          onMouseEnter={(el) => {
+                            el.currentTarget.style.backgroundColor = '#2563eb';
+                            el.currentTarget.style.color = 'white';
+                          }}
+                          onMouseLeave={(el) => {
+                            el.currentTarget.style.backgroundColor = '';
+                            el.currentTarget.style.color = '#2563eb';
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(product);
+                          }}
+                        >
+                          Edit
+                        </calcite-button>
+                      )}
+                      {canDelete('products') && (
+                        <calcite-button
+                          appearance="outline"
+                          kind="danger"
+                          icon-start="trash"
+                          scale="s"
+                          style={{
+                            color: '#dc2626',
+                            borderColor: '#dc2626'
+                          }}
+                          onMouseEnter={(el) => {
+                            el.currentTarget.style.backgroundColor = '#dc2626';
+                            el.currentTarget.style.color = 'white';
+                          }}
+                          onMouseLeave={(el) => {
+                            el.currentTarget.style.backgroundColor = '';
+                            el.currentTarget.style.color = '#dc2626';
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(product);
+                          }}
+                        >
+                          Delete
+                        </calcite-button>
+                      )}
                     </div>
                   </calcite-list-item>
                 ))}
@@ -549,7 +561,7 @@ export default function AdminProductList() {
       </div>
 
       {/* Edit Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={editModalOpen}
         onCalciteModalClose={() => setEditModalOpen(false)}
         width-scale="l"
@@ -560,26 +572,26 @@ export default function AdminProductList() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <calcite-label>Product Image</calcite-label>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '16px', 
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
                   alignItems: 'center',
                   marginTop: '8px'
                 }}>
-                  <img 
+                  <img
                     src={selectedProduct.image}
                     alt={selectedProduct.name}
-                    style={{ 
-                      width: '180px', 
-                      height: '180px', 
+                    style={{
+                      width: '180px',
+                      height: '180px',
                       objectFit: 'cover',
                       borderRadius: '4px',
                       border: '1px solid var(--calcite-ui-border-2)'
                     }}
                   />
                   <div>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       style={{ display: 'none' }}
@@ -599,7 +611,7 @@ export default function AdminProductList() {
                 Product Name
                 <calcite-input-text
                   value={selectedProduct.name}
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedProduct({ ...selectedProduct, name: e.target.value })
                   }
                 />
@@ -610,7 +622,7 @@ export default function AdminProductList() {
                 <calcite-text-area
                   value={selectedProduct.description || ''}
                   rows="3"
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedProduct({ ...selectedProduct, description: e.target.value })
                   }
                 />
@@ -618,7 +630,7 @@ export default function AdminProductList() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ 
+                  <label style={{
                     display: 'block',
                     marginBottom: '8px',
                     fontSize: '14px',
@@ -648,7 +660,7 @@ export default function AdminProductList() {
                 </div>
 
                 <div>
-                  <label style={{ 
+                  <label style={{
                     display: 'block',
                     marginBottom: '8px',
                     fontSize: '14px',
@@ -679,7 +691,7 @@ export default function AdminProductList() {
               </div>
 
               <div>
-                <label style={{ 
+                <label style={{
                   display: 'block',
                   marginBottom: '8px',
                   fontSize: '14px',
@@ -713,7 +725,7 @@ export default function AdminProductList() {
                   Price (LKR)
                   <calcite-input-number
                     value={selectedProduct.price.toString()}
-                    onInput={(e) => 
+                    onInput={(e) =>
                       setSelectedProduct({ ...selectedProduct, price: parseFloat(e.target.value) || 0 })
                     }
                   />
@@ -723,7 +735,7 @@ export default function AdminProductList() {
                   Stock
                   <calcite-input-number
                     value={selectedProduct.stock.toString()}
-                    onInput={(e) => 
+                    onInput={(e) =>
                       setSelectedProduct({ ...selectedProduct, stock: parseInt(e.target.value) || 0 })
                     }
                   />
@@ -735,7 +747,7 @@ export default function AdminProductList() {
                 <calcite-text-area
                   value={selectedProduct.features}
                   rows="3"
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedProduct({ ...selectedProduct, features: e.target.value })
                   }
                 />
@@ -752,7 +764,7 @@ export default function AdminProductList() {
       </calcite-modal>
 
       {/* Delete Confirmation Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={deleteModalOpen}
         onCalciteModalClose={() => setDeleteModalOpen(false)}
         width-scale="s"
@@ -775,7 +787,7 @@ export default function AdminProductList() {
       </calcite-modal>
 
       {/* Image Crop Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={cropModalOpen}
         onCalciteModalClose={() => setCropModalOpen(false)}
         width-scale="m"
@@ -784,7 +796,7 @@ export default function AdminProductList() {
         <div slot="content" style={{ padding: '20px' }}>
           {imageToCrop && (
             <div>
-              <div style={{ 
+              <div style={{
                 width: '100%',
                 height: '400px',
                 overflow: 'hidden',
@@ -793,7 +805,7 @@ export default function AdminProductList() {
                 borderRadius: '4px',
                 marginBottom: '20px'
               }}>
-                <img 
+                <img
                   src={imageToCrop}
                   alt="Crop preview"
                   style={{

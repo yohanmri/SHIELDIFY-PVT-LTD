@@ -1,5 +1,6 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import usePermissions from '../../hooks/usePermissions';
 import '@esri/calcite-components/components/calcite-shell-panel';
 import '@esri/calcite-components/components/calcite-action-bar';
 import '@esri/calcite-components/components/calcite-action';
@@ -12,6 +13,7 @@ import '@esri/calcite-components/components/calcite-list-item-group';
 export default function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasPermission, isSuperAdmin } = usePermissions();
   const [activePanel, setActivePanel] = useState('dashboard');
 
   const isActive = (path) => location.pathname === path;
@@ -20,46 +22,55 @@ export default function AdminSidebar() {
     navigate(path);
   };
 
-useEffect(() => {
-  if (
-    location.pathname.includes('/admin/product-list') || 
-    location.pathname.includes('/admin/product-add') || 
-    location.pathname.includes('/admin/bundle-list') || 
-    location.pathname.includes('/admin/bundle-add')
-  ) {
-    setActivePanel('products');
+  useEffect(() => {
+    if (
+      location.pathname.includes('/admin/product-list') ||
+      location.pathname.includes('/admin/product-add') ||
+      location.pathname.includes('/admin/bundle-list') ||
+      location.pathname.includes('/admin/bundle-add')
+    ) {
+      setActivePanel('products');
 
-  } else if (
-    location.pathname.includes('/admin/order-list') || 
-    location.pathname.includes('/admin/order-completed') || 
-    location.pathname.includes('/admin/order-pending') || 
-    location.pathname.includes('/admin/requests-refund') ||
-    location.pathname.includes('/admin/requests-cancel')
-  ) {
-    setActivePanel('orders');
+    } else if (
+      location.pathname.includes('/admin/order-list') ||
+      location.pathname.includes('/admin/order-completed') ||
+      location.pathname.includes('/admin/order-pending') ||
+      location.pathname.includes('/admin/requests-refund') ||
+      location.pathname.includes('/admin/requests-cancel')
+    ) {
+      setActivePanel('orders');
 
-  } else if (
-    location.pathname.includes('/admin/total-visitors') ||
-    location.pathname.includes('/admin/live-visitors') ||
-    location.pathname.includes('/admin/popular-pages') ||
-    location.pathname.includes('/admin/devices-locations')
-  ) {
-    setActivePanel('analytics');
+    } else if (
+      location.pathname.includes('/admin/total-visitors') ||
+      location.pathname.includes('/admin/live-visitors') ||
+      location.pathname.includes('/admin/popular-pages') ||
+      location.pathname.includes('/admin/devices-locations')
+    ) {
+      setActivePanel('analytics');
 
-  } else if (
-    location.pathname.includes('/admin/roles') ||
-    location.pathname.includes('/admin/settings')
-  ) {
-    setActivePanel('admin');
+    } else if (
+      location.pathname.includes('/admin/role-management') ||
+      location.pathname.includes('/admin/create-role') ||
+      location.pathname.includes('/admin/settings')
+    ) {
+      setActivePanel('admin');
 
-  } else if (
-    location.pathname.includes('/admin/dashboard') ||
-    location.pathname.includes('/admin/recent-activity') ||
-    location.pathname.includes('/admin/contact-view')
-  ) {
-    setActivePanel('dashboard');
-  }
-}, [location.pathname]);
+    } else if (
+      location.pathname.includes('/admin/dashboard') ||
+      location.pathname.includes('/admin/recent-activity') ||
+      location.pathname.includes('/admin/contact-view')
+    ) {
+      setActivePanel('dashboard');
+    }
+  }, [location.pathname]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[AdminSidebar] isSuperAdmin:', isSuperAdmin());
+    console.log('[AdminSidebar] hasPermission(products):', hasPermission('products'));
+    console.log('[AdminSidebar] hasPermission(orders):', hasPermission('orders'));
+    console.log('[AdminSidebar] hasPermission(analytics):', hasPermission('analytics'));
+  }, [hasPermission, isSuperAdmin]);
 
   return (
     <calcite-shell-panel slot="panel-start" position="start" resizable>
@@ -75,33 +86,41 @@ useEffect(() => {
             }}
           ></calcite-action>
 
-          <calcite-action
-            text="Products"
-            icon="shopping-cart"
-            active={activePanel === 'products'}
-            onClick={() => setActivePanel('products')}
-          ></calcite-action>
+          {(isSuperAdmin() || hasPermission('products') || hasPermission('bundles')) && (
+            <calcite-action
+              text="Products"
+              icon="shopping-cart"
+              active={activePanel === 'products'}
+              onClick={() => setActivePanel('products')}
+            ></calcite-action>
+          )}
 
-          <calcite-action
-            text="Orders"
-            icon="list-check"
-            active={activePanel === 'orders'}
-            onClick={() => setActivePanel('orders')}
-          ></calcite-action>
+          {(isSuperAdmin() || hasPermission('orders')) && (
+            <calcite-action
+              text="Orders"
+              icon="list-check"
+              active={activePanel === 'orders'}
+              onClick={() => setActivePanel('orders')}
+            ></calcite-action>
+          )}
 
-          <calcite-action
-            text="Analytics"
-            icon="graph-time-series"
-            active={activePanel === 'analytics'}
-            onClick={() => setActivePanel('analytics')}
-          ></calcite-action>
+          {(isSuperAdmin() || hasPermission('analytics')) && (
+            <calcite-action
+              text="Analytics"
+              icon="graph-time-series"
+              active={activePanel === 'analytics'}
+              onClick={() => setActivePanel('analytics')}
+            ></calcite-action>
+          )}
 
-          <calcite-action
-            text="Admin"
-            icon="user"
-            active={activePanel === 'admin'}
-            onClick={() => setActivePanel('admin')}
-          ></calcite-action>
+          {(isSuperAdmin() || hasPermission('admins') || hasPermission('roles')) && (
+            <calcite-action
+              text="Admin"
+              icon="user"
+              active={activePanel === 'admin'}
+              onClick={() => setActivePanel('admin')}
+            ></calcite-action>
+          )}
         </calcite-action-group>
 
         <calcite-action-group slot="actions-end">
@@ -112,45 +131,45 @@ useEffect(() => {
           ></calcite-action>
         </calcite-action-group>
       </calcite-action-bar>
-{/* Dashboard Panel */}
-{activePanel === 'dashboard' && (
-  <calcite-panel heading="Dashboard" description="Overview and statistics">
-    <calcite-list>
-      <calcite-list-item
-        value="overview"
-        label="Overview"
-        description="Quick stats and cards"
-        onClick={() => handleNavigation('/admin/dashboard')}
-        style={{ cursor: 'pointer' }}
-      >
-        <calcite-icon slot="content-start" icon="dashboard" scale="s"></calcite-icon>
-      </calcite-list-item>
+      {/* Dashboard Panel */}
+      {activePanel === 'dashboard' && (
+        <calcite-panel heading="Dashboard" description="Overview and statistics">
+          <calcite-list>
+            <calcite-list-item
+              value="overview"
+              label="Overview"
+              description="Quick stats and cards"
+              onClick={() => handleNavigation('/admin/dashboard')}
+              style={{ cursor: 'pointer' }}
+            >
+              <calcite-icon slot="content-start" icon="dashboard" scale="s"></calcite-icon>
+            </calcite-list-item>
 
-      <calcite-list-item
-        value="recent-activity"
-        label="Recent Activity"
-        description="Latest updates"
-        onClick={() => handleNavigation('/admin/recent-activity')}
-        style={{ cursor: 'pointer' }}
-      >
-        <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
-      </calcite-list-item>
-    </calcite-list>
+            <calcite-list-item
+              value="recent-activity"
+              label="Recent Activity"
+              description="Latest updates"
+              onClick={() => handleNavigation('/admin/recent-activity')}
+              style={{ cursor: 'pointer' }}
+            >
+              <calcite-icon slot="content-start" icon="clock" scale="s"></calcite-icon>
+            </calcite-list-item>
+          </calcite-list>
 
-    {/* Contact Section */}
-   <calcite-list>
-      <calcite-list-item
-        value="Contact"
-        label="Contact View Page"
-        description="Requests from page visitors"
-        onClick={() => handleNavigation('/admin/contact-view')}
-        style={{ cursor: 'pointer' }}
-      >
-        <calcite-icon slot="content-start" icon="email-address" scale="s"></calcite-icon>
-      </calcite-list-item>
-    </calcite-list>
-  </calcite-panel>
-)}
+          {/* Contact Section */}
+          <calcite-list>
+            <calcite-list-item
+              value="Contact"
+              label="Contact View Page"
+              description="Requests from page visitors"
+              onClick={() => handleNavigation('/admin/contact-view')}
+              style={{ cursor: 'pointer' }}
+            >
+              <calcite-icon slot="content-start" icon="email-address" scale="s"></calcite-icon>
+            </calcite-list-item>
+          </calcite-list>
+        </calcite-panel>
+      )}
 
       {/* Products Panel */}
       {activePanel === 'products' && (
@@ -162,7 +181,7 @@ useEffect(() => {
                 label="All Products"
                 description="View and manage products"
                 onClick={() => handleNavigation('/admin/product-list')}
-                style={{ 
+                style={{
                   cursor: 'pointer',
                   backgroundColor: isActive('/admin/product-list') ? 'var(--calcite-ui-brand)' : 'transparent',
                   color: isActive('/admin/product-list') ? 'white' : 'inherit'
@@ -178,7 +197,7 @@ useEffect(() => {
                 onClick={() => handleNavigation('/admin/product-add')}
                 style={{ cursor: 'pointer' }}
               >
-        <calcite-icon slot="content-start" icon="plus-circle" scale="s"></calcite-icon>
+                <calcite-icon slot="content-start" icon="plus-circle" scale="s"></calcite-icon>
               </calcite-list-item>
             </calcite-list-item-group>
 
@@ -321,17 +340,27 @@ useEffect(() => {
 
       {/* Admin Panel */}
       {activePanel === 'admin' && (
-        <calcite-panel heading="Admin" description="User and role management">
+        <calcite-panel heading="Admin" description="System administration">
           <calcite-list>
             <calcite-list-item-group heading="Role Management">
               <calcite-list-item
-                value="roles"
-                label="Roles & Permissions"
-                description="Manage roles and permissions"
-                onClick={() => handleNavigation('/admin/roles')}
+                value="role-management"
+                label="Role Management"
+                description="Manage admin users and roles"
+                onClick={() => handleNavigation('/admin/role-management')}
                 style={{ cursor: 'pointer' }}
               >
-                <calcite-icon slot="content-start" icon="shield" scale="s"></calcite-icon>
+                <calcite-icon slot="content-start" icon="users" scale="s"></calcite-icon>
+              </calcite-list-item>
+
+              <calcite-list-item
+                value="create-role"
+                label="Create Role"
+                description="Create new role with permissions"
+                onClick={() => handleNavigation('/admin/create-role')}
+                style={{ cursor: 'pointer' }}
+              >
+                <calcite-icon slot="content-start" icon="plus-circle" scale="s"></calcite-icon>
               </calcite-list-item>
             </calcite-list-item-group>
 
@@ -347,7 +376,7 @@ useEffect(() => {
               </calcite-list-item>
             </calcite-list-item-group>
 
-                      
+
           </calcite-list>
         </calcite-panel>
       )}

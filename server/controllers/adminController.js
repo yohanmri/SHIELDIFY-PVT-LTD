@@ -11,9 +11,9 @@ const { sendWelcomeEmail, sendRoleAssignedEmail } = require('../utils/emailServi
 exports.getAllAdmins = async (req, res) => {
   try {
     const { search, role, status, page = 1, limit = 10 } = req.query;
-    
+
     let query = {};
-    
+
     // Search by name or email
     if (search) {
       query.$or = [
@@ -21,21 +21,21 @@ exports.getAllAdmins = async (req, res) => {
         { email: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     // Filter by role
     if (role && role !== 'all') {
       query.role = role;
     }
-    
+
     // Filter by status
     if (status === 'active') {
       query.isActive = true;
     } else if (status === 'inactive') {
       query.isActive = false;
     }
-    
+
     const skip = (page - 1) * limit;
-    
+
     const admins = await Admin.find(query)
       .populate('role', 'name description')
       .populate('createdBy', 'name email')
@@ -43,9 +43,9 @@ exports.getAllAdmins = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
-    
+
     const total = await Admin.countDocuments(query);
-    
+
     res.status(200).json({
       success: true,
       count: admins.length,
@@ -73,14 +73,14 @@ exports.getAdminById = async (req, res) => {
       .populate('role')
       .populate('createdBy', 'name email')
       .select('-password -otp -otpExpires');
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: admin
@@ -100,16 +100,29 @@ exports.getAdminById = async (req, res) => {
 // @access  Private (Super Admin only)
 exports.createAdmin = async (req, res) => {
   try {
-    const { name, email, roleId, isSuperAdmin } = req.body;
-    
+    const { name, email, phone, designation, roleId, temporaryPassword, isSuperAdmin } = req.body;
+
     // Validate required fields
-    if (!name || !email || !roleId) {
+    if (!name || !email || !roleId || !temporaryPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, email, and role'
+        message: 'Please provide name, email, role, and temporary password'
       });
     }
-    
+
+    // Phone is recommended but not strictly required for backward compatibility
+    if (!phone) {
+      console.warn('Creating admin without phone number - not recommended');
+    }
+
+    // Validate password length
+    if (temporaryPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Temporary password must be at least 6 characters'
+      });
+    }
+
     // Check if email already exists
     const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
     if (existingAdmin) {
@@ -118,7 +131,7 @@ exports.createAdmin = async (req, res) => {
         message: 'Email already registered'
       });
     }
-    
+
     // Check if role exists
     const role = await Role.findById(roleId);
     if (!role) {
@@ -127,39 +140,40 @@ exports.createAdmin = async (req, res) => {
         message: 'Role not found'
       });
     }
-    
-    // Generate temporary password
-    const temporaryPassword = generateTemporaryPassword();
-    
+
     // Create admin
     const admin = await Admin.create({
       name,
       email: email.toLowerCase(),
+      phone: phone || '',
+      designation: designation || '',
       password: temporaryPassword,
       role: roleId,
       isSuperAdmin: isSuperAdmin || false,
       isTemporaryPassword: true,
       createdBy: req.admin.id
     });
-    
+
     // Send welcome email with credentials
     try {
-      await sendWelcomeEmail(admin.email, admin.name, temporaryPassword, role.name);
+      await sendWelcomeEmail(admin.email, admin.name, temporaryPassword, role.name, designation);
     } catch (emailError) {
       console.error('Error sending welcome email:', emailError);
       // Continue even if email fails
     }
-    
+
     // Populate role before sending response
     await admin.populate('role');
-    
+
     res.status(201).json({
       success: true,
-      message: 'Admin created successfully. Welcome email sent with temporary password.',
+      message: 'Admin created successfully. Welcome email sent with login credentials.',
       data: {
         id: admin._id,
         name: admin.name,
         email: admin.email,
+        phone: admin.phone,
+        designation: admin.designation,
         role: admin.role,
         isSuperAdmin: admin.isSuperAdmin
       }
@@ -180,16 +194,16 @@ exports.createAdmin = async (req, res) => {
 exports.updateAdmin = async (req, res) => {
   try {
     const { name, email, roleId, isSuperAdmin } = req.body;
-    
+
     let admin = await Admin.findById(req.params.id);
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     // Prevent non-super-admins from updating super admin status
     if (isSuperAdmin !== undefined && !req.admin.isSuperAdmin) {
       return res.status(403).json({
@@ -197,7 +211,7 @@ exports.updateAdmin = async (req, res) => {
         message: 'Only super admins can modify super admin status'
       });
     }
-    
+
     // Check if email is being changed and if it's already taken
     if (email && email.toLowerCase() !== admin.email) {
       const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
@@ -208,7 +222,7 @@ exports.updateAdmin = async (req, res) => {
         });
       }
     }
-    
+
     // Check if role exists (if being updated)
     if (roleId) {
       const role = await Role.findById(roleId);
@@ -219,20 +233,20 @@ exports.updateAdmin = async (req, res) => {
         });
       }
     }
-    
+
     // Update fields
     const updateData = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email.toLowerCase();
     if (roleId) updateData.role = roleId;
     if (isSuperAdmin !== undefined) updateData.isSuperAdmin = isSuperAdmin;
-    
+
     admin = await Admin.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true, runValidators: true }
     ).populate('role');
-    
+
     res.status(200).json({
       success: true,
       message: 'Admin updated successfully',
@@ -254,14 +268,14 @@ exports.updateAdmin = async (req, res) => {
 exports.deleteAdmin = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     // Prevent deleting own account
     if (admin._id.toString() === req.admin.id) {
       return res.status(400).json({
@@ -269,9 +283,9 @@ exports.deleteAdmin = async (req, res) => {
         message: 'You cannot delete your own account'
       });
     }
-    
+
     await Admin.findByIdAndDelete(req.params.id);
-    
+
     res.status(200).json({
       success: true,
       message: 'Admin deleted successfully'
@@ -292,14 +306,14 @@ exports.deleteAdmin = async (req, res) => {
 exports.toggleAdminStatus = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     // Prevent deactivating own account
     if (admin._id.toString() === req.admin.id) {
       return res.status(400).json({
@@ -307,10 +321,10 @@ exports.toggleAdminStatus = async (req, res) => {
         message: 'You cannot deactivate your own account'
       });
     }
-    
+
     admin.isActive = !admin.isActive;
     await admin.save();
-    
+
     res.status(200).json({
       success: true,
       message: `Admin ${admin.isActive ? 'activated' : 'deactivated'} successfully`,
@@ -332,16 +346,16 @@ exports.toggleAdminStatus = async (req, res) => {
 exports.unlockAdmin = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id);
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     await admin.resetLoginAttempts();
-    
+
     res.status(200).json({
       success: true,
       message: 'Admin account unlocked successfully'
@@ -362,28 +376,28 @@ exports.unlockAdmin = async (req, res) => {
 exports.resetAdminPassword = async (req, res) => {
   try {
     const admin = await Admin.findById(req.params.id).populate('role');
-    
+
     if (!admin) {
       return res.status(404).json({
         success: false,
         message: 'Admin not found'
       });
     }
-    
+
     // Generate new temporary password
     const temporaryPassword = generateTemporaryPassword();
-    
+
     admin.password = temporaryPassword;
     admin.isTemporaryPassword = true;
     await admin.save();
-    
+
     // Send email with new password
     try {
       await sendRoleAssignedEmail(admin.email, admin.name, admin.role.name, temporaryPassword);
     } catch (emailError) {
       console.error('Error sending password reset email:', emailError);
     }
-    
+
     res.status(200).json({
       success: true,
       message: 'Password reset successfully. New temporary password sent to admin email.'

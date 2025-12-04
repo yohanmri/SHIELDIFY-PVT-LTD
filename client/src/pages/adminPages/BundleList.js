@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/adminComponents/AdminNavbar';
 import AdminSidebar from '../../components/adminComponents/AdminSidebar';
 import { adminAPI as API } from '../../api/axios';
+import usePermissions from '../../hooks/usePermissions';
 import '@esri/calcite-components/components/calcite-shell';
 import '@esri/calcite-components/components/calcite-button';
 import '@esri/calcite-components/components/calcite-card';
@@ -24,6 +25,7 @@ import '@esri/calcite-components/components/calcite-switch';
 
 export default function AdminBundleList() {
   const navigate = useNavigate();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -33,7 +35,7 @@ export default function AdminBundleList() {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropData, setCropData] = useState({ zoom: 1, x: 0, y: 0 });
-  
+
   const [bundles, setBundles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -73,7 +75,7 @@ export default function AdminBundleList() {
     return bundles.filter(bundle => {
       const matchesCategory = selectedCategory === 'all' || bundle.category === selectedCategory;
       const matchesSearch = bundle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           bundle.category.toLowerCase().includes(searchQuery.toLowerCase());
+        bundle.category.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery, bundles]);
@@ -160,12 +162,12 @@ export default function AdminBundleList() {
     <calcite-shell>
       <AdminNavbar />
       <AdminSidebar />
-      
+
       <div style={{ padding: '24px', height: '100%', overflow: 'auto' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
             flexWrap: 'wrap',
@@ -179,12 +181,14 @@ export default function AdminBundleList() {
                 Manage bundle deals and bulk promotions
               </p>
             </div>
-            <calcite-button 
-              icon-start="plus-circle"
-              onClick={() => navigate('/admin/bundle-add')}
-            >
-              Add New Bundle
-            </calcite-button>
+            {canCreate('bundles') && (
+              <calcite-button
+                icon-start="plus-circle"
+                onClick={() => navigate('/admin/bundle-add')}
+              >
+                Add New Bundle
+              </calcite-button>
+            )}
           </div>
 
           {error && (
@@ -194,9 +198,9 @@ export default function AdminBundleList() {
             </calcite-notice>
           )}
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
+          <div style={{
+            display: 'flex',
+            gap: '12px',
             marginBottom: '24px',
             flexWrap: 'wrap',
             alignItems: 'center'
@@ -210,7 +214,7 @@ export default function AdminBundleList() {
               clearable
               style={{ flex: '1', minWidth: '250px' }}
             />
-            
+
             <calcite-select
               value={selectedCategory}
               onCalciteSelectChange={(e) => setSelectedCategory(e.target.selectedOption.value)}
@@ -260,18 +264,18 @@ export default function AdminBundleList() {
               gap: '20px'
             }}>
               {filteredBundles.map(bundle => (
-                <calcite-card 
+                <calcite-card
                   key={bundle._id}
                   onClick={() => handleViewBundle(bundle._id)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <img 
-                    slot="thumbnail" 
-                    src={bundle.image} 
+                  <img
+                    slot="thumbnail"
+                    src={bundle.image}
                     alt={bundle.name}
                     style={{ height: '180px', objectFit: 'cover' }}
                   />
-                  
+
                   <div slot="header-start" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     <calcite-chip scale="s" appearance="solid" kind="danger">
                       {calculateDiscount(bundle.originalPrice, bundle.discountPrice)}% OFF
@@ -293,46 +297,50 @@ export default function AdminBundleList() {
                   </div>
 
                   <div slot="footer-start" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ 
+                    <div style={{
                       fontSize: '14px',
                       color: '#6b6b6b',
                       textDecoration: 'line-through'
                     }}>
                       LKR {bundle.originalPrice.toLocaleString()}
                     </div>
-                    <div style={{ 
-                      fontWeight: '600', 
-                      fontSize: '1.25rem', 
-                      color: '#dc3545' 
+                    <div style={{
+                      fontWeight: '600',
+                      fontSize: '1.25rem',
+                      color: '#dc3545'
                     }}>
                       LKR {bundle.discountPrice.toLocaleString()}
                     </div>
                   </div>
 
                   <div slot="footer-end" style={{ display: 'flex', gap: '4px' }}>
-                    <calcite-button 
-                      appearance="outline" 
-                      icon-start="pencil"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(bundle);
-                      }}
-                    >
-                      Edit
-                    </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
-                      kind="danger"
-                      icon-start="trash"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(bundle);
-                      }}
-                    >
-                      Delete
-                    </calcite-button>
+                    {canEdit('bundles') && (
+                      <calcite-button
+                        appearance="outline"
+                        icon-start="pencil"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(bundle);
+                        }}
+                      >
+                        Edit
+                      </calcite-button>
+                    )}
+                    {canDelete('bundles') && (
+                      <calcite-button
+                        appearance="outline"
+                        kind="danger"
+                        icon-start="trash"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(bundle);
+                        }}
+                      >
+                        Delete
+                      </calcite-button>
+                    )}
                   </div>
                 </calcite-card>
               ))}
@@ -351,19 +359,19 @@ export default function AdminBundleList() {
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleViewBundle(bundle._id)}
                 >
-                  <img 
+                  <img
                     slot="content-start"
                     src={bundle.image}
                     alt={bundle.name}
-                    style={{ 
-                      width: '60px', 
-                      height: '60px', 
+                    style={{
+                      width: '60px',
+                      height: '60px',
                       objectFit: 'cover',
                       borderRadius: '4px'
                     }}
                   />
-                  <div slot="content-end" style={{ 
-                    display: 'flex', 
+                  <div slot="content-end" style={{
+                    display: 'flex',
                     gap: '8px',
                     alignItems: 'center'
                   }}>
@@ -375,29 +383,33 @@ export default function AdminBundleList() {
                         LKR {bundle.discountPrice.toLocaleString()}
                       </div>
                     </div>
-                    <calcite-button 
-                      appearance="outline" 
-                      icon-start="pencil"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(bundle);
-                      }}
-                    >
-                      Edit
-                    </calcite-button>
-                    <calcite-button 
-                      appearance="outline" 
-                      kind="danger"
-                      icon-start="trash"
-                      scale="s"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(bundle);
-                      }}
-                    >
-                      Delete
-                    </calcite-button>
+                    {canEdit('bundles') && (
+                      <calcite-button
+                        appearance="outline"
+                        icon-start="pencil"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(bundle);
+                        }}
+                      >
+                        Edit
+                      </calcite-button>
+                    )}
+                    {canDelete('bundles') && (
+                      <calcite-button
+                        appearance="outline"
+                        kind="danger"
+                        icon-start="trash"
+                        scale="s"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(bundle);
+                        }}
+                      >
+                        Delete
+                      </calcite-button>
+                    )}
                   </div>
                 </calcite-list-item>
               ))}
@@ -414,7 +426,7 @@ export default function AdminBundleList() {
       </div>
 
       {/* Edit Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={editModalOpen}
         onCalciteModalClose={() => setEditModalOpen(false)}
         width-scale="l"
@@ -425,26 +437,26 @@ export default function AdminBundleList() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <calcite-label>Bundle Image</calcite-label>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '16px', 
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
                   alignItems: 'center',
                   marginTop: '8px'
                 }}>
-                  <img 
+                  <img
                     src={selectedBundle.image}
                     alt={selectedBundle.name}
-                    style={{ 
-                      width: '280px', 
-                      height: '180px', 
+                    style={{
+                      width: '280px',
+                      height: '180px',
                       objectFit: 'cover',
                       borderRadius: '4px',
                       border: '1px solid var(--calcite-ui-border-2)'
                     }}
                   />
                   <div>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       style={{ display: 'none' }}
@@ -464,14 +476,14 @@ export default function AdminBundleList() {
                 Bundle Name *
                 <calcite-input-text
                   value={selectedBundle.name}
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedBundle({ ...selectedBundle, name: e.target.value })
                   }
                 />
               </calcite-label>
 
               <div>
-                <label style={{ 
+                <label style={{
                   display: 'block',
                   marginBottom: '8px',
                   fontSize: '14px',
@@ -504,7 +516,7 @@ export default function AdminBundleList() {
                 Quantity *
                 <calcite-input-number
                   value={selectedBundle.quantity.toString()}
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedBundle({ ...selectedBundle, quantity: parseInt(e.target.value) || 0 })
                   }
                   min="1"
@@ -516,7 +528,7 @@ export default function AdminBundleList() {
                   Original Price (LKR) *
                   <calcite-input-number
                     value={selectedBundle.originalPrice.toString()}
-                    onInput={(e) => 
+                    onInput={(e) =>
                       setSelectedBundle({ ...selectedBundle, originalPrice: parseFloat(e.target.value) || 0 })
                     }
                     min="0"
@@ -527,7 +539,7 @@ export default function AdminBundleList() {
                   Discount Price (LKR) *
                   <calcite-input-number
                     value={selectedBundle.discountPrice.toString()}
-                    onInput={(e) => 
+                    onInput={(e) =>
                       setSelectedBundle({ ...selectedBundle, discountPrice: parseFloat(e.target.value) || 0 })
                     }
                     min="0"
@@ -556,7 +568,7 @@ export default function AdminBundleList() {
                 <calcite-text-area
                   value={selectedBundle.description || ''}
                   rows="3"
-                  onInput={(e) => 
+                  onInput={(e) =>
                     setSelectedBundle({ ...selectedBundle, description: e.target.value })
                   }
                   placeholder="Brief description of the bundle..."
@@ -567,7 +579,7 @@ export default function AdminBundleList() {
                 <span>Active Status</span>
                 <calcite-switch
                   checked={selectedBundle.isActive}
-                  onCalciteSwitchChange={(e) => 
+                  onCalciteSwitchChange={(e) =>
                     setSelectedBundle({ ...selectedBundle, isActive: e.target.checked })
                   }
                 ></calcite-switch>
@@ -584,7 +596,7 @@ export default function AdminBundleList() {
       </calcite-modal>
 
       {/* Delete Confirmation Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={deleteModalOpen}
         onCalciteModalClose={() => setDeleteModalOpen(false)}
         width-scale="s"
@@ -607,7 +619,7 @@ export default function AdminBundleList() {
       </calcite-modal>
 
       {/* Image Crop Modal */}
-      <calcite-modal 
+      <calcite-modal
         open={cropModalOpen}
         onCalciteModalClose={() => setCropModalOpen(false)}
         width-scale="m"
@@ -616,7 +628,7 @@ export default function AdminBundleList() {
         <div slot="content" style={{ padding: '20px' }}>
           {imageToCrop && (
             <div>
-              <div style={{ 
+              <div style={{
                 width: '100%',
                 height: '0',
                 paddingBottom: '56.25%',
@@ -626,7 +638,7 @@ export default function AdminBundleList() {
                 borderRadius: '4px',
                 marginBottom: '20px'
               }}>
-                <img 
+                <img
                   src={imageToCrop}
                   alt="Crop preview"
                   style={{

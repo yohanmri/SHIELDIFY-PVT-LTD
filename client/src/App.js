@@ -35,7 +35,10 @@ import BundleDetailsPage from './pages/clientPages/BundleDetailsPage';
 import { trackPageView } from './utils/analytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import ContactViewPage from './pages/adminPages/ContactViewPage';
+import AdminManagement from './pages/adminPages/AdminManagement';
+import ChangePassword from './pages/adminPages/ChangePassword';
 import { CartProvider } from './context/CartContext';
+import { PermissionProvider } from './context/PermissionContext';
 
 // Analytics Tracker Component
 function AnalyticsTracker() {
@@ -60,217 +63,240 @@ function App() {
   }, []);
 
   return (
-    <CartProvider>
-      <Router>
-        <AnalyticsTracker />
-        <div className="App">
-          <Routes>
-            {/* ============================================
+    <PermissionProvider>
+      <CartProvider>
+        <Router>
+          <AnalyticsTracker />
+          <div className="App">
+            <Routes>
+              {/* ============================================
               CLIENT SIDE ROUTES (Public - No Protection)
               ============================================ */}
 
-            <Route path="/" element={<HomePage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/product/:id" element={<ProductDetailsPage />} />
-            <Route path="/bundles" element={<BundlesPage />} />
-            <Route path="/bundle/:id" element={<BundleDetailsPage />} />
-            <Route path="/solutions" element={<SolutionsPage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/product/:id" element={<ProductDetailsPage />} />
+              <Route path="/bundles" element={<BundlesPage />} />
+              <Route path="/bundle/:id" element={<BundleDetailsPage />} />
+              <Route path="/solutions" element={<SolutionsPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
 
-            {/* ============================================
+              {/* ============================================
               ADMIN AUTHENTICATION (Public Route)
               ============================================ */}
 
-            <Route
-              path="/admin/login"
-              element={<ShieldifyLogin />}
-            />
+              <Route
+                path="/admin/login"
+                element={<ShieldifyLogin />}
+              />
 
-            {/* ============================================
+              <Route
+                path="/admin/change-password"
+                element={<ChangePassword />}
+              />
+
+              {/* ============================================
               PROTECTED ADMIN ROUTES
               ============================================ */}
 
-            {/* Dashboard & Activity */}
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/recent-activity"
-              element={
-                <ProtectedRoute>
-                  <RecentActivity />
-                </ProtectedRoute>
-              }
-            />
+              {/* Dashboard & Activity */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/recent-activity"
+                element={
+                  <ProtectedRoute>
+                    <RecentActivity />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Product Management */}
-            <Route
-              path="/admin/product-list"
-              element={
-                <ProtectedRoute>
-                  <AdminProductList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/products/:id"
-              element={
-                <ProtectedRoute>
-                  <AdminProductDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/product-add"
-              element={
-                <ProtectedRoute>
-                  <AdminProductAdd />
-                </ProtectedRoute>
-              }
-            />
+              {/* Product Management */}
+              <Route
+                path="/admin/product-list"
+                element={
+                  <ProtectedRoute>
+                    <AdminProductList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/products/:id"
+                element={
+                  <ProtectedRoute>
+                    <AdminProductDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/product-add"
+                element={
+                  <ProtectedRoute>
+                    <AdminProductAdd />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Bundle Management */}
-            <Route
-              path="/admin/bundle-list"
-              element={
-                <ProtectedRoute>
-                  <AdminBundleList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/bundle-add"
-              element={
-                <ProtectedRoute>
-                  <AdminBundleAdd />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/bundles/:id"
-              element={
-                <ProtectedRoute>
-                  <AdminBundleDetail />
-                </ProtectedRoute>
-              }
-            />
+              {/* Bundle Management */}
+              <Route
+                path="/admin/bundle-list"
+                element={
+                  <ProtectedRoute>
+                    <AdminBundleList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/bundle-add"
+                element={
+                  <ProtectedRoute>
+                    <AdminBundleAdd />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/bundles/:id"
+                element={
+                  <ProtectedRoute>
+                    <AdminBundleDetail />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Order Management */}
-            <Route
-              path="/admin/order-list"
-              element={
-                <ProtectedRoute>
-                  <AdminOrdersList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/order-completed"
-              element={
-                <ProtectedRoute>
-                  <AdminOrdersCompleted />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/order-pending"
-              element={
-                <ProtectedRoute>
-                  <AdminOrdersPending />
-                </ProtectedRoute>
-              }
-            />
+              {/* Order Management */}
+              <Route
+                path="/admin/order-list"
+                element={
+                  <ProtectedRoute>
+                    <AdminOrdersList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/order-completed"
+                element={
+                  <ProtectedRoute>
+                    <AdminOrdersCompleted />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/order-pending"
+                element={
+                  <ProtectedRoute>
+                    <AdminOrdersPending />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Request Management */}
-            <Route
-              path="/admin/requests-refunds"
-              element={
-                <ProtectedRoute>
-                  <AdminRequestsRefund />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/requests-cancel"
-              element={
-                <ProtectedRoute>
-                  <AdminRequestsCancel />
-                </ProtectedRoute>
-              }
-            />
+              {/* Request Management */}
+              <Route
+                path="/admin/requests-refunds"
+                element={
+                  <ProtectedRoute>
+                    <AdminRequestsRefund />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/requests-cancel"
+                element={
+                  <ProtectedRoute>
+                    <AdminRequestsCancel />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Analytics - Visitors */}
-            <Route
-              path="/admin/total-visitors"
-              element={
-                <ProtectedRoute>
-                  <TotalVisitors />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/popular-pages"
-              element={
-                <ProtectedRoute>
-                  <PopularPages />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/devices-locations"
-              element={
-                <ProtectedRoute>
-                  <DeviceLocations />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/live-visitors"
-              element={
-                <ProtectedRoute>
-                  <LiveVisitors />
-                </ProtectedRoute>
-              }
-            />
+              {/* Analytics - Visitors */}
+              <Route
+                path="/admin/total-visitors"
+                element={
+                  <ProtectedRoute>
+                    <TotalVisitors />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/popular-pages"
+                element={
+                  <ProtectedRoute>
+                    <PopularPages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/devices-locations"
+                element={
+                  <ProtectedRoute>
+                    <DeviceLocations />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/live-visitors"
+                element={
+                  <ProtectedRoute>
+                    <LiveVisitors />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Roles & Settings */}
-            <Route
-              path="/admin/roles"
-              element={
-                <ProtectedRoute>
-                  <CreateRole />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/contact-view"
-              element={
-                <ProtectedRoute>
-                  <ContactViewPage />
-                </ProtectedRoute>
-              }
-            />
+              {/* Admin & Settings */}
+              <Route
+                path="/admin/role-management"
+                element={
+                  <ProtectedRoute>
+                    <AdminManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/create-role"
+                element={
+                  <ProtectedRoute>
+                    <CreateRole />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/edit-role/:id"
+                element={
+                  <ProtectedRoute>
+                    <CreateRole />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/contact-view"
+                element={
+                  <ProtectedRoute>
+                    <ContactViewPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </div>
-      </Router>
-    </CartProvider>
+              <Route
+                path="/admin/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+        </Router>
+      </CartProvider>
+    </PermissionProvider>
   );
 }
 
